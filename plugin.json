@@ -1,0 +1,24 @@
+{
+  "name": "wycats-ai-plugin",
+  "version": "0.1.0",
+  "description": "PER workflow: prepare, execute, review agents with walkthrough and per-cycle skills.",
+  "skills": [
+    {
+      "path": "./skills/per-cycle/SKILL.md"
+    },
+    {
+      "path": "./skills/walkthrough/SKILL.md"
+    }
+  ],
+  "agents": [
+    {
+      "path": "./agents/execute.agent.md"
+    },
+    {
+      "path": "./agents/prepare.agent.md"
+    },
+    {
+      "path": "./agents/review.agent.md"
+    }
+  ]
+}

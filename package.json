@@ -1,0 +1,23 @@
+{
+  "name": "wycats-ai-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Personal Copilot agent plugin bundling PER workflow agents, skills, and prompts.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-plugin.ts",
+    "watch": "node scripts/watch.ts",
+    "install-local": "node scripts/install-local.ts",
+    "validate": "node scripts/validate.ts",
+    "lint": "eslint scripts/",
+    "check": "tsc --noEmit && eslint scripts/"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.5.0",
+    "eslint": "^10.0.3",
+    "jiti": "^2.6.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.57.0"
+  }
+}
