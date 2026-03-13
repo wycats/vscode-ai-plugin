@@ -5,7 +5,7 @@ description: "Prepare a session handoff so the next agent can start immediately 
 
 # Session Handoff
 
-Produce a `SESSION-STATE.md` in `docs/agent-context/` that gives the next agent zero ramp-up time. The document captures *state*, not conversation history.
+Produce a `SESSION-STATE.md` in `docs/agent-context/` that gives the next agent zero ramp-up time. The document captures _state_, not conversation history.
 
 This skill has three phases: **draft**, **validate**, **finalize**. The validation loop is the core of the process — the draft is just raw material for it.
 
@@ -25,16 +25,16 @@ git branch --show-current
 
 ### 1b. Collect state
 
-| Category | Capture | Source |
-|---|---|---|
-| **Goal** | What the user asked for | Conversation |
-| **Progress** | Done / in-progress / blocked | Conversation + filesystem |
-| **Decisions** | Choices made and *why* | Conversation |
-| **Open questions** | Unresolved items needing user input | Conversation |
-| **Files changed** | Paths + one-line descriptions | `git status` + conversation |
-| **Git state** | Branch, last commit, uncommitted changes | Git commands |
-| **Build state** | Whether the code compiles and tests pass | See build state rules below |
-| **Gotchas** | Non-obvious things learned the hard way | Conversation |
+| Category           | Capture                                  | Source                      |
+| ------------------ | ---------------------------------------- | --------------------------- |
+| **Goal**           | What the user asked for                  | Conversation                |
+| **Progress**       | Done / in-progress / blocked             | Conversation + filesystem   |
+| **Decisions**      | Choices made and _why_                   | Conversation                |
+| **Open questions** | Unresolved items needing user input      | Conversation                |
+| **Files changed**  | Paths + one-line descriptions            | `git status` + conversation |
+| **Git state**      | Branch, last commit, uncommitted changes | Git commands                |
+| **Build state**    | Whether the code compiles and tests pass | See build state rules below |
+| **Gotchas**        | Non-obvious things learned the hard way  | Conversation                |
 
 ### 1c. Write `docs/agent-context/SESSION-STATE.md`
 
@@ -70,12 +70,12 @@ Use `recon` or `Explore`. Give it this framing:
 
 ### 2b. Triage every question
 
-| Question type | Action |
-|---|---|
-| **Repo gap** — info missing from SESSION-STATE.md or repo | Fix it now |
-| **Stale data** — hashes, file lists, state that drifted | Update SESSION-STATE.md |
-| **Discoverable but not found** — info exists but agent missed it | Move the info to where the agent looked |
-| **Needs user input** — design decisions, priority calls, ambiguities | Surface to the user now (see below) |
+| Question type                                                        | Action                                  |
+| -------------------------------------------------------------------- | --------------------------------------- |
+| **Repo gap** — info missing from SESSION-STATE.md or repo            | Fix it now                              |
+| **Stale data** — hashes, file lists, state that drifted              | Update SESSION-STATE.md                 |
+| **Discoverable but not found** — info exists but agent missed it     | Move the info to where the agent looked |
+| **Needs user input** — design decisions, priority calls, ambiguities | Surface to the user now (see below)     |
 
 ### 2c. Surface questions to the user
 
@@ -116,6 +116,7 @@ The user needs to see the actual document. After the validation loop converges, 
 Once validation has mostly converged, invoke the `pre-read` agent to produce a `SESSION-BRIEFING.md`.
 
 Give the pre-read agent:
+
 1. The handoff prompt you intend to deliver
 2. The contents of SESSION-STATE.md
 
@@ -131,8 +132,9 @@ Update `/memories/active-handoffs.md` (user memory):
 
 ```markdown
 # Active Handoffs
-| Repo | Branch | Date | Status |
-|------|--------|------|--------|
+
+| Repo      | Branch      | Date       | Status      |
+| --------- | ----------- | ---------- | ----------- |
 | repo-name | branch-name | 2026-03-12 | In Progress |
 ```
 
@@ -142,6 +144,7 @@ Update `/memories/active-handoffs.md` (user memory):
 ### 3d. Deliver the handoff prompt
 
 Write a handoff prompt (≤5 lines) for the user to give to the next session:
+
 - What to read (SESSION-STATE.md, SESSION-BRIEFING.md if it exists)
 - What to pick up (the immediate next action)
 - A request to restate and surface questions before proceeding
@@ -152,7 +155,7 @@ This prompt is the input to the `session-resume` skill.
 
 - [ ] Could someone start working from this document alone?
 - [ ] Are file paths verified against the filesystem?
-- [ ] Does "What's Next" say exactly *what* to do?
+- [ ] Does "What's Next" say exactly _what_ to do?
 - [ ] Are gotchas included?
 - [ ] Is `/memories/active-handoffs.md` updated?
 - [ ] Did the validation loop converge?
@@ -182,60 +185,72 @@ This prompt is the input to the `session-resume` skill.
 # Session Handoff — [Date]
 
 ## Goal
+
 [What we're trying to accomplish]
 
 ## Status: [In Progress | Blocked | Ready for Review]
 
 ## What's Done
+
 - [Completed item with file references]
 
 ## What's Next
+
 1. [Specific immediate action]
 2. [Following step]
 
 ## Key Decisions
+
 - [Decision]: [Rationale]
 
 ## Open Questions
+
 - [ ] [Question needing user input]
 
 ## Files Changed
-| File | Change |
-|------|--------|
+
+| File         | Change      |
+| ------------ | ----------- |
 | path/to/file | Description |
 
 ## Git State
+
 - Branch: [name]
 - Last commit: [hash] [message]
 - Uncommitted: [yes/no — list if yes]
 
 ## Build State
+
 - Compiles: [yes/no/not verified]
 - Tests: [pass/fail/not run]
 - Known issues: [list]
 
 ## Gotchas
+
 - [Thing that will confuse the next agent]
 
 ## What Your Previous Incarnation Investigated
+
 [Optional — populated during subagent validation.
 Records what the previous agent read, what it concluded, and
 what it saw but didn't follow up on.]
 ```
 
-### Critical: the handoff document IS the deliverable
+### Tensions
 
-The handoff must reflect the repo state **at the moment of writing**, not your recollection of it. If you made changes during the handoff process, re-run `git status` and `git log --oneline -3` before writing.
+These are the core tensions in handoff work. Each one requires judgment to resolve in context.
 
-### Anti-patterns
+**Source truth vs. session memory.** The handoff must reflect the repo at the moment of writing, not your recollection of it. This tension sharpens during the handoff process itself — if you ran commands, edited files, or committed during gathering, the repo has changed since you last looked. Re-verify before writing. The validation loop exists partly to catch the cases where you didn't.
 
-- **Summarizing the conversation** — summarize the *state*
-- **Storing handoff in `/memories/session/`** — session memory gets cleared
-- **Putting SESSION-STATE.md in the repo root** — it belongs in `docs/agent-context/`
-- **Guessing file paths** — verify with `git status` or `ls`
-- **Vague next steps** — "continue the refactor" vs. "extract `buildRequest` from `openresponses-chat.ts` into `request-builder.ts`, moving lines 400-450"
-- **Omitting gotchas** — the things you learned the hard way are the most valuable part
-- **Skipping build verification without asking** — ask; don't just write "unknown"
-- **Composing from memory after gathering** — re-verify before writing
-- **Correcting by strikethrough** — delete wrong information and replace it
-- **Exiting the validation loop after one pass** — one pass is almost never enough
+**Completeness vs. actionability.** A handoff that captures everything but prioritizes nothing is as bad as one that's missing information. The next agent needs to know what to do *first*, not just what exists. "What's Next" should be specific enough to act on immediately — "extract `buildRequest` from `handler.ts` into `request-builder.ts`" rather than "continue the refactor."
+
+**Speed vs. thoroughness in validation.** One validation pass feels sufficient but almost never is. The first pass surfaces obvious gaps. The second surfaces subtle ones. The third confirms convergence. The temptation to exit early is strongest when the draft looks good — which is exactly when the subtle gaps are hiding.
+
+**Your knowledge vs. the next agent's starting point.** You know things from the conversation that aren't in the repo. The next agent starts cold. Gotchas — the things you learned the hard way — are the most valuable part of the handoff precisely because they're invisible to someone reading the code fresh.
+
+**Asking the user vs. guessing.** When you don't know something (build commands, priorities, whether to defer a question), asking is always better than inferring. A handoff that says "not verified — user declined" is more trustworthy than one that says "should compile" based on a guess.
+
+### Things that silently break handoffs
+
+- Session memory (`/memories/session/`) gets cleared between conversations — handoff state belongs in `docs/agent-context/`, not session memory
+- Strikethrough text (`~~wrong thing~~`) is still read and acted on by agents — delete wrong information and replace it, don't annotate
