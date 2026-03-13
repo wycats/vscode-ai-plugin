@@ -2,7 +2,7 @@
   "name": "wycats-ai-plugin",
   "version": "0.1.0",
   "private": true,
-  "description": "Personal Copilot agent plugin bundling PER workflow agents, skills, and prompts.",
+  "description": "Personal agent toolkit: workflow agents, skills, and prompts.",
   "type": "module",
   "scripts": {
     "build": "node scripts/build-plugin.ts",
