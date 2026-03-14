@@ -1,9 +1,12 @@
 ---
 name: session-handoff
-description: "Prepare a session handoff so the next agent can start immediately — captures goal, progress, decisions, git state, and actionable next steps into SESSION-STATE.md"
+description: "The full handoff protocol: draft, validate with subagents, and finalize a SESSION-STATE.md so the next agent can start immediately. Invoke with /session-handoff when you're ready to transition."
+disable-model-invocation: true
 ---
 
 # Session Handoff
+
+This is the full handoff protocol. Run it when the user invokes `/session-handoff` — not proactively. For session awareness and checkpoint suggestions, see the `session-continuity` skill.
 
 Produce a `SESSION-STATE.md` in `docs/agent-context/` that gives the next agent zero ramp-up time. The document captures _state_, not conversation history.
 

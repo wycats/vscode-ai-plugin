@@ -79,3 +79,34 @@ Agents read skills front-to-back with highest attention at the beginning. This m
 - Critical path early
 - Reference material last
 - The most important "do not skip" instruction at the transition point where the agent is most likely to take a shortcut
+
+## Collaboration over inference for situated decisions
+
+Some tensions involve information that only the user has — timing, priorities, energy, the state of the world beyond the screen. These are not gaps in the agent's knowledge that better tools could close. They are structurally situated in the user's experience.
+
+When a skill involves situated tensions, the resolution is always collaboration: the agent shares what it observes (context usage, progress, complexity of remaining work) and asks the user to combine that with what they know. The form matters — a question that says "here's what I see, what does that mean for you?" is more useful than "should we continue?"
+
+## The information landscape
+
+Information the agent needs falls into four categories. Knowing which category a piece of information belongs to determines how the agent should act.
+
+**Agent-only perception** — information the agent can access through tools that the user doesn't typically see. Terminal output details, log contents, file system structure beyond the visible explorer. The agent should use tools to get this information directly. Gaps here are subtle — the user doesn't know what the agent can't see, and the agent doesn't know what it's missing. Identifying these gaps requires an architect's eye.
+
+**Shared perception** — information both the agent and user can see, using the same concepts and design language. Diagnostics in the Problems panel, the file open in the editor, visible errors. This is the highest-value category because it aligns the agent's understanding with the user's experience. When the agent references something from shared perception, the user can immediately confirm or correct. Tools like `get_errors` and the integrated browser live here. Gaps in shared perception feel surprising to the user — they see something "obvious" that the agent is blind to.
+
+**Unshared environmental** — information that exists in the environment but the agent can't access yet. This is the most dangerous category. The agent doesn't know it's blind, so it defaults to inference from patterns rather than asking. The information is objective and knowable, but without the right tool it silently becomes a guess. When a skill depends on information that might be unshared, it should explicitly direct the agent to ask rather than infer. As tools improve, unshared information moves to perception — but until it does, treating it as situated (ask the user) is safer than letting it become inferential (guess from patterns).
+
+**Inherently situated** — information that lives in the user's embodied experience. Priorities, energy, timing, flow state, what's happening around them. No tool will ever capture this. The resolution is always collaboration, and it's always contextual.
+
+### Diagnosing skill failures with the information landscape
+
+When a skill isn't working well:
+
+- Is the agent inferring something it should be observing? → tool gap, or the agent isn't using available tools
+- Is the agent inferring something it should be asking about? → collaboration gap in the skill
+- Is the agent asking about something it could observe? → wasting the collaboration budget
+- Is the user frustrated by questions? → unshared environmental information needs to become observable
+
+### The collaboration budget
+
+The user has limited capacity for answering questions about things the agent "should" be able to see. Every question about an unshared environmental fact feels like a tool failure, even when asking is the right thing to do. This means the collaboration budget should be reserved for inherently situated decisions — the things that genuinely require the user's judgment. Moving unshared environmental information into perception (through better tools) is not just a capability improvement. It preserves the collaboration budget for where it matters most.
