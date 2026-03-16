@@ -11,7 +11,7 @@ This skill is about awareness, not action. It describes how to think about sessi
 
 `docs/agent-context/SESSION-STATE.md` captures the current state of work — goal, progress, decisions, git state, gotchas, and next steps. It exists so that if the session ends (planned or not), the next agent can start without ramp-up.
 
-It is not a conversation log. It captures *state*, not history.
+It is not a conversation log. It captures _state_, not history.
 
 ## Keeping state warm
 

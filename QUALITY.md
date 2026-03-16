@@ -17,7 +17,7 @@ An agent should be able to understand the workflow shape by reading only the sec
 
 ## Front-load the mental model
 
-The first few lines of a skill should describe the *shape* of the work, not the first step. The agent needs to know what kind of process this is before it starts executing. A sentence like "this skill has three phases — the second is the core" reframes everything that follows.
+The first few lines of a skill should describe the _shape_ of the work, not the first step. The agent needs to know what kind of process this is before it starts executing. A sentence like "this skill has three phases — the second is the core" reframes everything that follows.
 
 ## The critical path is visually dominant
 

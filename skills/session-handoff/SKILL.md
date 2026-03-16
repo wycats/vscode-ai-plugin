@@ -245,7 +245,7 @@ These are the core tensions in handoff work. Each one requires judgment to resol
 
 **Source truth vs. session memory.** The handoff must reflect the repo at the moment of writing, not your recollection of it. This tension sharpens during the handoff process itself — if you ran commands, edited files, or committed during gathering, the repo has changed since you last looked. Re-verify before writing. The validation loop exists partly to catch the cases where you didn't.
 
-**Completeness vs. actionability.** A handoff that captures everything but prioritizes nothing is as bad as one that's missing information. The next agent needs to know what to do *first*, not just what exists. "What's Next" should be specific enough to act on immediately — "extract `buildRequest` from `handler.ts` into `request-builder.ts`" rather than "continue the refactor."
+**Completeness vs. actionability.** A handoff that captures everything but prioritizes nothing is as bad as one that's missing information. The next agent needs to know what to do _first_, not just what exists. "What's Next" should be specific enough to act on immediately — "extract `buildRequest` from `handler.ts` into `request-builder.ts`" rather than "continue the refactor."
 
 **Speed vs. thoroughness in validation.** One validation pass feels sufficient but almost never is. The first pass surfaces obvious gaps. The second surfaces subtle ones. The third confirms convergence. The temptation to exit early is strongest when the draft looks good — which is exactly when the subtle gaps are hiding.
 

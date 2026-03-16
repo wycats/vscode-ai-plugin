@@ -1,6 +1,6 @@
 # Foundations
 
-This document describes the distributional mechanics behind the design principles in QUALITY.md. It explains *why* those principles work, grounded in how language models process context and generate output.
+This document describes the distributional mechanics behind the design principles in QUALITY.md. It explains _why_ those principles work, grounded in how language models process context and generate output.
 
 These ideas are not speculative. They are grounded in the mechanics of transformer attention and probability distributions, informed by practical observation of what works and what fails in skill and agent design.
 
@@ -14,7 +14,7 @@ The depth and narrowness of the well determines the precision of the output. Dee
 
 ## Wells and stances
 
-A *stance* is a consistent set of relationships between the writer, the content, and the reader. In distributional terms, a stance creates a gravitational well — it pulls generation toward a coherent region of the probability landscape.
+A _stance_ is a consistent set of relationships between the writer, the content, and the reader. In distributional terms, a stance creates a gravitational well — it pulls generation toward a coherent region of the probability landscape.
 
 "The reader is a senior engineer" creates a well. "Every sentence must advance the argument" creates a well. "Explain the tradeoffs, not just the conclusion" creates a well. Each one reshapes the landscape, making certain continuations more likely and others less likely.
 
@@ -32,7 +32,7 @@ Stances interfere when they create competing wells — pulling the model toward 
 
 ### Orthogonality
 
-Stances compose most productively when they're *orthogonal* — constraining different dimensions of the output rather than the same dimension from different angles.
+Stances compose most productively when they're _orthogonal_ — constraining different dimensions of the output rather than the same dimension from different angles.
 
 "Princess Leia obituary" constrains content. "Linguistics paper style" constrains form. These are independent dimensions, so they compose cleanly — the model finds a small, specific, interesting region that satisfies both.
 
@@ -54,7 +54,7 @@ The sweet spot is moderate leverage: specific enough to create a meaningful well
 
 The model's probability distribution has a certain granularity — it can distinguish between regions down to some level of detail, but below that level, it's effectively noise.
 
-When a well is wider than the model's resolution, the model navigates within it productively. When a well is narrower than the model's resolution, the model can't reliably stay in it. It hits the walls and behaves erratically — producing output that's *almost* right but with strange artifacts.
+When a well is wider than the model's resolution, the model navigates within it productively. When a well is narrower than the model's resolution, the model can't reliably stay in it. It hits the walls and behaves erratically — producing output that's _almost_ right but with strange artifacts.
 
 The diagnostic: if output feels like it's trying to do the right thing but can't quite get there — right vocabulary, right structure, but slightly off in ways that are hard to pin down — the well may be too narrow. The fix is to relax one of the constraining stances, giving the model more room to maneuver.
 

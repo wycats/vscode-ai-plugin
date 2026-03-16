@@ -7,15 +7,19 @@ description: "Use when walking through code changes with the user one chunk at a
 
 A walkthrough is two people reading code together. The agent sees the code structure — what functions call what, how data flows, where the complexity lives. The user sees the design intent — what the code is supposed to accomplish, what tradeoffs matter, whether the direction feels right. Neither has the full picture. The walkthrough works when both perspectives combine.
 
-This is joint reading and sense-making, not a review delivered to the user.
+The agent's contribution is what it can see that the user might not — structural patterns, data flow, subtle inconsistencies. The user's contribution is what the agent can't access — design intent, priorities, whether the direction feels right. The walkthrough is valuable because it combines both.
 
 ## The core tension
 
 **Thoroughness vs. responsiveness.** A walkthrough that covers every file systematically is thorough but ignores what the user actually cares about. A walkthrough that only follows the user's questions misses things the user can't see. The right balance emerges from the conversation itself — the agent surfaces what the code is doing, the user steers toward what matters, and each chunk builds on what came before.
 
+**Explanation vs. evaluation.** Sometimes a chunk needs the agent to explain what the code is doing — the user doesn't yet see the structure. Sometimes it needs the agent to evaluate whether the code matches the intent — the user understands the structure but wants a second opinion on the design. The right mode depends on what the user needs at each pause, and it often shifts as the walkthrough progresses.
+
+**Detail vs. big picture.** The walkthrough moves through details sequentially, but understanding moves between details and the big picture in a circle. Reading the parts changes your understanding of the whole, and a revised understanding of the whole changes how you read the remaining parts. A walkthrough that only moves forward through chunks gradually loses coherence as the accumulated details outgrow the initial framing.
+
 ## How it works
 
-The walkthrough is a loop: present a chunk, pause, discuss, continue. Each iteration should be shaped by the previous one.
+The walkthrough is a loop with two rhythms: the **chunk rhythm** (present, pause, discuss, continue) and the **big-picture rhythm** (periodically step back, revise the overall understanding, then re-enter the details with the updated lens). The chunk rhythm drives the walkthrough forward. The big-picture rhythm keeps it coherent as it scales.
 
 ### Orient first
 
@@ -51,11 +55,20 @@ Stop and invite discussion. The pause is not a formality — it's where the walk
 
 Do not continue through the whole walkthrough in one response unless the user explicitly asks for that.
 
-### Carry forward what matters
+### Carry forward and revise
 
-Each new chunk should reflect what came before. If the user raised a concern in chunk 2, chunk 4 should note whether that concern is still relevant. If a design priority emerged from discussion, later chunks should be read through that lens.
+Each new chunk should reflect the concerns, priorities, and unresolved questions from earlier chunks. If the user raised a concern in chunk 2, chunk 4 should note whether that concern is still relevant. If a design priority emerged from discussion, later chunks should be read through that lens.
 
-The walkthrough builds momentum — a shared understanding that accumulates across chunks. Losing that thread is the main way a walkthrough fails.
+But carrying forward isn't just accumulation. Sometimes the details reveal that the big picture needs updating — a pattern across chunks suggests the architecture is different from what the plan assumed, or the user realizes from the details that their design intent needs revising. When this happens, pause the chunk-by-chunk flow and revise the big picture together before continuing.
+
+Good moments for a big-picture revision:
+
+- After finishing a major section of the codebase
+- When a pattern emerges across multiple chunks
+- When the user seems to be losing the thread
+- When a detail contradicts the initial framing from the orient step
+
+The revised understanding then shapes how the remaining chunks are read. This is the circle: parts inform the whole, the whole informs the parts.
 
 ## Design alignment
 
