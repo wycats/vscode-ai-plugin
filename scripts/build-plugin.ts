@@ -19,6 +19,8 @@ interface PluginJson {
   skills?: PluginEntry[];
   agents?: PluginEntry[];
   prompts?: PluginEntry[];
+  instructions?: PluginEntry[];
+  hooks?: PluginEntry[];
 }
 
 async function findFiles(dir: string, pattern: RegExp): Promise<string[]> {
@@ -59,6 +61,10 @@ async function build() {
   const prompts = (await findFiles(join(ROOT, "prompts"), /\.prompt\.md$/)).map(
     toEntry,
   );
+  const instructions = (
+    await findFiles(join(ROOT, "instructions"), /\.instructions\.md$/)
+  ).map(toEntry);
+  const hooks = (await findFiles(join(ROOT, "hooks"), /\.json$/)).map(toEntry);
 
   const pluginJson: PluginJson = {
     name: existing.name,
@@ -69,14 +75,18 @@ async function build() {
   if (skills.length > 0) pluginJson.skills = skills;
   if (agents.length > 0) pluginJson.agents = agents;
   if (prompts.length > 0) pluginJson.prompts = prompts;
+  if (instructions.length > 0) pluginJson.instructions = instructions;
+  if (hooks.length > 0) pluginJson.hooks = hooks;
 
   const output = JSON.stringify(pluginJson, null, 2) + "\n";
   await writeFile(join(ROOT, "plugin.json"), output);
 
   console.log("plugin.json updated:");
-  console.log(`  skills:  ${String(skills.length)}`);
-  console.log(`  agents:  ${String(agents.length)}`);
-  console.log(`  prompts: ${String(prompts.length)}`);
+  console.log(`  skills:       ${String(skills.length)}`);
+  console.log(`  agents:       ${String(agents.length)}`);
+  console.log(`  prompts:      ${String(prompts.length)}`);
+  console.log(`  instructions: ${String(instructions.length)}`);
+  console.log(`  hooks:        ${String(hooks.length)}`);
 }
 
 build().catch((err: unknown) => {

@@ -10,7 +10,7 @@ import { execSync } from "node:child_process";
 import { join } from "node:path";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
-const WATCHED_DIRS = ["agents", "skills", "prompts"];
+const WATCHED_DIRS = ["agents", "skills", "prompts", "instructions", "hooks"];
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 

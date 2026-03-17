@@ -44,5 +44,15 @@
     {
       "path": "./agents/slop-linter.agent.md"
     }
+  ],
+  "instructions": [
+    {
+      "path": "./instructions/environment.instructions.md"
+    }
+  ],
+  "hooks": [
+    {
+      "path": "./hooks/pnpm-enforcement.json"
+    }
   ]
 }
