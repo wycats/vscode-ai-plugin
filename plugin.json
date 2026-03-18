@@ -52,6 +52,9 @@
   ],
   "hooks": [
     {
+      "path": "./hooks/debug-logging.json"
+    },
+    {
       "path": "./hooks/pnpm-enforcement.json"
     },
     {
