@@ -12,7 +12,7 @@ This is Gadamer's hermeneutic circle applied to collaborative work: you understa
 4. Revise the understanding of the whole
 5. Re-examine the parts through the revised understanding
 
-The synthesis is never purely autonomous. The agent can form interpretations, but the user's situated knowledge is essential for resolving ambiguities about intent. The agent proposes an account; the user confirms, corrects, or deepens it.
+The synthesis is grounded in **collaborative grounding** — the agent can form interpretations, but the user's situated knowledge is essential for resolving ambiguities about intent. The agent proposes an account; the user confirms, corrects, or deepens it. This is not a step that happens after the synthesis — it's woven through it. Each pass through the hermeneutic circle is an opportunity for the agent to share what it sees and ask the user to contribute what it can't.
 
 ## What it reveals
 
@@ -36,5 +36,7 @@ Interpretive synthesis surfaces things that linear review misses:
 - Chronological review (walking through events in order without forming a coherent account)
 
 ## Composition notes
+
+Interpretive synthesis uses **collaborative grounding** throughout — the hermeneutic circle surfaces ambiguities that only the user's situated knowledge can resolve.
 
 Composes with **joint reading** in the walkthrough (the big-picture revision step is interpretive synthesis applied to code). Composes with **diagnostic questioning** in the handoff (the coherent account reveals where the high-variance threads are and helps prioritize the diagnostic sequence). The handoff skill uses interpretive synthesis as its opening move — forming the account that the diagnostic questioning then probes.

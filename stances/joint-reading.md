@@ -20,4 +20,6 @@ Joint reading has a spatial quality: the conversation is anchored to specific lo
 
 ## Composition notes
 
+Joint reading is **collaborative grounding** anchored to shared material. The agent's perception and the user's situated knowledge combine through the shared artifact they're both looking at.
+
 Composes well with **interpretive synthesis** (the big-picture revision during a walkthrough is joint reading + interpretive synthesis). Composes well with **diagnostic questioning** when the reading surfaces ambiguities that need the user's input. The walkthrough skill uses joint reading as its primary stance.

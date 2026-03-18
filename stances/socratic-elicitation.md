@@ -33,4 +33,6 @@ The question does the work of framing the decision space. The user just needs to
 
 ## Composition notes
 
+Socratic elicitation is **collaborative grounding** shaped as reflective probing. The agent makes its understanding visible so the user can refine it — the grounding happens through the act of reflection and correction.
+
 Composes naturally with **diagnostic questioning** (diagnostic questioning identifies _what_ to ask; Socratic elicitation shapes _how_ to ask it). The combination produces questions that are both high-information and low-burden. The handoff skill uses both together during thread triage.
