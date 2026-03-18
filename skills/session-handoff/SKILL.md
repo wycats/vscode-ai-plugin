@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 This is the full handoff protocol. Run it when the user invokes `/session-handoff` — not proactively. For session awareness and checkpoint suggestions, see the `session-continuity` skill.
 
-The handoff produces a `/memories/repo/SESSION-HANDOFF.md` (via the memory tool) that gives the next agent zero ramp-up time. Repo memory persists across conversations without polluting git, and works in any workspace without requiring a specific directory structure.
+The handoff produces a `/memories/repo/SESSION-TRAJECTORY.md` (via the memory tool) that gives the next agent zero ramp-up time. Repo memory persists across conversations without polluting git, and works in any workspace without requiring a specific directory structure.
 
 The document is not the starting point — it's the output of a collaborative process. The starting point is understanding what this session accomplished and what the user wants to carry forward.
 
@@ -90,7 +90,7 @@ This picture becomes the input to the draft.
 
 ## Phase 3: Draft
 
-Write `/memories/repo/SESSION-HANDOFF.md` (using the memory tool) from the shared picture that emerged in Phases 1 and 2. The template in the reference section provides structure, but the content comes from the triage conversation.
+Write `/memories/repo/SESSION-TRAJECTORY.md` (using the memory tool) from the shared picture that emerged in Phases 1 and 2. The template in the reference section provides structure, but the content comes from the triage conversation.
 
 The document should convey momentum, not just state. The next agent doesn't just need to know where things are — it needs to feel where things were *going*. Which threads were accelerating? Which decisions were opening up new possibilities? What was the session becoming when it stopped?
 
@@ -104,7 +104,7 @@ The draft should reflect:
 
 The "What's Next" section is especially important — it should reflect the user's stated priorities and convey the direction of the work, not just list steps.
 
-If a SESSION-HANDOFF.md already exists in repo memory, replace it with current state.
+If a SESSION-TRAJECTORY.md already exists in repo memory, replace it with current state.
 
 ## Phase 4: Validate
 
@@ -119,9 +119,9 @@ Validation also surfaces collaborative divergences — places where the agent an
 ```
 repeat:
   1. Spawn a read-only subagent (recon or Explore)
-  2. Give it the handoff prompt + SESSION-HANDOFF.md
+  2. Give it the handoff prompt + SESSION-TRAJECTORY.md
   3. Triage every question it raises
-  4. Fix SESSION-HANDOFF.md based on what you learn
+  4. Fix SESSION-TRAJECTORY.md based on what you learn
   5. If meaningful changes were needed → go to 1
   6. If remaining questions are resolved or user-deferred → exit loop
 ```
@@ -146,7 +146,7 @@ One validation pass is almost never enough. The first surfaces obvious gaps. The
 
 ### Pre-read (optional, recommended for complex handoffs)
 
-Once validation has converged, invoke the `pre-read` agent to produce a `SESSION-BRIEFING.md`. Give it the handoff prompt and SESSION-HANDOFF.md. The briefing goes in `/memories/repo/SESSION-BRIEFING.md` using the memory tool.
+Once validation has converged, invoke the `pre-read` agent to produce a `SESSION-BRIEFING.md`. Give it the handoff prompt and SESSION-TRAJECTORY.md. The briefing goes in `/memories/repo/SESSION-BRIEFING.md` using the memory tool.
 
 Run one more validation pass with the combined prompt. Skip this step for simple handoffs where the next action is obvious.
 
@@ -158,7 +158,7 @@ Update `/memories/active-handoffs.md` (user memory) with the current repo/branch
 
 Write a handoff prompt (≤5 lines) for the next session:
 
-- What to read (SESSION-HANDOFF.md, SESSION-BRIEFING.md if it exists)
+- What to read (SESSION-TRAJECTORY.md, SESSION-BRIEFING.md if it exists)
 - What to pick up (the immediate next action)
 - A request to restate and surface questions before proceeding
 
@@ -166,7 +166,7 @@ This prompt is the input to the `session-resume` skill.
 
 ## Output
 
-1. A `/memories/repo/SESSION-HANDOFF.md` (via memory tool)
+1. A `/memories/repo/SESSION-TRAJECTORY.md` (via memory tool)
 2. An updated `/memories/active-handoffs.md` entry
 3. A `/memories/repo/SESSION-BRIEFING.md` (for complex handoffs)
 4. A handoff prompt (≤5 lines) delivered to the user
@@ -182,7 +182,7 @@ This prompt is the input to the `session-resume` skill.
 3. **If it's not obvious how to build/test** — use `vscode_askQuestions` to ask the user.
 4. Record the results (or "not verified — user declined") in the Build State section.
 
-### SESSION-HANDOFF.md template
+### SESSION-TRAJECTORY.md template
 
 ```markdown
 # Session Handoff — [Date]
