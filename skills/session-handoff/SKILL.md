@@ -88,21 +88,27 @@ This picture becomes the input to the draft.
 
 ## Phase 3: Draft
 
-Write `docs/agent-context/SESSION-STATE.md` incorporating everything from Phases 1 and 2.
+Write `docs/agent-context/SESSION-STATE.md` from the shared picture that emerged in Phases 1 and 2. The template in the reference section provides structure, but the content comes from the triage conversation.
 
-Use the template in the reference section. The draft should reflect:
+The document should convey momentum, not just state. The next agent doesn't just need to know where things are — it needs to feel where things were *going*. Which threads were accelerating? Which decisions were opening up new possibilities? What was the session becoming when it stopped?
 
-- The interpreted account of the session (from Phase 1)
-- The user's priorities and decisions (from Phase 2)
+Dangling threads aren't just open items on a list — they're live tensions the next session should feel the pull of. Write them as tensions to engage with, not tasks to check off.
+
+The draft should reflect:
+
+- The trajectory of the session — not just what happened, but where it was heading (from Phase 1)
+- The user's priorities and the momentum they want preserved (from Phase 2)
 - Observable state (git, build, files changed)
 
-The "What's Next" section is especially important — it should reflect the user's stated priorities, not the agent's guess about what comes next.
+The "What's Next" section is especially important — it should reflect the user's stated priorities and convey the direction of the work, not just list steps.
 
 If a SESSION-STATE.md already exists, replace it with current state.
 
 ## Phase 4: Validate
 
-Verify the document with a subagent to catch gaps the collaborative process missed.
+The next agent will read this document cold and start working from it. Every gap, stale reference, or missing context in the document becomes a wrong assumption in the next session — one that may not surface until significant work has been done in the wrong direction. Validation is cheap now. Discovering problems after the next agent has been working for an hour is expensive.
+
+This phase simulates the next agent's experience. A subagent reads the document and the repo with fresh eyes, and every question it asks reveals something the document failed to communicate. Because the triage in Phase 2 was collaborative, the subagent should find fewer priority gaps — but it will find repo gaps (files the document references that have changed), stale data (git state that drifted during the handoff process), and missing context (things that felt obvious during the session but aren't obvious from the document alone).
 
 ### The loop
 
@@ -122,15 +128,15 @@ Give the subagent this framing:
 
 Triage the subagent's questions:
 
-| Question type                                                  | Action               |
-| -------------------------------------------------------------- | -------------------- |
-| **Repo gap** — info missing from document or repo              | Fix it now           |
+| Question type | Action |
+|---|---|
+| **Repo gap** — info missing from document or repo | Fix it now |
 | **Stale data** — state that drifted during the handoff process | Re-verify and update |
-| **Needs user input** — something the triage didn't cover       | Ask the user now     |
+| **Needs user input** — something the triage didn't cover | Ask the user now |
 
 After triaging, ask the subagent: "What questions would you have for the previous session's agent?" Answers about code that was read or conclusions that were reached go into the "What Your Previous Incarnation Investigated" section.
 
-One validation pass is almost never enough. The first surfaces obvious gaps. The second surfaces subtle ones. The third confirms convergence.
+One validation pass is almost never enough. The first surfaces obvious gaps. The second surfaces subtle ones. The third confirms convergence. The cost of each pass is small compared to the cost of the next agent starting from a flawed document.
 
 ## Finalize
 
