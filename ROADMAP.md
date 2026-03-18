@@ -17,22 +17,22 @@ The plugin's content (skills, agents, instructions, hooks) can be packaged as a 
 
 These are discovered automatically from `package.json` contribution points:
 
-| Contribution point | What it provides |
-|---|---|
-| `chatSkills` | Skills (`SKILL.md` files) |
-| `chatInstructions` | Instructions (`.instructions.md` files) |
-| `chatPromptFiles` | Prompts (`.prompt.md` files) |
-| `languageModelTools` | LM tools |
-| `mcpServerDefinitionProviders` | MCP server definitions |
+| Contribution point             | What it provides                        |
+| ------------------------------ | --------------------------------------- |
+| `chatSkills`                   | Skills (`SKILL.md` files)               |
+| `chatInstructions`             | Instructions (`.instructions.md` files) |
+| `chatPromptFiles`              | Prompts (`.prompt.md` files)            |
+| `languageModelTools`           | LM tools                                |
+| `mcpServerDefinitionProviders` | MCP server definitions                  |
 
 ### What requires programmatic registration
 
 These have no contribution point. The extension would register them on activation using `vscode.workspace.getConfiguration().update()`:
 
-| Feature | Setting to register |
-|---|---|
-| Custom agents (`.agent.md`) | `chat.plugins.paths` → extension root |
-| Hooks (`.json` files) | `chat.hookFilesLocations` → extension `hooks/` directory |
+| Feature                     | Setting to register                                      |
+| --------------------------- | -------------------------------------------------------- |
+| Custom agents (`.agent.md`) | `chat.plugins.paths` → extension root                    |
+| Hooks (`.json` files)       | `chat.hookFilesLocations` → extension `hooks/` directory |
 
 ### Extension activation pattern
 
@@ -42,17 +42,27 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Register hooks directory
   const hooksPath = path.join(context.extensionPath, "hooks");
-  const hookLocations = config.get<Record<string, boolean>>("chat.hookFilesLocations") ?? {};
+  const hookLocations =
+    config.get<Record<string, boolean>>("chat.hookFilesLocations") ?? {};
   if (!hookLocations[hooksPath]) {
     hookLocations[hooksPath] = true;
-    await config.update("chat.hookFilesLocations", hookLocations, vscode.ConfigurationTarget.Global);
+    await config.update(
+      "chat.hookFilesLocations",
+      hookLocations,
+      vscode.ConfigurationTarget.Global,
+    );
   }
 
   // Register as plugin for agent discovery
-  const pluginPaths = config.get<Record<string, boolean>>("chat.plugins.paths") ?? {};
+  const pluginPaths =
+    config.get<Record<string, boolean>>("chat.plugins.paths") ?? {};
   if (!pluginPaths[context.extensionPath]) {
     pluginPaths[context.extensionPath] = true;
-    await config.update("chat.plugins.paths", pluginPaths, vscode.ConfigurationTarget.Global);
+    await config.update(
+      "chat.plugins.paths",
+      pluginPaths,
+      vscode.ConfigurationTarget.Global,
+    );
   }
 }
 ```

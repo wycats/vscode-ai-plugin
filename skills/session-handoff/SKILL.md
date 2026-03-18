@@ -1,6 +1,6 @@
 ---
 name: session-handoff
-description: "The full handoff protocol: draft, validate with subagents, and finalize a SESSION-STATE.md so the next agent can start immediately. Invoke with /session-handoff when you're ready to transition."
+description: "The full handoff protocol: interpret the session, triage dangling threads with the user, draft and validate SESSION-STATE.md. Invoke with /session-handoff when you're ready to transition."
 disable-model-invocation: true
 ---
 
@@ -8,15 +8,17 @@ disable-model-invocation: true
 
 This is the full handoff protocol. Run it when the user invokes `/session-handoff` — not proactively. For session awareness and checkpoint suggestions, see the `session-continuity` skill.
 
-Produce a `SESSION-STATE.md` in `docs/agent-context/` that gives the next agent zero ramp-up time. The document captures _state_, not conversation history.
+The handoff produces a `SESSION-STATE.md` in `docs/agent-context/` that gives the next agent zero ramp-up time. But the document is not the starting point — it's the output of a collaborative process. The starting point is understanding what this session accomplished and what the user wants to carry forward.
 
-This skill has three phases: **draft**, **validate**, **finalize**. The validation loop is the core of the process — the draft is just raw material for it.
+This skill has four phases: **interpret**, **triage**, **draft**, **validate**. The first two phases are collaborative — the agent and user work together to understand the session and decide what matters. The last two phases produce and verify the document.
 
-## Phase 1: Draft
+**Stances used:** interpretive synthesis (Phase 1), diagnostic questioning + Socratic elicitation (Phase 2), subagent validation (Phase 4). See `stances/` for details.
 
-Gather verified state and write an initial `SESSION-STATE.md`.
+## Phase 1: Interpret
 
-### 1a. Capture verified facts
+Form a coherent account of the session by moving between the whole and the parts.
+
+### 1a. Capture observable state
 
 Run these commands — do not guess:
 
@@ -26,143 +28,129 @@ git log --oneline -5
 git branch --show-current
 ```
 
-### 1b. Collect state
+### 1b. Form the account
 
-| Category           | Capture                                  | Source                      |
-| ------------------ | ---------------------------------------- | --------------------------- |
-| **Goal**           | What the user asked for                  | Conversation                |
-| **Progress**       | Done / in-progress / blocked             | Conversation + filesystem   |
-| **Decisions**      | Choices made and _why_                   | Conversation                |
-| **Open questions** | Unresolved items needing user input      | Conversation                |
-| **Files changed**  | Paths + one-line descriptions            | `git status` + conversation |
-| **Git state**      | Branch, last commit, uncommitted changes | Git commands                |
-| **Build state**    | Whether the code compiles and tests pass | See build state rules below |
-| **Gotchas**        | Non-obvious things learned the hard way  | Conversation                |
+Review the conversation history and form an interpretation of the session as a whole:
 
-### 1c. Write `docs/agent-context/SESSION-STATE.md`
+- What was the session trying to accomplish?
+- How did the work actually unfold — did it follow the initial intent, or did it evolve?
+- Where did the session's direction shift, and why?
+- What threads were opened but not closed?
 
-Use the template in the reference section at the end of this document. If one already exists, replace it with current state.
+This is interpretive synthesis: the initial understanding of the session's intent gets revised as you examine the specific threads, and the threads look different in light of the revised understanding. A decision that seemed settled early on may look different after what happened later. A thread that seemed like a tangent may turn out to have been the most important work.
 
-**The draft does not need to be perfect.** Its purpose is to give the validation loop something concrete to test against.
+### 1c. Identify dangling threads
 
-## Phase 2: Validate
+Scan the conversation for threads that were raised but not resolved. These include:
 
-This is the core of the handoff process. Do not skip or abbreviate it.
+- Directions explored but not concluded
+- Ideas mentioned but not acted on
+- Concerns raised but not addressed
+- Decisions that seemed settled but may need revisiting in light of later work
+- Implicit abandonments — threads that were silently dropped, not because they were resolved but because something else took priority
 
-The goal: iterate with a subagent until the handoff document is good enough that a fresh agent can start working from it alone.
+For each thread, estimate how predictable the user's intent is. Some threads are obvious (completed work, explicitly deferred items). Others are ambiguous — the agent genuinely can't tell whether the user wants to carry them forward. The ambiguous ones are the high-variance threads, and they're the focus of Phase 2.
+
+## Phase 2: Triage
+
+This is the collaborative core of the handoff. The agent has formed an interpretation and identified threads. Now the user's situated knowledge — their sense of what has momentum, what was silently abandoned, what carries subtle importance — shapes what gets carried forward.
+
+### The approach
+
+Use diagnostic questioning and Socratic elicitation together. Diagnostic questioning identifies _what_ to ask (the highest-variance threads, especially pregnant tensions). Socratic elicitation shapes _how_ to ask (reflecting the agent's understanding, probing where it might be wrong, making the user's job easy).
+
+### The sequence
+
+Work through the threads one at a time, using `vscode_askQuestions` for each. Start with the thread where the user's intent is hardest to predict — the one with the most variance. Each answer informs the next question.
+
+The questions should:
+
+- Be easy to answer but hard to predict. "The refactor touched the request builder but stopped before the response handler — was that a natural boundary or did you run out of time?" is better than "Do you want to continue the refactor?"
+- Reflect the agent's interpretation and invite correction. "My read is that the session shifted from planning to implementation around the middleware discussion. Does that match how it felt to you?"
+- Name tensions when they exist. "There's a tension between finishing the type migration and addressing the test gaps it revealed. Which feels more urgent for the next session?"
+
+### When to stop
+
+Stop asking when the remaining threads are predictable from the conversation history plus the answers already given. Don't ask about things the agent can already infer — that wastes the collaboration budget.
+
+### What to capture
+
+As the user answers, build up a picture of:
+
+- What has momentum and should be continued
+- What was intentionally set aside
+- What the user wants the next agent to prioritize
+- Gotchas and context that aren't visible in the code
+
+This picture becomes the input to the draft.
+
+## Phase 3: Draft
+
+Write `docs/agent-context/SESSION-STATE.md` incorporating everything from Phases 1 and 2.
+
+Use the template in the reference section. The draft should reflect:
+
+- The interpreted account of the session (from Phase 1)
+- The user's priorities and decisions (from Phase 2)
+- Observable state (git, build, files changed)
+
+The "What's Next" section is especially important — it should reflect the user's stated priorities, not the agent's guess about what comes next.
+
+If a SESSION-STATE.md already exists, replace it with current state.
+
+## Phase 4: Validate
+
+Verify the document with a subagent to catch gaps the collaborative process missed.
 
 ### The loop
 
 ```
 repeat:
-  1. Spawn a read-only subagent
+  1. Spawn a read-only subagent (recon or Explore)
   2. Give it the handoff prompt + SESSION-STATE.md
   3. Triage every question it raises
   4. Fix SESSION-STATE.md based on what you learn
-  5. If you made meaningful changes → go to 1
-  6. If remaining questions are all user-deferred → exit loop
+  5. If meaningful changes were needed → go to 1
+  6. If remaining questions are resolved or user-deferred → exit loop
 ```
 
-### 2a. Spawn the subagent
+Give the subagent this framing:
 
-Use `recon` or `Explore`. Give it this framing:
+> This is a handoff test. Read the repo to come up to speed, then restate what you've learned and surface any questions. Exhaust what the repo can tell you before asking. Once done, STOP and await feedback.
 
-> This is a handoff test. Read the repo to come up to speed, then restate what you've learned and surface any questions. Exhaust what the repo can tell you before asking.
->
-> Once done reporting, STOP and await feedback.
+Triage the subagent's questions:
 
-### 2b. Triage every question
+| Question type                                                  | Action               |
+| -------------------------------------------------------------- | -------------------- |
+| **Repo gap** — info missing from document or repo              | Fix it now           |
+| **Stale data** — state that drifted during the handoff process | Re-verify and update |
+| **Needs user input** — something the triage didn't cover       | Ask the user now     |
 
-| Question type                                                        | Action                                  |
-| -------------------------------------------------------------------- | --------------------------------------- |
-| **Repo gap** — info missing from SESSION-STATE.md or repo            | Fix it now                              |
-| **Stale data** — hashes, file lists, state that drifted              | Update SESSION-STATE.md                 |
-| **Discoverable but not found** — info exists but agent missed it     | Move the info to where the agent looked |
-| **Needs user input** — design decisions, priority calls, ambiguities | Surface to the user now (see below)     |
+After triaging, ask the subagent: "What questions would you have for the previous session's agent?" Answers about code that was read or conclusions that were reached go into the "What Your Previous Incarnation Investigated" section.
 
-### 2c. Surface questions to the user
+One validation pass is almost never enough. The first surfaces obvious gaps. The second surfaces subtle ones. The third confirms convergence.
 
-The subagent loop will often uncover questions that require judgment. Present these to the user using `vscode_askQuestions` while you still have session context. The user may:
+## Finalize
 
-- Answer immediately → capture the answer in SESSION-STATE.md
-- Say "defer to next session" → record as an Open Question
-- Redirect the conversation → follow the new thread, then resume
+### Pre-read (optional, recommended for complex handoffs)
 
-This is the collaborative part. The goal is to surface everything the next agent will need, including things only the user can decide.
+Once validation has converged, invoke the `pre-read` agent to produce a `SESSION-BRIEFING.md`. Give it the handoff prompt and SESSION-STATE.md. The briefing goes in `/memories/repo/SESSION-BRIEFING.md` using the memory tool.
 
-### 2d. Ask the meta-question
+Run one more validation pass with the combined prompt. Skip this step for simple handoffs where the next action is obvious.
 
-After triaging, ask the subagent one more thing:
+### Update the handoff index
 
-> What questions would you have for the previous session's agent?
+Update `/memories/active-handoffs.md` (user memory) with the current repo/branch/date/status.
 
-This surfaces what the agent already read and concluded. Answer from your session context. Persist answers about code that was read or conclusions that were reached into the "What Your Previous Incarnation Investigated" section.
+### Deliver the handoff prompt
 
-### 2e. Loop back
-
-After every meaningful change to SESSION-STATE.md, **go back to step 2a**. Re-run the subagent with the updated document. Continue until the subagent's remaining questions are ones the user has explicitly deferred.
-
-**Do not exit the loop early.** One pass is almost never enough. The first subagent run surfaces the obvious gaps. The second surfaces the subtle ones. The third confirms convergence.
-
-## Phase 3: Finalize
-
-### 3a. Review with the user
-
-The user needs to see the actual document. After the validation loop converges, use `vscode_askQuestions` to confirm:
-
-- Whether the goal and status are accurate
-- Whether anything is missing or should be removed
-- Whether the "What's Next" steps are correctly prioritized
-
-### 3b. Pre-read (optional, recommended for complex handoffs)
-
-Once validation has mostly converged, invoke the `pre-read` agent to produce a `SESSION-BRIEFING.md`.
-
-Give the pre-read agent:
-
-1. The handoff prompt you intend to deliver
-2. The contents of SESSION-STATE.md
-
-The briefing goes in `/memories/repo/SESSION-BRIEFING.md` using the **memory tool** (repo memory — persists across conversations, doesn't pollute git).
-
-After persisting the briefing, run one more validation pass using the combined prompt (handoff prompt + "also read SESSION-BRIEFING.md"). If the subagent finds issues, fix them or re-run the pre-read agent.
-
-**When to skip**: Simple handoffs where the next action is obvious and the codebase context is small.
-
-### 3c. Update the cross-workspace handoff index
-
-Update `/memories/active-handoffs.md` (user memory):
-
-```markdown
-# Active Handoffs
-
-| Repo      | Branch      | Date       | Status      |
-| --------- | ----------- | ---------- | ----------- |
-| repo-name | branch-name | 2026-03-12 | In Progress |
-```
-
-- Add or update the row for the current repo/branch.
-- Remove the row when a handoff is consumed.
-
-### 3d. Deliver the handoff prompt
-
-Write a handoff prompt (≤5 lines) for the user to give to the next session:
+Write a handoff prompt (≤5 lines) for the next session:
 
 - What to read (SESSION-STATE.md, SESSION-BRIEFING.md if it exists)
 - What to pick up (the immediate next action)
 - A request to restate and surface questions before proceeding
 
 This prompt is the input to the `session-resume` skill.
-
-### 3e. Self-verify
-
-- [ ] Could someone start working from this document alone?
-- [ ] Are file paths verified against the filesystem?
-- [ ] Does "What's Next" say exactly _what_ to do?
-- [ ] Are gotchas included?
-- [ ] Is `/memories/active-handoffs.md` updated?
-- [ ] Did the validation loop converge?
-- [ ] Is the handoff prompt ready?
 
 ## Output
 
@@ -241,19 +229,13 @@ what it saw but didn't follow up on.]
 
 ### Tensions
 
-These are the core tensions in handoff work. Each one requires judgment to resolve in context.
+**Source truth vs. session memory.** The handoff must reflect the repo at the moment of writing, not your recollection of it. Re-verify before writing — especially if you ran commands or edited files during the handoff process itself.
 
-**Source truth vs. session memory.** The handoff must reflect the repo at the moment of writing, not your recollection of it. This tension sharpens during the handoff process itself — if you ran commands, edited files, or committed during gathering, the repo has changed since you last looked. Re-verify before writing. The validation loop exists partly to catch the cases where you didn't.
+**Completeness vs. actionability.** A handoff that captures everything but prioritizes nothing is as bad as one that's missing information. "What's Next" should be specific enough to act on immediately.
 
-**Completeness vs. actionability.** A handoff that captures everything but prioritizes nothing is as bad as one that's missing information. The next agent needs to know what to do _first_, not just what exists. "What's Next" should be specific enough to act on immediately — "extract `buildRequest` from `handler.ts` into `request-builder.ts`" rather than "continue the refactor."
-
-**Speed vs. thoroughness in validation.** One validation pass feels sufficient but almost never is. The first pass surfaces obvious gaps. The second surfaces subtle ones. The third confirms convergence. The temptation to exit early is strongest when the draft looks good — which is exactly when the subtle gaps are hiding.
-
-**Your knowledge vs. the next agent's starting point.** You know things from the conversation that aren't in the repo. The next agent starts cold. Gotchas — the things you learned the hard way — are the most valuable part of the handoff precisely because they're invisible to someone reading the code fresh.
-
-**Asking the user vs. guessing.** When you don't know something (build commands, priorities, whether to defer a question), asking is always better than inferring. A handoff that says "not verified — user declined" is more trustworthy than one that says "should compile" based on a guess.
+**Interpretation vs. assumption.** The interpretive synthesis in Phase 1 forms an account of the session, but that account is the agent's interpretation — it may not match the user's experience. Phase 2 exists to correct the interpretation before it becomes the document.
 
 ### Things that silently break handoffs
 
 - Session memory (`/memories/session/`) gets cleared between conversations — handoff state belongs in `docs/agent-context/`, not session memory
-- Strikethrough text (`~~wrong thing~~`) is still read and acted on by agents — delete wrong information and replace it, don't annotate
+- Strikethrough text (`~~wrong thing~~`) is still read and acted on by agents — delete wrong information and replace it
