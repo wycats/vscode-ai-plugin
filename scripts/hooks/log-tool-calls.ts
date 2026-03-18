@@ -1,19 +1,35 @@
 /**
- * Diagnostic hook: logs the full PreToolUse input to a file.
- * Use this temporarily to discover tool names and input schemas.
+ * Tool call logger: records every tool invocation to a JSONL file.
  *
- * Output goes to hooks-debug.log in the plugin root.
+ * Handles PreToolUse, PostToolUse, and any other hook event.
+ * Each line is a self-contained JSON object with the full hook input
+ * plus a `logged_at` timestamp from the hook's own clock.
+ *
+ * Log file: ~/.copilot/tool-call-log.jsonl
+ * Format: one JSON object per line, append-only.
  */
 
-import { readFileSync, appendFileSync } from "node:fs";
+import { readFileSync, appendFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
-const ROOT = new URL("../..", import.meta.url).pathname.replace(/\/$/, "");
-const LOG_PATH = join(ROOT, "hooks-debug.log");
+const LOG_DIR = join(process.env.HOME ?? "", ".copilot");
+const LOG_PATH = join(LOG_DIR, "tool-call-log.jsonl");
+
+// Ensure the directory exists
+mkdirSync(LOG_DIR, { recursive: true });
 
 const raw = readFileSync("/dev/stdin", "utf-8");
-const timestamp = new Date().toISOString();
 
-appendFileSync(LOG_PATH, `\n--- ${timestamp} ---\n${raw}\n`);
+interface HookInput {
+  [key: string]: unknown;
+}
 
-// Always allow — this is just for logging
+const input = JSON.parse(raw) as HookInput;
+const entry = {
+  logged_at: new Date().toISOString(),
+  ...input,
+};
+
+appendFileSync(LOG_PATH, JSON.stringify(entry) + "\n");
+
+// Always allow — this hook only observes

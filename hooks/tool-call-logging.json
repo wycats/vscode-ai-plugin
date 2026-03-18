@@ -6,6 +6,13 @@
         "command": "node scripts/hooks/log-tool-calls.ts",
         "timeout": 5
       }
+    ],
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "node scripts/hooks/log-tool-calls.ts",
+        "timeout": 5
+      }
     ]
   }
 }

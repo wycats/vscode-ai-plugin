@@ -31,29 +31,52 @@ async function installLocal() {
   const escapedForRegex = ROOT.replace(/[/\\]/g, "\\$&");
   const alreadyRegistered = new RegExp(escapedForRegex).test(content);
 
+  // Step 3: register plugin path if not already present
   if (alreadyRegistered) {
     console.log(`Plugin already registered at ${ROOT}`);
-    return;
-  }
-
-  // Step 3: check if chat.plugins.paths exists
-  if (content.includes('"chat.plugins.paths"')) {
-    // Add our path to the existing object — insert after the opening brace
+  } else if (content.includes('"chat.plugins.paths"')) {
     const escapedForSed = ROOT.replace(/\//g, "\\/");
     execSync(
       `sed -i '/"chat.plugins.paths"/{n;s/{/{ "${escapedForSed}": true,/}' "${SETTINGS_PATH}"`,
       { stdio: "inherit" },
     );
+    console.log(`Registered plugin at ${ROOT} in ${SETTINGS_PATH}`);
   } else {
-    // Add the entire setting before the final closing brace
     const escapedForSed = ROOT.replace(/\//g, "\\/");
     execSync(
       `sed -i '$i\\\\t"chat.plugins.paths": {\\n\\t\\t"${escapedForSed}": true\\n\\t},' "${SETTINGS_PATH}"`,
       { stdio: "inherit" },
     );
+    console.log(`Registered plugin at ${ROOT} in ${SETTINGS_PATH}`);
   }
 
-  console.log(`Registered plugin at ${ROOT} in ${SETTINGS_PATH}`);
+  // Step 4: register hooks directory in chat.hookFilesLocations
+  // Plugins don't auto-discover hooks from their own directory,
+  // so we register the path explicitly.
+  // Re-read settings in case step 3 modified the file.
+  const updatedContent = await readFile(SETTINGS_PATH, "utf-8");
+  const hooksPath = `${ROOT}/hooks`;
+  const hooksEscapedForRegex = hooksPath.replace(/[/\\]/g, "\\$&");
+  const hooksAlreadyRegistered = new RegExp(hooksEscapedForRegex).test(
+    updatedContent,
+  );
+
+  if (!hooksAlreadyRegistered) {
+    const hooksEscapedForSed = hooksPath.replace(/\//g, "\\/");
+    if (updatedContent.includes('"chat.hookFilesLocations"')) {
+      execSync(
+        `sed -i '/"chat.hookFilesLocations"/{n;s/{/{ "${hooksEscapedForSed}": true,/}' "${SETTINGS_PATH}"`,
+        { stdio: "inherit" },
+      );
+    } else {
+      execSync(
+        `sed -i '/"chat.plugins.paths"/i\\\\t"chat.hookFilesLocations": {\\n\\t\\t"${hooksEscapedForSed}": true\\n\\t},' "${SETTINGS_PATH}"`,
+        { stdio: "inherit" },
+      );
+    }
+    console.log(`Registered hooks directory at ${hooksPath}`);
+  }
+
   console.log("Reload VS Code windows to pick up changes.");
 }
 

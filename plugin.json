@@ -53,6 +53,9 @@
   "hooks": [
     {
       "path": "./hooks/pnpm-enforcement.json"
+    },
+    {
+      "path": "./hooks/tool-call-logging.json"
     }
   ]
 }
