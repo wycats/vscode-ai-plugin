@@ -1,0 +1,11 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "node scripts/hooks/log-tool-calls.ts",
+        "timeout": 5
+      }
+    ]
+  }
+}

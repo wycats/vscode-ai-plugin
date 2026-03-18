@@ -26,20 +26,16 @@ interface HookOutput {
 
 const input = JSON.parse(readFileSync("/dev/stdin", "utf-8")) as HookInput;
 
-// Only check terminal/command tools
-const terminalTools = [
-  "run_in_terminal",
-  "runInTerminal",
-  "terminal",
-  "execute",
-];
-
-if (!terminalTools.includes(input.tool_name)) {
-  // Not a terminal command — allow
+// Only check the run_in_terminal tool
+if (input.tool_name !== "run_in_terminal") {
   process.exit(0);
 }
 
-const command = input.tool_input.command ?? "";
+const command = input.tool_input.command;
+
+if (typeof command !== "string" || command.length === 0) {
+  process.exit(0);
+}
 
 // Check for npm/npx usage (but not pnpm/pnpx)
 const npmPattern = /\b(npm|npx)\b/;

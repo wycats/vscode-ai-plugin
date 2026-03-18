@@ -1,3 +1,4 @@
 node_modules/
 .runtime/
 dist/
+hooks-debug.log
