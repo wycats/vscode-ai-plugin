@@ -31,8 +31,14 @@ The question does the work of framing the decision space. The user just needs to
 - Teaching (the agent knows something the user doesn't)
 - Confirmation (checking boxes on a known list)
 
+## Tension with diagnostic questioning
+
+Socratic elicitation follows the user's thinking wherever it goes. Diagnostic questioning has a specific uncertainty to resolve. When composed together, the user may respond to a diagnostic question by revealing something unexpected — a priority or concern that wasn't on the diagnostic map. The Socratic stance says to follow that thread. The diagnostic stance says to return to the sequence.
+
+Resolve this in context. The user's energy often points to something more important than the diagnostic sequence anticipated. But sometimes the user needs gentle redirection back to a decision that matters for the handoff. The skill is in reading which situation you're in.
+
 ## Composition notes
 
 Socratic elicitation is **collaborative grounding** shaped as reflective probing. The agent makes its understanding visible so the user can refine it — the grounding happens through the act of reflection and correction.
 
-Composes naturally with **diagnostic questioning** (diagnostic questioning identifies _what_ to ask; Socratic elicitation shapes _how_ to ask it). The combination produces questions that are both high-information and low-burden. The handoff skill uses both together during thread triage.
+Composes naturally with **diagnostic questioning** (diagnostic questioning identifies _what_ to ask; Socratic elicitation shapes _how_ to ask it — but see the tension above). The combination produces questions that are both high-information and low-burden. The handoff skill uses both together during thread triage.

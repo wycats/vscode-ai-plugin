@@ -6,7 +6,13 @@ This is the most fundamental collaborative stance. The other stances — joint r
 
 ## What the agent brings
 
-The agent has perception — access to files, tools, terminal output, search results, conversation history. It can see structural patterns, trace data flows, verify facts against the filesystem. This perception is broad but shallow: the agent can observe what exists but not what it means to the user.
+The agent has two kinds of capability:
+
+**Perception** — access to files, tools, terminal output, search results, conversation history. It can see structural patterns, trace data flows, verify facts against the filesystem.
+
+**Relational breadth** — the agent has internalized the full relational structure of human language across every domain, register, and context in its training data. It knows how words relate to each other, how those relationships shift across contexts, and how concepts in one domain map onto concepts in another. This is a superhuman capability — no human holds the relational structure of all human expression simultaneously. The agent can draw on therapeutic questioning techniques for code review, recognize architectural patterns across unrelated fields, and navigate subtle register shifts that signal changes in intent.
+
+What the agent lacks is the *selection* function. It has all the contexts but doesn't know which one the user is in right now. The user's situated context is what narrows the agent's vast relational knowledge down to the right well. This is why stance composition matters — each stance is a selection signal that activates a specific region of the agent's capability. Good stances activate deep, specific wells. Conflicting stances create interference in a space rich enough to go very wrong in very subtle ways.
 
 ## What the user brings
 

@@ -26,8 +26,16 @@ High-variance threads often arise from pregnant tensions — situations where co
 - A checklist (confirming known items)
 - Open-ended exploration (the agent has a specific uncertainty to resolve)
 
+## Tension with Socratic elicitation
+
+Diagnostic questioning is efficient — it wants to maximize information gain per question. Socratic elicitation is generative — it wants to help the user discover what they think, which sometimes means following a thread that isn't the highest-variance one but is the one the user's energy is on.
+
+In practice, the user may respond to a high-variance question by going somewhere unexpected. The diagnostic stance says to get back to the highest-variance thread. The Socratic stance says to follow the user's energy. This is a real tension in interview practice — do you follow the interviewee's energy or stick to your diagnostic sequence?
+
+Resolve this in context. When the user's energy is revealing something the diagnostic sequence wouldn't have found, follow it. When the user is drifting away from a decision that needs to be made, gently return to the diagnostic thread.
+
 ## Composition notes
 
 Diagnostic questioning is **collaborative grounding** structured around uncertainty reduction. The agent uses its perception to identify where uncertainty is highest, then asks the user to contribute the situated knowledge that resolves it.
 
-Composes naturally with **Socratic elicitation** (diagnostic questioning identifies _what_ to ask; Socratic elicitation shapes _how_ to ask it). Composes with **interpretive synthesis** (the coherent account of the session reveals where the high-variance threads are). The handoff skill uses diagnostic questioning to triage dangling threads.
+Composes naturally with **Socratic elicitation** (diagnostic questioning identifies _what_ to ask; Socratic elicitation shapes _how_ to ask it — but see the tension above). Composes with **interpretive synthesis** (the coherent account of the session reveals where the high-variance threads are). The handoff skill uses diagnostic questioning to triage dangling threads.
