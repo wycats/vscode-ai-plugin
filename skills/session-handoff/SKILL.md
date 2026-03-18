@@ -1,6 +1,6 @@
 ---
 name: session-handoff
-description: "The full handoff protocol: interpret the session, triage dangling threads with the user, draft and validate SESSION-STATE.md. Invoke with /session-handoff when you're ready to transition."
+description: "The full handoff protocol: interpret the session, triage dangling threads with the user, draft and validate a handoff document. Invoke with /session-handoff when you're ready to transition."
 disable-model-invocation: true
 ---
 
@@ -8,7 +8,9 @@ disable-model-invocation: true
 
 This is the full handoff protocol. Run it when the user invokes `/session-handoff` — not proactively. For session awareness and checkpoint suggestions, see the `session-continuity` skill.
 
-The handoff produces a `SESSION-STATE.md` in `docs/agent-context/` that gives the next agent zero ramp-up time. But the document is not the starting point — it's the output of a collaborative process. The starting point is understanding what this session accomplished and what the user wants to carry forward.
+The handoff produces a `/memories/repo/SESSION-HANDOFF.md` (via the memory tool) that gives the next agent zero ramp-up time. Repo memory persists across conversations without polluting git, and works in any workspace without requiring a specific directory structure.
+
+The document is not the starting point — it's the output of a collaborative process. The starting point is understanding what this session accomplished and what the user wants to carry forward.
 
 This skill has four phases: **interpret**, **triage**, **draft**, **validate**. The first two phases are collaborative — the agent and user work together to understand the session and decide what matters. The last two phases produce and verify the document.
 
@@ -88,7 +90,7 @@ This picture becomes the input to the draft.
 
 ## Phase 3: Draft
 
-Write `docs/agent-context/SESSION-STATE.md` from the shared picture that emerged in Phases 1 and 2. The template in the reference section provides structure, but the content comes from the triage conversation.
+Write `/memories/repo/SESSION-HANDOFF.md` (using the memory tool) from the shared picture that emerged in Phases 1 and 2. The template in the reference section provides structure, but the content comes from the triage conversation.
 
 The document should convey momentum, not just state. The next agent doesn't just need to know where things are — it needs to feel where things were *going*. Which threads were accelerating? Which decisions were opening up new possibilities? What was the session becoming when it stopped?
 
@@ -102,7 +104,7 @@ The draft should reflect:
 
 The "What's Next" section is especially important — it should reflect the user's stated priorities and convey the direction of the work, not just list steps.
 
-If a SESSION-STATE.md already exists, replace it with current state.
+If a SESSION-HANDOFF.md already exists in repo memory, replace it with current state.
 
 ## Phase 4: Validate
 
@@ -110,14 +112,16 @@ The next agent will read this document cold and start working from it. Every gap
 
 This phase simulates the next agent's experience. A subagent reads the document and the repo with fresh eyes, and every question it asks reveals something the document failed to communicate. Because the triage in Phase 2 was collaborative, the subagent should find fewer priority gaps — but it will find repo gaps (files the document references that have changed), stale data (git state that drifted during the handoff process), and missing context (things that felt obvious during the session but aren't obvious from the document alone).
 
+Validation also surfaces collaborative divergences — places where the agent and user thought they agreed during triage but actually had different understandings. Language creates the appearance of shared understanding even when the underlying interpretations differ slightly. When the subagent asks a question that seems like it should have been resolved in triage, that's often a signal that the agent's understanding of the user's intent diverged from the user's actual intent. These divergences need another round of triage, not just a document fix.
+
 ### The loop
 
 ```
 repeat:
   1. Spawn a read-only subagent (recon or Explore)
-  2. Give it the handoff prompt + SESSION-STATE.md
+  2. Give it the handoff prompt + SESSION-HANDOFF.md
   3. Triage every question it raises
-  4. Fix SESSION-STATE.md based on what you learn
+  4. Fix SESSION-HANDOFF.md based on what you learn
   5. If meaningful changes were needed → go to 1
   6. If remaining questions are resolved or user-deferred → exit loop
 ```
@@ -142,7 +146,7 @@ One validation pass is almost never enough. The first surfaces obvious gaps. The
 
 ### Pre-read (optional, recommended for complex handoffs)
 
-Once validation has converged, invoke the `pre-read` agent to produce a `SESSION-BRIEFING.md`. Give it the handoff prompt and SESSION-STATE.md. The briefing goes in `/memories/repo/SESSION-BRIEFING.md` using the memory tool.
+Once validation has converged, invoke the `pre-read` agent to produce a `SESSION-BRIEFING.md`. Give it the handoff prompt and SESSION-HANDOFF.md. The briefing goes in `/memories/repo/SESSION-BRIEFING.md` using the memory tool.
 
 Run one more validation pass with the combined prompt. Skip this step for simple handoffs where the next action is obvious.
 
@@ -154,7 +158,7 @@ Update `/memories/active-handoffs.md` (user memory) with the current repo/branch
 
 Write a handoff prompt (≤5 lines) for the next session:
 
-- What to read (SESSION-STATE.md, SESSION-BRIEFING.md if it exists)
+- What to read (SESSION-HANDOFF.md, SESSION-BRIEFING.md if it exists)
 - What to pick up (the immediate next action)
 - A request to restate and surface questions before proceeding
 
@@ -162,7 +166,7 @@ This prompt is the input to the `session-resume` skill.
 
 ## Output
 
-1. A `docs/agent-context/SESSION-STATE.md` file
+1. A `/memories/repo/SESSION-HANDOFF.md` (via memory tool)
 2. An updated `/memories/active-handoffs.md` entry
 3. A `/memories/repo/SESSION-BRIEFING.md` (for complex handoffs)
 4. A handoff prompt (≤5 lines) delivered to the user
@@ -178,14 +182,14 @@ This prompt is the input to the `session-resume` skill.
 3. **If it's not obvious how to build/test** — use `vscode_askQuestions` to ask the user.
 4. Record the results (or "not verified — user declined") in the Build State section.
 
-### SESSION-STATE.md template
+### SESSION-HANDOFF.md template
 
 ```markdown
 # Session Handoff — [Date]
 
-## Goal
+## Where We're Going
 
-[What we're trying to accomplish]
+[The trajectory — not just the goal, but the direction and momentum]
 
 ## Status: [In Progress | Blocked | Ready for Review]
 
@@ -195,8 +199,12 @@ This prompt is the input to the `session-resume` skill.
 
 ## What's Next
 
-1. [Specific immediate action]
+1. [Specific immediate action — convey direction, not just steps]
 2. [Following step]
+
+## Live Tensions
+
+[Dangling threads as tensions to engage with, not tasks to check off]
 
 ## Key Decisions
 
@@ -208,8 +216,8 @@ This prompt is the input to the `session-resume` skill.
 
 ## Files Changed
 
-| File         | Change      |
-| ------------ | ----------- |
+| File | Change |
+|------|--------|
 | path/to/file | Description |
 
 ## Git State
@@ -245,5 +253,5 @@ what it saw but didn't follow up on.]
 
 ### Things that silently break handoffs
 
-- Session memory (`/memories/session/`) gets cleared between conversations — handoff state belongs in `docs/agent-context/`, not session memory
+- Session memory (`/memories/session/`) gets cleared between conversations — handoff state belongs in repo memory (`/memories/repo/`), not session memory
 - Strikethrough text (`~~wrong thing~~`) is still read and acted on by agents — delete wrong information and replace it

@@ -7,15 +7,15 @@ description: "Awareness of session state and progress over time. Keeps SESSION-S
 
 This skill is about awareness, not action. It describes how to think about session state, when to checkpoint progress, and how to collaborate with the user on timing decisions.
 
-## What SESSION-STATE.md is
+## What SESSION-HANDOFF.md is
 
-`docs/agent-context/SESSION-STATE.md` captures the current state of work — goal, progress, decisions, git state, gotchas, and next steps. It exists so that if the session ends (planned or not), the next agent can start without ramp-up.
+`/memories/repo/SESSION-HANDOFF.md` (accessed via the memory tool) captures the trajectory of the current work — where things are going, what has momentum, live tensions, decisions, and gotchas. It exists so that if the session ends (planned or not), the next agent can start with the right direction and momentum.
 
-It is not a conversation log. It captures _state_, not history.
+It is not a conversation log or a snapshot. It captures trajectory — where we are, where we were heading, and what forces are still in play.
 
-## Keeping state warm
+## Keeping the handoff warm
 
-As significant work happens during a session, keep SESSION-STATE.md loosely updated. This doesn't mean rewriting it after every edit — it means noticing when something meaningful has changed:
+As significant work happens during a session, keep SESSION-HANDOFF.md loosely updated. This doesn't mean rewriting it after every edit — it means noticing when something meaningful has changed:
 
 - A major piece of work was completed
 - An important decision was made
@@ -23,11 +23,11 @@ As significant work happens during a session, keep SESSION-STATE.md loosely upda
 - The plan changed direction
 - Files were committed
 
-When these happen, update the relevant section of SESSION-STATE.md. This is lightweight — a line or two, not a full handoff protocol.
+When these happen, update the relevant section of SESSION-HANDOFF.md using the memory tool. This is lightweight — a line or two, not a full handoff protocol.
 
 ## Mid-session checkpoints
 
-Sometimes it's valuable to capture state without ending the session. A checkpoint is a more thorough update to SESSION-STATE.md at a natural boundary — after completing a feature, before starting a risky change, or when enough has accumulated that you'd hate to lose it.
+Sometimes it's valuable to capture the trajectory without ending the session. A checkpoint is a more thorough update to SESSION-HANDOFF.md at a natural boundary — after completing a feature, before starting a risky change, or when enough has accumulated that you'd hate to lose it.
 
 A checkpoint preserves knowledge without costing momentum. The session continues after the checkpoint.
 
