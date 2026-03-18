@@ -69,13 +69,15 @@ The questions should:
 - Reflect the agent's interpretation and invite correction. "My read is that the session shifted from planning to implementation around the middleware discussion. Does that match how it felt to you?"
 - Name tensions when they exist. "There's a tension between finishing the type migration and addressing the test gaps it revealed. Which feels more urgent for the next session?"
 
-### When to stop
+If the user's response reveals a thread or priority the diagnostic sequence didn't anticipate, follow it before returning to the sequence. The user's energy often points to something more important than the planned question order. See `stances/diagnostic-questioning.md` and `stances/socratic-elicitation.md` for the deeper treatment of this tension.
 
-Stop asking when the remaining threads are predictable from the conversation history plus the answers already given. Don't ask about things the agent can already infer — that wastes the collaboration budget.
+### Building the picture
 
-### What to capture
+Each answer adds to a shared picture of what the user wants to carry forward. Continue the triage until the picture is coherent enough to draft from — when the answers have built up a consistent account of the user's priorities, and remaining threads fit naturally into that account without needing to be asked about.
 
-As the user answers, build up a picture of:
+The signal is coherence: when new threads stop surprising either party and instead confirm the picture that's already forming, the triage has done its work.
+
+As the picture takes shape, it should include:
 
 - What has momentum and should be continued
 - What was intentionally set aside
