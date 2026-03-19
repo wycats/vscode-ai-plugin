@@ -10,13 +10,16 @@
       "path": "./skills/recon/SKILL.md"
     },
     {
-      "path": "./skills/session-continuity/SKILL.md"
+      "path": "./skills/session-close/SKILL.md"
     },
     {
-      "path": "./skills/session-handoff/SKILL.md"
+      "path": "./skills/session-load/SKILL.md"
     },
     {
-      "path": "./skills/session-resume/SKILL.md"
+      "path": "./skills/session-rest/SKILL.md"
+    },
+    {
+      "path": "./skills/session-save/SKILL.md"
     },
     {
       "path": "./skills/walkthrough/SKILL.md"
