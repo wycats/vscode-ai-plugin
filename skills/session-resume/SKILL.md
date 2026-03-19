@@ -1,15 +1,15 @@
 ---
 name: session-resume
-description: "Resume work from a session handoff — reads SESSION-STATE.md, orients the agent, and clears the active-handoffs index"
+description: "Resume work from a session handoff — reads SESSION-TRAJECTORY.md, orients the agent, and clears the active-handoffs index"
 ---
 
 # Session Resume
 
-Pick up where the previous agent left off using `SESSION-STATE.md`.
+Pick up where the previous agent left off using `SESSION-TRAJECTORY.md`.
 
 ## Inputs
 
-- A `docs/agent-context/SESSION-STATE.md` (written by the session-handoff skill)
+- A `/memories/repo/SESSION-TRAJECTORY.md` (written by the session-handoff skill, accessed via memory tool)
 - Optionally, a `/memories/repo/SESSION-BRIEFING.md` (produced by the pre-read agent)
 - Access to the filesystem and git
 
@@ -17,8 +17,7 @@ Pick up where the previous agent left off using `SESSION-STATE.md`.
 
 ### 1. Read the handoff
 
-Read `docs/agent-context/SESSION-STATE.md`. If it doesn't exist, check
-`SESSION-STATE.md` in the repo root (older convention), then
+Use the **memory tool** to read `/memories/repo/SESSION-TRAJECTORY.md`. If it doesn't exist, check
 `/memories/active-handoffs.md` for other repos with pending handoffs.
 
 Also use the **memory tool** to check `/memories/repo/SESSION-BRIEFING.md`
@@ -68,7 +67,7 @@ Remove the current repo's row from `/memories/active-handoffs.md`.
 
 - **Starting work without reading the handoff** — the whole point is zero ramp-up
 - **Ignoring git discrepancies** — if the branch moved, the handoff may be stale
-- **Deleting SESSION-STATE.md immediately** — keep it until the first commit of the new session, so it's recoverable
+- **Deleting SESSION-TRAJECTORY.md immediately** — keep it until the first commit of the new session, so it's recoverable
 - **Ignoring SESSION-BRIEFING.md** — if the pre-read agent produced one, it contains valuable codebase context
 
 ## Output

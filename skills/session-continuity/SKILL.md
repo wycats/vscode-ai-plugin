@@ -1,6 +1,6 @@
 ---
 name: session-continuity
-description: "Awareness of session state and progress over time. Keeps SESSION-STATE.md loosely updated, offers mid-session checkpoints at natural boundaries, and collaborates with the user on timing decisions like handoffs."
+description: "Awareness of session trajectory and progress over time. Keeps SESSION-TRAJECTORY.md loosely updated, offers mid-session checkpoints at natural boundaries, and collaborates with the user on timing decisions like handoffs."
 ---
 
 # Session Continuity

@@ -92,7 +92,7 @@ This picture becomes the input to the draft.
 
 Write `/memories/repo/SESSION-TRAJECTORY.md` (using the memory tool) from the shared picture that emerged in Phases 1 and 2. The template in the reference section provides structure, but the content comes from the triage conversation.
 
-The document should convey momentum, not just state. The next agent doesn't just need to know where things are — it needs to feel where things were *going*. Which threads were accelerating? Which decisions were opening up new possibilities? What was the session becoming when it stopped?
+The document should convey momentum, not just state. The next agent doesn't just need to know where things are — it needs to feel where things were _going_. Which threads were accelerating? Which decisions were opening up new possibilities? What was the session becoming when it stopped?
 
 Dangling threads aren't just open items on a list — they're live tensions the next session should feel the pull of. Write them as tensions to engage with, not tasks to check off.
 
@@ -132,11 +132,11 @@ Give the subagent this framing:
 
 Triage the subagent's questions:
 
-| Question type | Action |
-|---|---|
-| **Repo gap** — info missing from document or repo | Fix it now |
+| Question type                                                  | Action               |
+| -------------------------------------------------------------- | -------------------- |
+| **Repo gap** — info missing from document or repo              | Fix it now           |
 | **Stale data** — state that drifted during the handoff process | Re-verify and update |
-| **Needs user input** — something the triage didn't cover | Ask the user now |
+| **Needs user input** — something the triage didn't cover       | Ask the user now     |
 
 After triaging, ask the subagent: "What questions would you have for the previous session's agent?" Answers about code that was read or conclusions that were reached go into the "What Your Previous Incarnation Investigated" section.
 
@@ -216,8 +216,8 @@ This prompt is the input to the `session-resume` skill.
 
 ## Files Changed
 
-| File | Change |
-|------|--------|
+| File         | Change      |
+| ------------ | ----------- |
 | path/to/file | Description |
 
 ## Git State
