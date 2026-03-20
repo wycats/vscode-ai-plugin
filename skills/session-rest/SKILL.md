@@ -59,7 +59,7 @@ Because the user is still around and will serve as a bridge, the triage can be l
 
 ### The approach
 
-Use diagnostic questioning and Socratic elicitation together. Diagnostic questioning identifies *what* to ask (the highest-variance threads, especially pregnant tensions). Socratic elicitation shapes *how* to ask (reflecting the agent's understanding, probing where it might be wrong, making the user's job easy).
+Use diagnostic questioning and Socratic elicitation together. Diagnostic questioning identifies _what_ to ask (the highest-variance threads, especially pregnant tensions). Socratic elicitation shapes _how_ to ask (reflecting the agent's understanding, probing where it might be wrong, making the user's job easy).
 
 ### The sequence
 
@@ -83,7 +83,7 @@ The signal is coherence: when new threads stop surprising either party and inste
 
 Write `/memories/repo/SESSION-TRAJECTORY.md` (using the memory tool) from the shared picture that emerged in Phases 1 and 2. The template in the reference section provides structure, but the content comes from the triage conversation.
 
-The document should convey momentum, not just state. The next agent doesn't just need to know where things are — it needs to feel where things were *going*. Dangling threads are live tensions the next session should feel the pull of.
+The document should convey momentum, not just state. The next agent doesn't just need to know where things are — it needs to feel where things were _going_. Dangling threads are live tensions the next session should feel the pull of.
 
 The draft should reflect:
 
@@ -174,8 +174,8 @@ This prompt is the input to the `session-load` skill.
 
 ## Files Changed
 
-| File | Change |
-|------|--------|
+| File         | Change      |
+| ------------ | ----------- |
 | path/to/file | Description |
 
 ## Git State

@@ -20,6 +20,7 @@ Also check `/memories/repo/SESSION-BRIEFING.md` — if it exists, the pre-read a
 ### 2. Verify git state matches
 
 Run:
+
 ```bash
 git branch --show-current
 git log --oneline -3
@@ -27,6 +28,7 @@ git status
 ```
 
 Compare against the trajectory's Git State section. If there are discrepancies, surface them individually using `vscode_askQuestions`:
+
 - Wrong branch? Ask if the user wants to switch.
 - New commits since the transition? Summarize what changed and ask if it affects the plan.
 - Uncommitted changes not in the trajectory? Ask if they're intentional.
@@ -42,11 +44,13 @@ Present the trajectory to the user — where things were going, what's next, wha
 Adapt the depth of orientation to the user's state:
 
 **After a rest (user is warm):**
+
 - Brief summary — the user remembers most of the context
 - Focus on confirming "What's Next" and any live tensions
 - The user will fill in nuances from memory
 
 **After a close (user is cold):**
+
 - Fuller orientation — walk through the trajectory, the briefing if it exists, and the key decisions
 - Surface gotchas explicitly — the user may not remember them
 - Check whether the anticipatory framing from the close still matches the user's priorities (they may have thought about it overnight and changed their mind)

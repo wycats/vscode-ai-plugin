@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Session Close
 
-Actually putting the device down. The user is leaving — going to sleep, stepping away for the evening, taking a real break. The bridge goes away. The next session starts with *only* what's written down plus whatever the user remembers after a real break.
+Actually putting the device down. The user is leaving — going to sleep, stepping away for the evening, taking a real break. The bridge goes away. The next session starts with _only_ what's written down plus whatever the user remembers after a real break.
 
 This is the most thorough transition protocol. It includes everything `session-rest` does, plus:
 
@@ -59,7 +59,7 @@ Arrange the desk for tomorrow. Based on what happened today and what the user sa
 - What should the first action of the next session be?
 - What context will the user need refreshed after sleeping?
 - Are there any time-sensitive items (PRs to review, builds to check, deadlines)?
-- What's the most important thing to *not* forget?
+- What's the most important thing to _not_ forget?
 
 This goes in the trajectory document and in the transition prompt.
 
