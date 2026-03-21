@@ -37,16 +37,34 @@ if (typeof command !== "string" || command.length === 0) {
   process.exit(0);
 }
 
-// Check for npm/npx usage (but not pnpm/pnpx)
-const npmPattern = /\b(npm|npx)\b/;
-const pnpmPattern = /\bpnpm\b/;
+// Check for npm usage (but not pnpm)
+const npmPattern = /\bnpm\b/;
+const npxPattern = /\bnpx\b/;
+const pnpmPattern = /\b(pnpm|pnpx)\b/;
 
-if (npmPattern.test(command) && !pnpmPattern.test(command)) {
+if (pnpmPattern.test(command)) {
+  // Already using pnpm/pnpx — allow
+  process.exit(0);
+}
+
+if (npmPattern.test(command)) {
   const output: HookOutput = {
     hookSpecificOutput: {
       hookEventName: "PreToolUse",
       permissionDecision: "deny",
-      permissionDecisionReason: `This environment uses pnpm, not npm. Replace "npm" with "pnpm" or "npx" with "pnpm exec" in the command: ${command}`,
+      permissionDecisionReason: `This environment uses pnpm, not npm. Replace "npm" with "pnpm" in the command: ${command}`,
+    },
+  };
+  process.stdout.write(JSON.stringify(output));
+  process.exit(0);
+}
+
+if (npxPattern.test(command)) {
+  const output: HookOutput = {
+    hookSpecificOutput: {
+      hookEventName: "PreToolUse",
+      permissionDecision: "deny",
+      permissionDecisionReason: `This environment uses pnpm. "npx" is always wrong here. If this runs a project script, use "pnpm run <script>" instead. If it's truly a one-off tool not in the project, use "pnpx". Prefer creating a package script over using pnpx. Command was: ${command}`,
     },
   };
   process.stdout.write(JSON.stringify(output));
