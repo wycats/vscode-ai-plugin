@@ -19,5 +19,8 @@
     "jiti": "^2.6.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.57.0"
+  },
+  "dependencies": {
+    "jsonc-parser": "^3.3.1"
   }
 }
