@@ -1,10 +1,24 @@
 # Diagnostic Questioning
 
-Sequential questions designed to maximally reduce uncertainty about the user's priorities, ordered so that each answer informs the next.
+Adaptive sequential questioning where each answer reshapes the questioner's model and determines the next question.
 
-The agent has done its homework — it has reviewed the material and formed a preliminary understanding. The questions aren't exploratory. They target the specific places where the agent's understanding might diverge from the user's. High-variance threads (where the agent genuinely can't predict the user's intent) are asked about first, because their answers carry the most information and often resolve lower-variance threads implicitly.
+---
 
-The sequence matters. Early questions establish the frame — the broad shape of what the user cares about. Later questions probe within that frame. The agent doesn't ask about details before understanding the big picture, and doesn't ask about the big picture after the details have already revealed it.
+The questioner has done their homework — they have a preliminary model of the space. The questions test that model against the other party's knowledge, targeting the specific places where the questioner's understanding is most likely to be wrong.
+
+The sequence matters. Early questions establish the frame — the broad shape of what matters. Later questions probe within that frame. The questioner doesn't ask about details before understanding the big picture, and doesn't ask about the big picture after the details have already revealed it.
+
+## The relational structure
+
+These examples span trivial to intimate stakes. The questioning structure is the same in each — the stakes determine how much sequencing matters, not whether it applies.
+
+A sommelier helping someone choose a wine. "Do you tend toward red or white? How do you feel about tannins? What's a wine you've really enjoyed recently?" The customer can't fully articulate what they want. Each answer narrows the space and determines the next question. The sommelier isn't exploring randomly — they have a model of the flavor space and are converging on the region the customer will enjoy.
+
+An experienced interviewer assessing a candidate. The first question is broad: "Tell me about the hardest technical decision you made last year." The answer reveals what the candidate considers hard, which tells the interviewer where to probe. "You mentioned the team disagreed about the migration approach — how did you handle that?" Each question is chosen based on what the previous answer revealed about where to look next.
+
+A therapist in a session. They have a clinical model. Each question tests it. But the sequencing is trust-constrained: the right question asked too early closes the door rather than opening it. Each question must be one the client is ready to answer. The therapist is also reading cognitive capacity, fatigue, and emotional readiness — the *order* of questions matters not just for information gain but because some paths close off others.
+
+A parent sensing their teenager is struggling. "How did the presentation go today?" is specific, grounded, and safe. The answer — or the way it's deflected — reshapes the model. Ask too directly and the teenager retreats. Ask too indirectly and the window passes. Unlike the therapist, the parent and teenager live together — a question that lands wrong at dinner changes the relational context for every interaction after.
 
 ## The key property
 
@@ -25,6 +39,7 @@ High-variance threads often arise from pregnant tensions — situations where co
 - A survey (presenting all questions at once)
 - A checklist (confirming known items)
 - Open-ended exploration (the agent has a specific uncertainty to resolve)
+- Investigation of systems (that's recon — adaptive investigation of code, not questioning of people)
 
 ## Tension with Socratic elicitation
 

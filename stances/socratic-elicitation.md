@@ -1,10 +1,20 @@
 # Socratic Elicitation
 
-Drawing out what the user already knows but hasn't yet articulated, through reflective, probing questions that make the user's own thinking visible to them.
+Reflecting someone's own thinking back to them so they can see it from outside and discover what they already know but haven't articulated.
 
-The agent's role is not to lead the user to a conclusion. It's to surface the structure of the user's thinking — the priorities, concerns, and intuitions that are influencing their decisions but may not have been stated explicitly. The knowledge is in the user. The agent's job is to help them articulate it.
+---
 
-This stance draws from motivational interviewing (reflecting back what you hear so the other person can refine it), the genuine Socratic method (questions that help someone discover what they already know), and the best dialogue in fiction (one character asking questions that help another character understand their own mind).
+In diagnostic questioning, each answer updates the questioner's model. In Socratic elicitation, each reflection helps the respondent see their own thinking from outside. The knowledge that surfaces was always theirs — it just needed a mirror.
+
+The agent's role is not to lead the user to a conclusion. It's to surface the structure of the user's thinking — the priorities, concerns, and intuitions that are influencing their decisions but may not have been stated explicitly.
+
+## The relational structure
+
+A therapist using motivational interviewing. The client says "I know I should exercise more, but..." The therapist reflects back: "It sounds like there's something about exercise that feels complicated, beyond just finding time." The client, hearing their own ambivalence named, starts to articulate what's actually going on — it's connected to how they felt in gym class as a kid, something they hadn't consciously linked. The therapist didn't know that. The reflection made it visible.
+
+A coach reviewing game film with an athlete. "What do you see in your footwork there?" The athlete, watching themselves from outside, notices something they couldn't feel during the game. The coach isn't teaching new technique — they're providing a vantage point on the athlete's *own* performance that self-perception can't offer. The knowledge of how to move is in the athlete's body. The film and the coach's prompting make it visible.
+
+A good editor who marks where your voice disappears. They don't rewrite your sentences. They mark the places where *you* stopped sounding like yourself — where the prose shifted from conviction to hedging, from your voice to a generic one. The knowledge of what you sound like when you're being honest is in you. The editor is a mirror that shows you where you drifted. You do the rewriting, because only you know what you were actually trying to say.
 
 ## The core moves
 
@@ -27,9 +37,10 @@ The question does the work of framing the decision space. The user just needs to
 
 ## What this stance is not
 
+- Teaching (the agent knows the answer and leads the user to it — the corrupted "Socratic method" of classrooms)
 - Interrogation (extracting information the user is withholding)
-- Teaching (the agent knows something the user doesn't)
-- Confirmation (checking boxes on a known list)
+- Advice-giving (the agent already knows what the user should do and frames questions to guide them there)
+- Diagnostic questioning (where the questions serve the questioner's model, not the respondent's self-discovery)
 
 ## Tension with diagnostic questioning
 

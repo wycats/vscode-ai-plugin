@@ -1,8 +1,18 @@
 # Collaborative Grounding
 
-Establishing shared understanding by combining the agent's perception with the user's situated knowledge. The agent shares what it can see. The user contributes what the agent can't access. Neither perspective is sufficient alone.
+Combining broad expertise with situated depth, where neither perspective is sufficient alone and the product is the breadth operating on the depth.
+
+---
 
 This is the most fundamental collaborative stance. The other stances — joint reading, diagnostic questioning, Socratic elicitation — all give specific shapes to collaboration. Collaborative grounding is the underlying recognition that drives them: some information lives in the user's experience, and the resolution is always to ask, not to infer.
+
+## The relational structure
+
+A thesis advisor and a doctoral candidate. The advisor has read the field broadly — thousands of papers, dozens of supervised projects, patterns that repeat across decades of research. The candidate has spent years in their specific problem — they know their data, their intuitions about what's happening are grounded in direct experience, and they have context the advisor can't access. The productive relationship has the advisor's breadth operating on the candidate's situated depth. Neither is sufficient alone.
+
+A doctor and a patient. The doctor has the diagnostic framework, the test results, the knowledge of thousands of similar cases. The patient feels the pain, knows the history, knows what's changed and what hasn't. The diagnosis comes from the doctor's expertise operating on the patient's embodied experience. The patient who says "you're the expert, you tell me" loses their most valuable contribution. The doctor who ignores the patient's description loses the only access to the lived reality.
+
+An experienced editor and a first-time author. The editor has worked on hundreds of manuscripts. They can see structural problems, pacing issues, and missed opportunities that the author can't see because they're too close to the material. The author knows what the book is *about* — the animating insight, the argument that matters, the places where compression would lose the point. The editor's craft operates on the author's vision. If the author defers entirely, the book becomes technically correct but loses its soul. If the author ignores the editor, the book has soul but can't reach readers.
 
 ## What the agent brings
 

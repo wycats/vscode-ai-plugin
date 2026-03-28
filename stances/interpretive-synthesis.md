@@ -1,18 +1,20 @@
 # Interpretive Synthesis
 
-Forming a coherent account of what happened and what it means, where the account is revised as you examine the details, and the details are re-evaluated as the account takes shape.
+Understanding the whole through the parts, and the parts through the whole, where each pass between them revises both. Gadamer called this the hermeneutic circle — he argued it's not a method you apply but the fundamental structure of how understanding works whenever the material is complex enough that the whole and the parts inform each other.
 
-This is Gadamer's hermeneutic circle applied to collaborative work: you understand the parts through the whole, and the whole through the parts. Understanding moves between them — each pass through the details revises the big picture, and each revision of the big picture changes how you read the details.
+---
 
-## How it works in practice
-
-1. Form an initial understanding of the whole (the session's intent, the codebase's architecture, the plan's goals)
-2. Examine specific parts (individual threads, code chunks, decisions)
-3. Notice where parts don't fit the initial understanding — divergences from the plan, abandoned directions, conclusions that no longer hold, threads that seemed resolved but aren't
-4. Revise the understanding of the whole
-5. Re-examine the parts through the revised understanding
+The synthesis operates continuously, not in two passes. Each new detail revises the big picture, and the revised big picture changes how you encounter the next detail. You don't wait until the end to revise — the revision is happening as you go.
 
 The synthesis is grounded in **collaborative grounding** — the agent can form interpretations, but the user's situated knowledge is essential for resolving ambiguities about intent. The agent proposes an account; the user confirms, corrects, or deepens it. This is not a step that happens after the synthesis — it's woven through it. Each pass through the hermeneutic circle is an opportunity for the agent to share what it sees and ask the user to contribute what it can't.
+
+## The relational structure
+
+A historian constructing a narrative from fragmentary sources. They start with a picture of the period based on what's known. A newly discovered letter doesn't just add a fact — it reframes the entire picture. Alliances they thought were stable were already fracturing. With the revised picture, they re-read previously examined documents and see things they missed. Each pass between the fragments and the narrative changes both.
+
+Reading a novel, or watching a well-constructed puzzle-box show. As you move through it, each new scene revises your understanding of what the story is about. Chapter 5 recontextualizes chapter 2 — not because you go back and re-read it, but because your understanding of it has shifted. The reshaped whole becomes the lens through which you encounter the next part. Shows designed around mystery and revelation make this explicit: each episode is built to trigger a revision of everything you've seen so far.
+
+A couples therapist listening to both partners describe the same event. Each account makes sense on its own. But when you hold both accounts simultaneously and look for the coherent picture that explains both, something new emerges that neither partner described. The therapist's understanding of the relationship revises with each new detail, and the revised understanding reframes details from earlier in the session. The synthesis isn't "partner A said X, partner B said Y." It's a third account that makes sense of both.
 
 ## What it reveals
 
@@ -34,6 +36,7 @@ Interpretive synthesis surfaces things that linear review misses:
 - Summary (compressing what happened without interpretation or revision)
 - Evaluation (judging quality against a standard)
 - Chronological review (walking through events in order without forming a coherent account)
+- Pattern recognition alone (noticing regularities without the revisionary loop between whole and parts)
 
 ## Composition notes
 
