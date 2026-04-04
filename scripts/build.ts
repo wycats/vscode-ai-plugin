@@ -199,34 +199,19 @@ async function build() {
     agentPaths.push(relPath);
   }
 
-  // Copy skills
-  const skillFiles = await findFiles(join(ROOT, "skills"), /^SKILL\.md$/);
-  const skillPaths: string[] = [];
-  if (skillFiles.length > 0) {
-    await copyDir("skills", outDir);
-    for (const f of skillFiles) {
-      skillPaths.push("./" + relative(ROOT, f));
-    }
-  }
+  // Copy skills, instructions, hooks, stances — use copyDir's return
+  // values (paths relative to outDir) instead of scanning ROOT
+  const allSkillPaths = await copyDir("skills", outDir);
+  const skillPaths = allSkillPaths.filter((p) => p.endsWith("/SKILL.md"));
 
-  // Copy other directories
-  const instructionFiles: string[] = [];
-  const hookFiles: string[] = [];
+  const allInstructionPaths = await copyDir("instructions", outDir);
+  const instructionPaths = allInstructionPaths.filter((p) =>
+    p.endsWith(".instructions.md"),
+  );
 
-  for (const f of await findFiles(
-    join(ROOT, "instructions"),
-    /\.instructions\.md$/,
-  )) {
-    instructionFiles.push("./" + relative(ROOT, f));
-  }
-  if (instructionFiles.length > 0) await copyDir("instructions", outDir);
+  const allHookPaths = await copyDir("hooks", outDir);
+  const hookPaths = allHookPaths.filter((p) => p.endsWith(".json"));
 
-  for (const f of await findFiles(join(ROOT, "hooks"), /\.json$/)) {
-    hookFiles.push("./" + relative(ROOT, f));
-  }
-  if (hookFiles.length > 0) await copyDir("hooks", outDir);
-
-  // Copy stances if they exist
   await copyDir("stances", outDir);
 
   // Generate plugin.json
@@ -242,11 +227,11 @@ async function build() {
   if (skillPaths.length > 0) {
     pluginJson.skills = skillPaths.map((p) => ({ path: p }));
   }
-  if (instructionFiles.length > 0) {
-    pluginJson.instructions = instructionFiles.map((p) => ({ path: p }));
+  if (instructionPaths.length > 0) {
+    pluginJson.instructions = instructionPaths.map((p) => ({ path: p }));
   }
-  if (hookFiles.length > 0) {
-    pluginJson.hooks = hookFiles.map((p) => ({ path: p }));
+  if (hookPaths.length > 0) {
+    pluginJson.hooks = hookPaths.map((p) => ({ path: p }));
   }
 
   await writeFile(
@@ -257,8 +242,8 @@ async function build() {
   console.log(`Built to ${relative(ROOT, outDir)}/`);
   console.log(`  agents:       ${String(agentPaths.length)}`);
   console.log(`  skills:       ${String(skillPaths.length)}`);
-  console.log(`  instructions: ${String(instructionFiles.length)}`);
-  console.log(`  hooks:        ${String(hookFiles.length)}`);
+  console.log(`  instructions: ${String(instructionPaths.length)}`);
+  console.log(`  hooks:        ${String(hookPaths.length)}`);
 }
 
 build().catch((err: unknown) => {
