@@ -15,6 +15,7 @@ tools:
     search,
     web,
     browser,
+    vscode/memory,
     exosuit.exosuit-context/exo-run,
     todo,
   ]

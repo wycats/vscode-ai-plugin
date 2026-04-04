@@ -71,7 +71,9 @@ Otherwise replace with:
   - group ≥3 items or ≥150 words, and
   - state an axis (component/module, lifecycle phase, decision point, failure mode category, interface surface, or audience boundary), and
   - provide a lookup win (grep-able label or prevents mixed axes), and
-  - pass the cost test (removing the heading would increase ambiguity)._ Exception: reference taxonomies (label lists, error catalogs, API indexes) may use lightweight subheadings for scannability even if they don't meet the word threshold._ Replace provocative headings with neutral ones (e.g., “Decision: …”, “Constraint: …”, “Failure modes”, “API: …”, “Verification”).
+  - pass the cost test (removing the heading would increase ambiguity).
+    - Exception: reference taxonomies (label lists, error catalogs, API indexes) may use lightweight subheadings for scannability even if they don't meet the word threshold.
+    - Replace provocative headings with neutral ones (e.g., "Decision: …", "Constraint: …", "Failure modes", "API: …", "Verification").
 
 ## Slop labels
 
