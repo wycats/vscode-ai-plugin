@@ -1,4 +1,5 @@
 {
+  "$schema": "./config.schema.json",
   "target": "vscode",
   "models": {
     "fast": null,
