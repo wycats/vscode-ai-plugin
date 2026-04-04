@@ -5,7 +5,8 @@
   "description": "Personal agent toolkit: workflow agents, skills, and prompts.",
   "type": "module",
   "scripts": {
-    "build": "node scripts/build-plugin.ts",
+    "build": "node scripts/build.ts",
+    "build-plugin": "node scripts/build-plugin.ts",
     "watch": "node scripts/watch.ts",
     "install-local": "node scripts/install-local.ts",
     "validate": "node scripts/validate.ts",
@@ -21,6 +22,7 @@
     "typescript-eslint": "^8.57.0"
   },
   "dependencies": {
+    "gray-matter": "^4.0.3",
     "jsonc-parser": "^3.3.1"
   }
 }

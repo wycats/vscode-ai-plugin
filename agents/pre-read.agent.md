@@ -1,23 +1,15 @@
 ---
 description: "Pre-read agent for session handoffs. Synthesizes codebase context into a briefing that helps the next working agent start faster."
-model: GPT 5.4 (vercel)
+model: auxiliary
 user-invocable: false
 tools:
   [
-    vscode,
-    execute/testFailure,
-    execute/getTerminalOutput,
-    execute/awaitTerminal,
-    execute/killTerminal,
-    execute/runInTerminal,
-    execute/runTests,
-    read,
+    core,
     agent,
-    search,
-    web,
     browser,
-    exosuit.exosuit-context/exo-run,
-    todo,
+    exo,
+    terminal,
+    testing,
   ]
 ---
 

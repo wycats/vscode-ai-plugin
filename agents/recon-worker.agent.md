@@ -1,24 +1,15 @@
 ---
 description: "Bounded codebase investigator dispatched by Recon for parallel sub-investigations needing rich tools (git, terminal, exo). Returns grounded findings with sourcing, not raw data. For simple search fan-out, use Explore instead."
-model: Claude Opus 4.6 Fast (vercel)
+model: fast
 user-invocable: false
 tools:
   [
-    vscode,
-    execute/getTerminalOutput,
-    execute/runInTerminal,
-    read,
-    search,
-    web,
-    "github/*",
+    core,
     browser,
-    vscode/memory,
-    exosuit.exosuit-context/exo-run,
-    github.vscode-pull-request-github/issue_fetch,
-    github.vscode-pull-request-github/doSearch,
-    github.vscode-pull-request-github/activePullRequest,
-    github.vscode-pull-request-github/openPullRequest,
-    todo,
+    memory,
+    exo,
+    terminal-minimal,
+    github,
   ]
 ---
 

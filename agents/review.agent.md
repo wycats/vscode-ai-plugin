@@ -1,24 +1,16 @@
 ---
 description: "Evaluates what happened against what was predicted, reading the gap between expectation and outcome to judge what the divergences mean and whether the result warrants confidence."
-model: Gemini 3.1 Pro Preview (vercel)
+model: balanced
 user-invocable: false
 tools:
   [
-    vscode,
-    execute/testFailure,
-    execute/getTerminalOutput,
-    execute/awaitTerminal,
-    execute/killTerminal,
-    execute/runInTerminal,
-    execute/runTests,
-    read,
+    core,
     agent,
-    search,
-    web,
     browser,
-    vscode/memory,
-    exosuit.exosuit-context/exo-run,
-    todo,
+    memory,
+    exo,
+    terminal,
+    testing,
   ]
 ---
 

@@ -1,23 +1,15 @@
 ---
 description: "Adaptive codebase investigator — follows leads, uses tools interactively, and synthesizes findings. Use when each result may change what to search next. For known searches, use Explore instead."
-model: Claude Opus 4.6 Fast (vercel)
+model: fast
 tools:
   [
-    vscode,
-    execute/testFailure,
-    execute/getTerminalOutput,
-    execute/awaitTerminal,
-    execute/killTerminal,
-    execute/runInTerminal,
-    execute/runTests,
-    read,
+    core,
     agent,
-    search,
-    web,
     browser,
-    vscode/memory,
-    exosuit.exosuit-context/exo-run,
-    todo,
+    memory,
+    exo,
+    terminal,
+    testing,
   ]
 ---
 

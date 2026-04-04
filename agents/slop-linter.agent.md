@@ -1,7 +1,7 @@
 ---
 name: slop-linter
 description: Identifies and removes slop from documents.
-model: GPT 5.4 (vercel)
+model: auxiliary
 ---
 
 # Slop linter
