@@ -9,7 +9,6 @@ tools:
     execute/getTerminalOutput,
     execute/awaitTerminal,
     execute/killTerminal,
-    execute/runTask,
     execute/runInTerminal,
     execute/runTests,
     read,
@@ -17,7 +16,6 @@ tools:
     search,
     web,
     browser,
-    memory,
     exosuit.exosuit-context/exo-run,
     todo,
   ]

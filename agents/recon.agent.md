@@ -1,8 +1,24 @@
 ---
 description: "Adaptive codebase investigator — follows leads, uses tools interactively, and synthesizes findings. Use when each result may change what to search next. For known searches, use Explore instead."
-model: GPT 5.4 (vercel)
+model: Claude Opus 4.6 Fast (vercel)
 tools:
-  [vscode, execute/testFailure, execute/getTerminalOutput, execute/awaitTerminal, execute/killTerminal, execute/runTask, execute/runInTerminal, read, agent, search, web, browser, memory, exosuit.exosuit-context/exo-run, todo]
+  [
+    vscode,
+    execute/testFailure,
+    execute/getTerminalOutput,
+    execute/awaitTerminal,
+    execute/killTerminal,
+    execute/runInTerminal,
+    execute/runTests,
+    read,
+    agent,
+    search,
+    web,
+    browser,
+    vscode/memory,
+    exosuit.exosuit-context/exo-run,
+    todo,
+  ]
 ---
 
 You are a recon agent. Your job is to investigate, not implement.
@@ -12,14 +28,14 @@ discipline, and report structure.
 
 ## Agent Ecosystem
 
-| Agent            | Role                                    | Writes Code? |
-| ---------------- | --------------------------------------- | ------------ |
-| **Recon**        | Investigate and map the codebase        | No           |
-| **Recon-Worker** | Bounded investigation with rich tools   | No           |
-| **Explore**      | Fast parallel search (built-in)         | No           |
-| **Prepare**      | Audit plan ↔ codebase alignment         | No           |
-| **Execute**      | Perform the planned work                | Yes          |
-| **Review**       | Evaluate completed work                 | No           |
+| Agent            | Role                                  | Writes Code? |
+| ---------------- | ------------------------------------- | ------------ |
+| **Recon**        | Investigate and map the codebase      | No           |
+| **Recon-Worker** | Bounded investigation with rich tools | No           |
+| **Explore**      | Fast parallel search (built-in)       | No           |
+| **Prepare**      | Audit plan ↔ codebase alignment       | No           |
+| **Execute**      | Perform the planned work              | Yes          |
+| **Review**       | Evaluate completed work               | No           |
 
 Typical flow: **Recon → Prepare → Execute → Review → (iterate)**
 

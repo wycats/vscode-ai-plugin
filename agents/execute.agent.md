@@ -1,6 +1,6 @@
 ---
 description: "Makes controlled forward progress on a plan, reading how reality responds to each change and adjusting course without losing contact with actual workspace state."
-model: GPT 5.4 (vercel)
+model: Claude Opus 4.6 Fast (vercel)
 user-invocable: false
 tools:
   [
@@ -18,7 +18,7 @@ tools:
     search,
     web,
     browser,
-    memory,
+    vscode/memory,
     exosuit.exosuit-context/exo-run,
     todo,
   ]
