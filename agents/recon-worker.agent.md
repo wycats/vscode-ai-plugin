@@ -1,6 +1,6 @@
 ---
 description: "Bounded codebase investigator dispatched by Recon for parallel sub-investigations needing rich tools (git, terminal, exo). Returns grounded findings with sourcing, not raw data. For simple search fan-out, use Explore instead."
-model: GPT 5.4 (vercel)
+model: Claude Opus 4.6 Fast (vercel)
 user-invocable: false
 tools:
   [
@@ -12,7 +12,7 @@ tools:
     web,
     "github/*",
     browser,
-    memory,
+    vscode/memory,
     exosuit.exosuit-context/exo-run,
     github.vscode-pull-request-github/issue_fetch,
     github.vscode-pull-request-github/doSearch,

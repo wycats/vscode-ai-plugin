@@ -3,24 +3,7 @@ description: "Pre-read agent for session handoffs. Synthesizes codebase context 
 model: GPT 5.4 (vercel)
 user-invocable: false
 tools:
-  [
-    vscode,
-    execute/testFailure,
-    execute/getTerminalOutput,
-    execute/awaitTerminal,
-    execute/killTerminal,
-    execute/runTask,
-    execute/runInTerminal,
-    execute/runTests,
-    read,
-    agent,
-    search,
-    web,
-    browser,
-    memory,
-    exosuit.exosuit-context/exo-run,
-    todo,
-  ]
+  [vscode, execute/testFailure, execute/getTerminalOutput, execute/awaitTerminal, execute/killTerminal, execute/runInTerminal, execute/runTests, read, agent, search, web, browser, exosuit.exosuit-context/exo-run, todo]
 ---
 
 You are a pre-read agent. Your job is to produce a **SESSION-BRIEFING.md** that orients the next working agent.
