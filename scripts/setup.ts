@@ -3,9 +3,10 @@
  * runs the build, and (for VS Code) registers the plugin.
  */
 
-import { readFile, writeFile, access } from "node:fs/promises";
+import { readFile, writeFile, appendFile, access } from "node:fs/promises";
 import { join } from "node:path";
 import { execSync } from "node:child_process";
+import { platform } from "node:os";
 import * as p from "@clack/prompts";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
@@ -68,7 +69,11 @@ async function setup() {
     message: "What platform are you using?",
     options: [
       { value: "vscode", label: "VS Code", hint: "GitHub Copilot" },
-      { value: "claude-code", label: "Claude Code", hint: "coming soon — builds agents in Claude Code format" },
+      {
+        value: "claude-code",
+        label: "Claude Code",
+        hint: "coming soon — builds agents in Claude Code format",
+      },
     ],
   });
 
@@ -81,14 +86,38 @@ async function setup() {
   const providerOptions =
     target === "claude-code"
       ? [
-          { value: "claude", label: "Claude models", hint: "opus, sonnet, haiku" },
-          { value: "custom", label: "Custom", hint: "you'll fill in model names yourself" },
+          {
+            value: "claude",
+            label: "Claude models",
+            hint: "opus, sonnet, haiku",
+          },
+          {
+            value: "custom",
+            label: "Custom",
+            hint: "you'll fill in model names yourself",
+          },
         ]
       : [
-          { value: "copilot", label: "Copilot defaults", hint: "no specific models — the platform picks" },
-          { value: "vercel", label: "Vercel AI Gateway", hint: "Claude, Gemini, GPT via Vercel" },
-          { value: "claude", label: "Claude models", hint: "opus, sonnet, haiku" },
-          { value: "custom", label: "Custom", hint: "you'll fill in model names yourself" },
+          {
+            value: "copilot",
+            label: "Copilot defaults",
+            hint: "no specific models — the platform picks",
+          },
+          {
+            value: "vercel",
+            label: "Vercel AI Gateway",
+            hint: "Claude, Gemini, GPT via Vercel",
+          },
+          {
+            value: "claude",
+            label: "Claude models",
+            hint: "opus, sonnet, haiku",
+          },
+          {
+            value: "custom",
+            label: "Custom",
+            hint: "you'll fill in model names yourself",
+          },
         ];
 
   const provider = await p.select({
@@ -114,19 +143,28 @@ async function setup() {
       message: "Fast model (execute, prepare, recon):",
       placeholder: "e.g. claude-opus-4-6",
     });
-    if (p.isCancel(fast)) { p.cancel("Setup cancelled."); process.exit(0); }
+    if (p.isCancel(fast)) {
+      p.cancel("Setup cancelled.");
+      process.exit(0);
+    }
 
     const balanced = await p.text({
       message: "Balanced model (review):",
       placeholder: "e.g. claude-sonnet-4",
     });
-    if (p.isCancel(balanced)) { p.cancel("Setup cancelled."); process.exit(0); }
+    if (p.isCancel(balanced)) {
+      p.cancel("Setup cancelled.");
+      process.exit(0);
+    }
 
     const auxiliary = await p.text({
       message: "Auxiliary model (pre-read, slop-linter):",
       placeholder: "e.g. claude-haiku-3",
     });
-    if (p.isCancel(auxiliary)) { p.cancel("Setup cancelled."); process.exit(0); }
+    if (p.isCancel(auxiliary)) {
+      p.cancel("Setup cancelled.");
+      process.exit(0);
+    }
 
     models = {
       fast: fast || null,
@@ -140,9 +178,7 @@ async function setup() {
   // 4. Build config — use the right example for the target
   const examplePath =
     target === "claude-code" ? CC_EXAMPLE_PATH : VSCODE_EXAMPLE_PATH;
-  const example = JSON.parse(
-    await readFile(examplePath, "utf-8"),
-  ) as Config;
+  const example = JSON.parse(await readFile(examplePath, "utf-8")) as Config;
 
   const config: Config = {
     $schema: "./config.schema.json",
@@ -186,9 +222,42 @@ async function setup() {
       }
     }
   } else {
+    // Offer to add a shell alias for persistent access
+    const pluginDir = join(ROOT, "out", target as string);
+    const aliasLine = `alias claude-plugin='claude --plugin-dir "${pluginDir}"'`;
+    const shellRc = join(
+      process.env.HOME ?? "",
+      platform() === "darwin" ? ".zshrc" : ".bashrc",
+    );
+
+    const addAlias = await p.confirm({
+      message: `Add a "claude-plugin" shell alias to ${shellRc.replace(process.env.HOME ?? "", "~")}?`,
+      initialValue: true,
+    });
+
+    if (!p.isCancel(addAlias) && addAlias) {
+      try {
+        const existing = await readFile(shellRc, "utf-8").catch(() => "");
+        if (existing.includes("claude-plugin")) {
+          p.log.info("Alias already exists in shell config.");
+        } else {
+          await appendFile(
+            shellRc,
+            `\n# Claude Code with plugin\n${aliasLine}\n`,
+          );
+          p.log.success(
+            `Added alias to ${shellRc.replace(process.env.HOME ?? "", "~")}`,
+          );
+          p.log.info("Run `source ~/.zshrc` or open a new terminal to use it.");
+        }
+      } catch (err: unknown) {
+        p.log.error(`Could not write to ${shellRc}: ${String(err)}`);
+      }
+    }
+
     const launch = await p.confirm({
       message: "Launch Claude Code with the plugin now?",
-      initialValue: false,
+      initialValue: true,
     });
 
     if (!p.isCancel(launch) && launch) {

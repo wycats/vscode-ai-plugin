@@ -48,20 +48,14 @@ async function loadConfig(): Promise<Config> {
   }
 }
 
-function resolveModel(
-  role: string,
-  config: Config,
-): string | undefined {
+function resolveModel(role: string, config: Config): string | undefined {
   const value = config.models[role];
   // null or missing means "omit the field" (use platform default)
   if (value === null) return undefined;
   return value;
 }
 
-function resolveTools(
-  toolList: unknown[],
-  config: Config,
-): string[] {
+function resolveTools(toolList: unknown[], config: Config): string[] {
   const resolved: string[] = [];
   for (const entry of toolList) {
     const name = String(entry);
@@ -228,10 +222,12 @@ async function buildHooks(
 
         const ccHandlers = handlers.map((h) => ({
           ...h,
-          command: h.command.replace(
-            /^node scripts\/hooks\//,
-            'node "$CLAUDE_PLUGIN_ROOT/scripts/hooks/',
-          ).replace(/\.ts$/, '.ts"'),
+          command: h.command
+            .replace(
+              /^node scripts\/hooks\//,
+              'node "$CLAUDE_PLUGIN_ROOT/scripts/hooks/',
+            )
+            .replace(/\.ts$/, '.ts"'),
         }));
 
         const group: CCMatcherGroup = { hooks: ccHandlers };
@@ -268,7 +264,10 @@ async function buildHooks(
       const outFile = join(hooksOutDir, relative(join(ROOT, "hooks"), file));
       await mkdir(dirname(outFile), { recursive: true });
       // Write without the match field (VS Code doesn't use it)
-      await writeFile(outFile, JSON.stringify({ hooks: rewritten }, null, 2) + "\n");
+      await writeFile(
+        outFile,
+        JSON.stringify({ hooks: rewritten }, null, 2) + "\n",
+      );
       outPaths.push("./" + relative(outDir, outFile));
     }
 
@@ -276,10 +275,7 @@ async function buildHooks(
   }
 }
 
-async function copyDir(
-  srcName: string,
-  outDir: string,
-): Promise<string[]> {
+async function copyDir(srcName: string, outDir: string): Promise<string[]> {
   const srcDir = join(ROOT, srcName);
   const destDir = join(outDir, srcName);
   try {
@@ -307,10 +303,7 @@ async function build() {
   ) as PluginJson;
 
   // Build agents
-  const agentSources = await findFiles(
-    join(ROOT, "agents"),
-    /\.agent\.md$/,
-  );
+  const agentSources = await findFiles(join(ROOT, "agents"), /\.agent\.md$/);
   const agentPaths: string[] = [];
   for (const src of agentSources) {
     const relPath = await buildAgent(src, outDir, config);

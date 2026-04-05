@@ -11,6 +11,7 @@
     "watch": "node scripts/watch.ts",
     "install-local": "node scripts/install-local.ts",
     "launch-claude": "node scripts/launch-claude.ts",
+    "publish-cc": "node scripts/publish-cc.ts",
     "validate": "node scripts/validate.ts",
     "lint": "eslint scripts/",
     "check": "tsc --noEmit && eslint scripts/"

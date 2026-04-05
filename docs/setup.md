@@ -38,17 +38,18 @@ Which platform you're building for. This determines the output directory and (ev
 
 Three roles that agents use, mapped to model strings for your provider:
 
-| Role | What it's for | Which agents use it |
-|------|--------------|-------------------|
-| `fast` | Strong reasoning, complex tasks | execute, prepare, recon, recon-worker |
-| `balanced` | Evaluation and review | review |
-| `auxiliary` | Supporting tasks, lower cost | pre-read, slop-linter |
+| Role        | What it's for                   | Which agents use it                   |
+| ----------- | ------------------------------- | ------------------------------------- |
+| `fast`      | Strong reasoning, complex tasks | execute, prepare, recon, recon-worker |
+| `balanced`  | Evaluation and review           | review                                |
+| `auxiliary` | Supporting tasks, lower cost    | pre-read, slop-linter                 |
 
 Set a role to `null` to leave the model unspecified — the platform picks its default.
 
 **Examples by provider:**
 
 Copilot (no specific models needed):
+
 ```json
 "models": {
   "fast": null,
@@ -58,6 +59,7 @@ Copilot (no specific models needed):
 ```
 
 Vercel AI Gateway:
+
 ```json
 "models": {
   "fast": "Claude Opus 4.6 Fast (vercel)",
@@ -67,6 +69,7 @@ Vercel AI Gateway:
 ```
 
 Claude Code:
+
 ```json
 "models": {
   "fast": "opus",
@@ -83,19 +86,19 @@ Each agent's source file lists the groups it needs (e.g., `tools: [core, agent, 
 
 The default groups:
 
-| Group | What it provides |
-|-------|-----------------|
-| `core` | Basic capabilities: workspace access, file reading, search, web, todos |
-| `agent` | Dispatching subagents |
-| `browser` | Browser interaction |
-| `edit` | File editing (only the execute agent needs this) |
-| `memory` | Persistent memory across sessions |
-| `exo` | Exosuit context tools |
-| `terminal` | Full terminal: run commands, await output, kill processes |
-| `terminal-minimal` | Just running commands and reading output |
-| `testing` | Running tests and inspecting failures |
-| `tasks` | Creating and running VS Code tasks |
-| `github` | GitHub PRs, issues, search, code review |
+| Group              | What it provides                                                       |
+| ------------------ | ---------------------------------------------------------------------- |
+| `core`             | Basic capabilities: workspace access, file reading, search, web, todos |
+| `agent`            | Dispatching subagents                                                  |
+| `browser`          | Browser interaction                                                    |
+| `edit`             | File editing (only the execute agent needs this)                       |
+| `memory`           | Persistent memory across sessions                                      |
+| `exo`              | Exosuit context tools                                                  |
+| `terminal`         | Full terminal: run commands, await output, kill processes              |
+| `terminal-minimal` | Just running commands and reading output                               |
+| `testing`          | Running tests and inspecting failures                                  |
+| `tasks`            | Creating and running VS Code tasks                                     |
+| `github`           | GitHub PRs, issues, search, code review                                |
 
 ## Keeping up to date
 
