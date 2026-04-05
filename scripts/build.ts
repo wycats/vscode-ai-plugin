@@ -340,9 +340,9 @@ async function build() {
       description: pluginMeta.description,
     };
 
-    if (agentPaths.length > 0) ccManifest.agents = "./agents/";
-    if (skillPaths.length > 0) ccManifest.skills = "./skills/";
-    if (hookPaths.length > 0) ccManifest.hooks = "./hooks/hooks.json";
+    // CC auto-discovers agents/, skills/, and hooks/ from the plugin root.
+    // Explicit paths in the manifest override auto-discovery and have strict
+    // validation — omitting them lets CC find everything in default locations.
 
     const manifestDir = join(outDir, ".claude-plugin");
     await mkdir(manifestDir, { recursive: true });
