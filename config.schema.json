@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Plugin Config",
+  "description": "Configuration for building the agent plugin. Maps abstract role names to concrete model strings and tool identifiers for your environment.",
+  "type": "object",
+  "required": ["target", "models", "toolGroups"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Path to this schema file. Enables editor validation and autocomplete."
+    },
+    "target": {
+      "type": "string",
+      "description": "Build target platform. Output goes to out/<target>/.",
+      "enum": ["vscode", "claude-code"],
+      "default": "vscode"
+    },
+    "models": {
+      "type": "object",
+      "description": "Maps model role names used in agent source files to concrete model strings for your provider. Set a value to null to omit the model field (uses the platform default).",
+      "required": ["fast", "balanced", "auxiliary"],
+      "additionalProperties": false,
+      "properties": {
+        "fast": {
+          "type": ["string", "null"],
+          "description": "High-capability model for agents that need strong reasoning (execute, prepare, recon, recon-worker). Examples: 'Claude Opus 4.6 Fast (vercel)', 'opus', null (platform default)."
+        },
+        "balanced": {
+          "type": ["string", "null"],
+          "description": "Mid-tier model for evaluation tasks (review). Examples: 'Gemini 3.1 Pro Preview (vercel)', 'sonnet', null (platform default)."
+        },
+        "auxiliary": {
+          "type": ["string", "null"],
+          "description": "Cost-effective model for supporting tasks (pre-read, slop-linter). Examples: 'GPT 5.4 (vercel)', 'haiku', null (platform default)."
+        }
+      }
+    },
+    "toolGroups": {
+      "type": "object",
+      "description": "Named groups of tool identifiers. Agent source files reference group names, and the build expands them to concrete tool lists. Any name in an agent's tools array that doesn't match a group key passes through as a literal.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Array of concrete tool identifiers for this group."
+      },
+      "properties": {
+        "core": {
+          "description": "Base tools available to most agents (search, read, etc.).",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "agent": {
+          "description": "Ability to dispatch subagents.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "browser": {
+          "description": "Browser interaction tools.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "edit": {
+          "description": "File editing tools (only execute agent needs this).",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "memory": {
+          "description": "Persistent memory read/write.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "exo": {
+          "description": "Exosuit context tools.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "terminal": {
+          "description": "Full terminal access (run, await, kill, get output).",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "terminal-minimal": {
+          "description": "Limited terminal access (run and get output only).",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "testing": {
+          "description": "Test execution and failure inspection.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "tasks": {
+          "description": "VS Code task creation and execution.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "github": {
+          "description": "GitHub API tools (PRs, issues, search).",
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "$schema": "./config.schema.json",
+  "target": "vscode",
+  "models": {
+    "fast": null,
+    "balanced": null,
+    "auxiliary": null
+  },
+  "toolGroups": {
+    "core": [
+      "vscode",
+      "read",
+      "search",
+      "web",
+      "todo"
+    ],
+    "agent": [
+      "agent"
+    ],
+    "browser": [
+      "browser"
+    ],
+    "edit": [
+      "edit"
+    ],
+    "memory": [
+      "vscode/memory"
+    ],
+    "exo": [
+      "exosuit.exosuit-context/exo-run"
+    ],
+    "terminal": [
+      "execute/getTerminalOutput",
+      "execute/awaitTerminal",
+      "execute/killTerminal",
+      "execute/runInTerminal"
+    ],
+    "terminal-minimal": [
+      "execute/getTerminalOutput",
+      "execute/runInTerminal"
+    ],
+    "testing": [
+      "execute/testFailure",
+      "execute/runTests"
+    ],
+    "tasks": [
+      "execute/createAndRunTask"
+    ],
+    "github": [
+      "github/*",
+      "github.vscode-pull-request-github/issue_fetch",
+      "github.vscode-pull-request-github/doSearch",
+      "github.vscode-pull-request-github/activePullRequest",
+      "github.vscode-pull-request-github/openPullRequest"
+    ]
+  }
+}

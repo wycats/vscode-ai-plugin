@@ -1,0 +1,53 @@
+{
+  "$schema": "./config.schema.json",
+  "target": "claude-code",
+  "models": {
+    "fast": "opus",
+    "balanced": "sonnet",
+    "auxiliary": "haiku"
+  },
+  "toolGroups": {
+    "core": [
+      "Read",
+      "Grep",
+      "Glob",
+      "WebFetch",
+      "WebSearch",
+      "TodoWrite"
+    ],
+    "agent": [
+      "Agent"
+    ],
+    "browser": [
+      "WebFetch",
+      "WebSearch"
+    ],
+    "edit": [
+      "Edit",
+      "Write",
+      "MultiEdit"
+    ],
+    "memory": [
+      "Read",
+      "Write"
+    ],
+    "exo": [],
+    "terminal": [
+      "Bash",
+      "BashOutput",
+      "KillShell"
+    ],
+    "terminal-minimal": [
+      "Bash"
+    ],
+    "testing": [
+      "Bash"
+    ],
+    "tasks": [
+      "Bash"
+    ],
+    "github": [
+      "Bash"
+    ]
+  }
+}

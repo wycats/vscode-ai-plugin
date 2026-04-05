@@ -1,6 +1,6 @@
 /**
- * Watches the plugin source tree for changes to agents, skills, and prompts.
- * On any change, rebuilds plugin.json automatically.
+ * Watches the plugin source tree for changes to agents, skills, prompts,
+ * and config.json. On any change, runs the full build.
  *
  * Uses Node.js native fs.watch (recursive) — no dependencies needed.
  */
@@ -16,7 +16,7 @@ let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 function rebuild() {
   try {
-    execSync("node scripts/build-plugin.ts", { cwd: ROOT, stdio: "inherit" });
+    execSync("node scripts/build.ts", { cwd: ROOT, stdio: "inherit" });
   } catch (err) {
     console.error("Rebuild failed:", err);
   }
@@ -47,6 +47,14 @@ for (const dir of WATCHED_DIRS) {
   }
 }
 
+// Watch config.json
+try {
+  watch(join(ROOT, "config.json"), scheduleRebuild);
+  console.log(`[watch] Watching config.json`);
+} catch {
+  console.log(`[watch] Skipping config.json (does not exist)`);
+}
+
 console.log(
-  "[watch] Ready. Editing agents, skills, or prompts will rebuild plugin.json.\n",
+  "[watch] Ready. Editing source files or config.json will rebuild.\n",
 );

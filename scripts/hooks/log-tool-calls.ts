@@ -12,7 +12,8 @@
 import { readFileSync, appendFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
-const LOG_DIR = join(process.env.HOME ?? "", ".copilot");
+const LOG_DIR = process.env.CLAUDE_PLUGIN_DATA
+  ?? join(process.env.HOME ?? "", ".ai-plugin");
 const LOG_PATH = join(LOG_DIR, "tool-call-log.jsonl");
 
 // Ensure the directory exists

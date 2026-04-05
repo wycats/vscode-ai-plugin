@@ -1,6 +1,6 @@
 # vscode-ai-plugin
 
-A personal agent toolkit for VS Code Copilot, grounded in a theory of how language activates reasoning in language models.
+An agent toolkit for VS Code Copilot and Claude Code, grounded in a theory of how language activates reasoning in language models.
 
 ## What this is
 
@@ -68,20 +68,30 @@ A tool-call logging hook records every tool invocation as JSONL, providing an au
 
 ## Setup
 
-```bash
-pnpm install           # Install dependencies
-pnpm run build         # Build plugin.json from source tree
-pnpm run install-local # Register plugin and hooks in VS Code settings
+```sh
+git clone https://github.com/wycats/vscode-ai-plugin.git
+cd vscode-ai-plugin
+pnpm install
+pnpm run setup
 ```
 
-Then reload VS Code. Requires `chat.plugins.enabled: true` (agent plugins are preview).
+The interactive setup wizard asks which platform (VS Code or Claude Code) and model provider you use, writes a `config.json`, builds the plugin, and registers it. Reload VS Code and you're done.
+
+Requires `chat.plugins.enabled: true` (agent plugins are preview).
+
+### How the build works
+
+Agent source files use abstract role names for models and tool groups instead of hardcoded provider-specific values. A local `config.json` (gitignored) maps those roles to concrete values for your environment. The build resolves the names and writes ready-to-use files to `out/<target>/`.
+
+See [docs/setup.md](docs/setup.md) for full configuration details, including model presets by provider and tool group reference.
 
 ## Development
 
-```bash
-pnpm run watch     # Auto-rebuild plugin.json on changes
-pnpm run validate  # Check all entries are consistent
-pnpm run check     # TypeScript + ESLint strict type-checked
+```sh
+pnpm watch     # Auto-rebuild on source or config changes
+pnpm build     # One-off build
+pnpm validate  # Check all plugin entries are consistent
+pnpm check     # TypeScript + ESLint strict type-checked
 ```
 
-Edit skills, agents, and stances in this directory. The watch script keeps `plugin.json` in sync. All VS Code windows consume the installed plugin.
+Edit agents, skills, and stances in this directory. The watch script rebuilds `out/vscode/` on every change. All VS Code windows consume the installed plugin.

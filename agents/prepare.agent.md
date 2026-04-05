@@ -1,21 +1,14 @@
 ---
 description: "Forms falsifiable predictions about the codebase and the plan, producing hypotheses that execution will test and review will evaluate."
-model: Claude Opus 4.6 Fast (vercel)
+model: fast
 user-invocable: false
 tools:
   [
-    vscode,
-    execute/getTerminalOutput,
-    execute/awaitTerminal,
-    execute/killTerminal,
-    execute/runInTerminal,
-    read,
+    core,
     agent,
-    search,
-    web,
     memory,
-    exosuit.exosuit-context/exo-run,
-    todo,
+    exo,
+    terminal,
   ]
 ---
 

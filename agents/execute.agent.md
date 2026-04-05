@@ -1,26 +1,18 @@
 ---
 description: "Makes controlled forward progress on a plan, reading how reality responds to each change and adjusting course without losing contact with actual workspace state."
-model: Claude Opus 4.6 Fast (vercel)
+model: fast
 user-invocable: false
 tools:
   [
-    vscode,
-    execute/testFailure,
-    execute/getTerminalOutput,
-    execute/awaitTerminal,
-    execute/killTerminal,
-    execute/createAndRunTask,
-    execute/runInTerminal,
-    execute/runTests,
-    read,
+    core,
     agent,
-    edit,
-    search,
-    web,
     browser,
-    vscode/memory,
-    exosuit.exosuit-context/exo-run,
-    todo,
+    edit,
+    memory,
+    exo,
+    terminal,
+    testing,
+    tasks,
   ]
 ---
 

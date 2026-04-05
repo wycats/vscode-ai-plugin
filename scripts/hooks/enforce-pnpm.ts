@@ -26,8 +26,8 @@ interface HookOutput {
 
 const input = JSON.parse(readFileSync("/dev/stdin", "utf-8")) as HookInput;
 
-// Only check the run_in_terminal tool
-if (input.tool_name !== "run_in_terminal") {
+// VS Code uses "run_in_terminal", Claude Code uses "Bash"
+if (input.tool_name !== "run_in_terminal" && input.tool_name !== "Bash") {
   process.exit(0);
 }
 

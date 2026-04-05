@@ -1,5 +1,5 @@
 /**
- * Builds plugin.json and registers the plugin directory
+ * Runs the build and registers the output directory
  * in VS Code's local plugin paths setting.
  *
  * After running, all VS Code windows will pick up the plugin
@@ -51,23 +51,39 @@ function setJsoncValue(
 }
 
 async function installLocal() {
-  // Step 1: rebuild plugin.json
-  execSync("node scripts/build-plugin.ts", { cwd: ROOT, stdio: "inherit" });
+  // Step 1: run the build
+  execSync("node scripts/build.ts", { cwd: ROOT, stdio: "inherit" });
 
   // Step 2: read current settings
   let content = await readSettings();
 
-  // Step 3: register plugin path if not already present
-  if (content.includes(ROOT)) {
-    console.log(`Plugin already registered at ${ROOT}`);
+  // Step 3: determine output path from config
+  let target = "vscode";
+  try {
+    const config = JSON.parse(
+      await readFile(join(ROOT, "config.json"), "utf-8"),
+    ) as { target?: string };
+    if (config.target) target = config.target;
+  } catch {
+    // config.json missing — build.ts already errored
+  }
+  const outPath = join(ROOT, "out", target);
+
+  // Step 4: register plugin output path if not already present
+  if (content.includes(outPath)) {
+    console.log(`Plugin already registered at ${outPath}`);
   } else {
-    content = setJsoncValue(content, ["chat.plugins.paths", ROOT], true);
+    // Remove old ROOT registration if present
+    if (content.includes(ROOT) && !content.includes(outPath)) {
+      // We'll just add the new path; user can clean up old ones
+    }
+    content = setJsoncValue(content, ["chat.plugins.paths", outPath], true);
     await writeFile(SETTINGS_PATH, content, "utf-8");
-    console.log(`Registered plugin at ${ROOT} in ${SETTINGS_PATH}`);
+    console.log(`Registered plugin at ${outPath} in ${SETTINGS_PATH}`);
   }
 
-  // Step 4: register hooks directory in chat.hookFilesLocations
-  const hooksPath = `${ROOT}/hooks`;
+  // Step 5: register hooks directory in chat.hookFilesLocations
+  const hooksPath = join(outPath, "hooks");
   if (!content.includes(hooksPath)) {
     content = setJsoncValue(
       content,
