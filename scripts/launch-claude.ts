@@ -29,7 +29,12 @@ async function launch() {
     process.exit(1);
   }
 
-  // Build first
+  // Pull latest and build
+  try {
+    execSync("git pull --ff-only", { cwd: ROOT, stdio: "inherit" });
+  } catch {
+    // Offline or uncommitted changes — continue with what we have
+  }
   execSync("node scripts/build.ts", { cwd: ROOT, stdio: "inherit" });
 
   // Launch claude with the plugin
