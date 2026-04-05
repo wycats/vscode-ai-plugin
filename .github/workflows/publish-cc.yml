@@ -28,9 +28,10 @@ jobs:
           cp config.claude-code.example.json config.json
           pnpm build
           
-          # Prepare temp dir with build output + marketplace
+          # Marketplace at root, plugin in plugin/ subdirectory
           tmp=$(mktemp -d)
-          cp -r out/claude-code/* out/claude-code/.claude-plugin "$tmp/"
+          mkdir -p "$tmp/plugin" "$tmp/.claude-plugin"
+          cp -r out/claude-code/* out/claude-code/.claude-plugin "$tmp/plugin/"
           
           cat > "$tmp/.claude-plugin/marketplace.json" << 'EOF'
           {
@@ -42,7 +43,7 @@ jobs:
             "plugins": [
               {
                 "name": "wycats-ai-plugin",
-                "source": ".",
+                "source": "./plugin",
                 "description": "Agent toolkit: workflow agents, skills, and prompts."
               }
             ]
