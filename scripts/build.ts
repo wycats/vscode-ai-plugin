@@ -3,10 +3,10 @@
  *
  * 1. Reads config.json (errors if missing)
  * 2. For each source agent: resolves model and tool role names from config
- * 3. Copies skills, instructions, hooks, stances as-is
- * 4. Generates plugin.json in the output directory
+ * 3. Copies skills and (for vscode) instructions, hooks, stances
+ * 4. Generates the platform-specific manifest
  *
- * Output goes to out/vscode/ (registered via install-local.ts).
+ * Output goes to out/<target>/ (e.g. out/vscode/ or out/claude-code/).
  */
 
 import { readFile, writeFile, readdir, mkdir, cp, rm } from "node:fs/promises";
@@ -15,7 +15,6 @@ import matter from "gray-matter";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
 const CONFIG_PATH = join(ROOT, "config.json");
-const CONFIG_EXAMPLE_PATH = join(ROOT, "config.example.json");
 
 interface Config {
   target: string;
@@ -55,7 +54,7 @@ function resolveModel(
 ): string | undefined {
   const value = config.models[role];
   // null or missing means "omit the field" (use platform default)
-  if (value === null || value === undefined) return undefined;
+  if (value === null) return undefined;
   return value;
 }
 
@@ -112,15 +111,20 @@ function serializeFrontmatter(data: Record<string, unknown>): string {
       }
       lines.push(`  ]`);
     } else if (typeof value === "boolean") {
-      lines.push(`${key}: ${String(value)}`);
-    } else {
-      const str = String(value);
+      lines.push(`${key}: ${value ? "true" : "false"}`);
+    } else if (typeof value === "string") {
+      const str = value;
       // Quote strings that need it
       const needsQuote = /[:#{}[\],&*?|>'"@`\n]/.test(str);
       lines.push(`${key}: ${needsQuote ? JSON.stringify(str) : str}`);
     }
   }
   return lines.join("\n");
+}
+
+function deriveAgentName(filename: string): string {
+  // recon-worker.agent.md → recon-worker
+  return filename.replace(/\.agent\.md$/, "");
 }
 
 async function buildAgent(
@@ -130,6 +134,19 @@ async function buildAgent(
 ): Promise<string> {
   const raw = await readFile(srcPath, "utf-8");
   const { data, content } = matter(raw);
+  const filename = relative(join(ROOT, "agents"), srcPath);
+  const isClaudeCode = config.target === "claude-code";
+
+  // Claude Code requires a name field — insert at the front
+  if (isClaudeCode && !data.name) {
+    const name = deriveAgentName(filename);
+    const original = { ...data };
+    for (const k of Object.keys(data)) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete data[k];
+    }
+    Object.assign(data, { name }, original);
+  }
 
   // Resolve model
   if (data.model !== undefined) {
@@ -143,14 +160,20 @@ async function buildAgent(
 
   // Resolve tools
   if (Array.isArray(data.tools)) {
-    data.tools = resolveTools(data.tools, config);
+    const resolved = resolveTools(data.tools, config);
+    // Claude Code: deduplicate (many CC groups overlap, e.g. Bash appears in multiple)
+    data.tools = isClaudeCode ? [...new Set(resolved)] : resolved;
+  }
+
+  // Claude Code: strip VS Code-specific fields
+  if (isClaudeCode) {
+    delete data["user-invocable"];
   }
 
   // Rebuild the file: frontmatter + body
   const frontmatter = serializeFrontmatter(data);
   const outContent = `---\n${frontmatter}\n---\n${content}`;
 
-  const filename = relative(join(ROOT, "agents"), srcPath);
   const outPath = join(outDir, "agents", filename);
   await mkdir(dirname(outPath), { recursive: true });
   await writeFile(outPath, outContent);
@@ -199,51 +222,77 @@ async function build() {
     agentPaths.push(relPath);
   }
 
-  // Copy skills, instructions, hooks, stances — use copyDir's return
-  // values (paths relative to outDir) instead of scanning ROOT
+  // Copy skills (shared by both targets)
   const allSkillPaths = await copyDir("skills", outDir);
   const skillPaths = allSkillPaths.filter((p) => p.endsWith("/SKILL.md"));
 
-  const allInstructionPaths = await copyDir("instructions", outDir);
-  const instructionPaths = allInstructionPaths.filter((p) =>
-    p.endsWith(".instructions.md"),
-  );
+  const isClaudeCode = config.target === "claude-code";
 
-  const allHookPaths = await copyDir("hooks", outDir);
-  const hookPaths = allHookPaths.filter((p) => p.endsWith(".json"));
+  if (isClaudeCode) {
+    // Claude Code: generate .claude-plugin/plugin.json
+    const ccManifest: Record<string, unknown> = {
+      name: pluginMeta.name,
+      version: pluginMeta.version,
+      description: pluginMeta.description,
+    };
 
-  await copyDir("stances", outDir);
+    // CC manifest uses directory paths, not individual file paths
+    if (agentPaths.length > 0) ccManifest.agents = "./agents/";
+    if (skillPaths.length > 0) ccManifest.skills = "./skills/";
 
-  // Generate plugin.json
-  const pluginJson: PluginJson = {
-    name: pluginMeta.name,
-    version: pluginMeta.version,
-    description: pluginMeta.description,
-  };
+    const manifestDir = join(outDir, ".claude-plugin");
+    await mkdir(manifestDir, { recursive: true });
+    await writeFile(
+      join(manifestDir, "plugin.json"),
+      JSON.stringify(ccManifest, null, 2) + "\n",
+    );
 
-  if (agentPaths.length > 0) {
-    pluginJson.agents = agentPaths.map((p) => ({ path: p }));
+    console.log(`Built to ${relative(ROOT, outDir)}/`);
+    console.log(`  agents:       ${String(agentPaths.length)}`);
+    console.log(`  skills:       ${String(skillPaths.length)}`);
+    console.log(`  manifest:     .claude-plugin/plugin.json`);
+  } else {
+    // VS Code: copy instructions, hooks, stances; generate plugin.json
+    const allInstructionPaths = await copyDir("instructions", outDir);
+    const instructionPaths = allInstructionPaths.filter((p) =>
+      p.endsWith(".instructions.md"),
+    );
+
+    const allHookPaths = await copyDir("hooks", outDir);
+    const hookPaths = allHookPaths.filter((p) => p.endsWith(".json"));
+
+    await copyDir("stances", outDir);
+
+    const pluginJson: PluginJson = {
+      name: pluginMeta.name,
+      version: pluginMeta.version,
+      description: pluginMeta.description,
+    };
+
+    if (agentPaths.length > 0) {
+      pluginJson.agents = agentPaths.map((p) => ({ path: p }));
+    }
+    if (skillPaths.length > 0) {
+      pluginJson.skills = skillPaths.map((p) => ({ path: p }));
+    }
+    if (instructionPaths.length > 0) {
+      pluginJson.instructions = instructionPaths.map((p) => ({ path: p }));
+    }
+    if (hookPaths.length > 0) {
+      pluginJson.hooks = hookPaths.map((p) => ({ path: p }));
+    }
+
+    await writeFile(
+      join(outDir, "plugin.json"),
+      JSON.stringify(pluginJson, null, 2) + "\n",
+    );
+
+    console.log(`Built to ${relative(ROOT, outDir)}/`);
+    console.log(`  agents:       ${String(agentPaths.length)}`);
+    console.log(`  skills:       ${String(skillPaths.length)}`);
+    console.log(`  instructions: ${String(instructionPaths.length)}`);
+    console.log(`  hooks:        ${String(hookPaths.length)}`);
   }
-  if (skillPaths.length > 0) {
-    pluginJson.skills = skillPaths.map((p) => ({ path: p }));
-  }
-  if (instructionPaths.length > 0) {
-    pluginJson.instructions = instructionPaths.map((p) => ({ path: p }));
-  }
-  if (hookPaths.length > 0) {
-    pluginJson.hooks = hookPaths.map((p) => ({ path: p }));
-  }
-
-  await writeFile(
-    join(outDir, "plugin.json"),
-    JSON.stringify(pluginJson, null, 2) + "\n",
-  );
-
-  console.log(`Built to ${relative(ROOT, outDir)}/`);
-  console.log(`  agents:       ${String(agentPaths.length)}`);
-  console.log(`  skills:       ${String(skillPaths.length)}`);
-  console.log(`  instructions: ${String(instructionPaths.length)}`);
-  console.log(`  hooks:        ${String(hookPaths.length)}`);
 }
 
 build().catch((err: unknown) => {

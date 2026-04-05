@@ -10,7 +10,8 @@ import * as p from "@clack/prompts";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
 const CONFIG_PATH = join(ROOT, "config.json");
-const EXAMPLE_PATH = join(ROOT, "config.example.json");
+const VSCODE_EXAMPLE_PATH = join(ROOT, "config.example.json");
+const CC_EXAMPLE_PATH = join(ROOT, "config.claude-code.example.json");
 
 interface Config {
   $schema: string;
@@ -76,15 +77,23 @@ async function setup() {
     process.exit(0);
   }
 
-  // 2. Model provider
+  // 2. Model provider (options depend on target)
+  const providerOptions =
+    target === "claude-code"
+      ? [
+          { value: "claude", label: "Claude models", hint: "opus, sonnet, haiku" },
+          { value: "custom", label: "Custom", hint: "you'll fill in model names yourself" },
+        ]
+      : [
+          { value: "copilot", label: "Copilot defaults", hint: "no specific models — the platform picks" },
+          { value: "vercel", label: "Vercel AI Gateway", hint: "Claude, Gemini, GPT via Vercel" },
+          { value: "claude", label: "Claude models", hint: "opus, sonnet, haiku" },
+          { value: "custom", label: "Custom", hint: "you'll fill in model names yourself" },
+        ];
+
   const provider = await p.select({
     message: "What model provider do you use?",
-    options: [
-      { value: "copilot", label: "Copilot defaults", hint: "no specific models — the platform picks" },
-      { value: "vercel", label: "Vercel AI Gateway", hint: "Claude, Gemini, GPT via Vercel" },
-      { value: "claude", label: "Claude models", hint: "opus, sonnet, haiku" },
-      { value: "custom", label: "Custom", hint: "you'll fill in model names yourself" },
-    ],
+    options: providerOptions,
   });
 
   if (p.isCancel(provider)) {
@@ -128,14 +137,16 @@ async function setup() {
     models = PRESETS[provider];
   }
 
-  // 4. Build config
+  // 4. Build config — use the right example for the target
+  const examplePath =
+    target === "claude-code" ? CC_EXAMPLE_PATH : VSCODE_EXAMPLE_PATH;
   const example = JSON.parse(
-    await readFile(EXAMPLE_PATH, "utf-8"),
+    await readFile(examplePath, "utf-8"),
   ) as Config;
 
   const config: Config = {
     $schema: "./config.schema.json",
-    target: String(target),
+    target: target as string,
     models,
     toolGroups: example.toolGroups,
   };
@@ -177,7 +188,7 @@ async function setup() {
   }
 
   // 7. Done
-  const outDir = `out/${String(target)}`;
+  const outDir = `out/${target as string}`;
 
   p.note(
     [
