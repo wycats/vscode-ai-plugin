@@ -8,7 +8,7 @@ This plugin provides a set of AI agents, skills, and workflow tools. It works wi
 git clone https://github.com/wycats/vscode-ai-plugin.git
 cd vscode-ai-plugin
 pnpm install
-pnpm setup
+pnpm run setup
 ```
 
 The setup wizard asks which platform and model provider you use, writes your `config.json`, builds the plugin, and (for VS Code) registers it. Reload VS Code and you're done.

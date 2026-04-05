@@ -18,7 +18,7 @@ async function launch() {
     ) as { target?: string };
     if (config.target) target = config.target;
   } catch {
-    console.error("config.json not found. Run `pnpm setup` first.");
+    console.error("config.json not found. Run `pnpm run setup` first.");
     process.exit(1);
   }
 

@@ -72,7 +72,7 @@ A tool-call logging hook records every tool invocation as JSONL, providing an au
 git clone https://github.com/wycats/vscode-ai-plugin.git
 cd vscode-ai-plugin
 pnpm install
-pnpm setup
+pnpm run setup
 ```
 
 The interactive setup wizard asks which platform (VS Code or Claude Code) and model provider you use, writes a `config.json`, builds the plugin, and registers it. Reload VS Code and you're done.
