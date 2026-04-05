@@ -165,7 +165,7 @@ async function setup() {
     process.exit(1);
   }
 
-  // 6. Register (VS Code only)
+  // 6. Register / launch
   if (target === "vscode") {
     const install = await p.confirm({
       message: "Register the plugin with VS Code now?",
@@ -185,19 +185,36 @@ async function setup() {
         console.error(err);
       }
     }
+  } else {
+    const launch = await p.confirm({
+      message: "Launch Claude Code with the plugin now?",
+      initialValue: false,
+    });
+
+    if (!p.isCancel(launch) && launch) {
+      p.outro(`Launching Claude Code...`);
+      execSync(`node scripts/launch-claude.ts`, {
+        cwd: ROOT,
+        stdio: "inherit",
+      });
+      return;
+    }
   }
 
   // 7. Done
   const outDir = `out/${target as string}`;
+
+  const nextSteps =
+    target === "vscode"
+      ? "Reload VS Code to pick up the plugin."
+      : `To launch Claude Code with the plugin:\n  pnpm launch-claude\n\nUse /reload-plugins during a session to pick up rebuilds.`;
 
   p.note(
     [
       `Config written to config.json`,
       `Plugin built to ${outDir}/`,
       "",
-      target === "vscode"
-        ? "Reload VS Code to pick up the plugin."
-        : `To use with Claude Code:\n  claude --plugin-dir ${join(ROOT, outDir)}\n\nUse /reload-plugins during a session to pick up rebuilds.`,
+      nextSteps,
       "",
       "To rebuild after changes:  pnpm build",
       "To auto-rebuild on save:  pnpm watch",
