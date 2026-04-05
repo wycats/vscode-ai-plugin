@@ -194,9 +194,10 @@ async function setup() {
     [
       `Config written to config.json`,
       `Plugin built to ${outDir}/`,
+      "",
       target === "vscode"
         ? "Reload VS Code to pick up the plugin."
-        : "Claude Code target support coming soon.",
+        : `To use with Claude Code:\n  claude --plugin-dir ${join(ROOT, outDir)}\n\nUse /reload-plugins during a session to pick up rebuilds.`,
       "",
       "To rebuild after changes:  pnpm build",
       "To auto-rebuild on save:  pnpm watch",

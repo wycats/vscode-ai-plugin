@@ -181,6 +181,101 @@ async function buildAgent(
   return `./agents/${filename}`;
 }
 
+interface SourceHook {
+  match?: string;
+  hooks: Record<string, { type: string; command: string; timeout?: number }[]>;
+}
+
+interface CCMatcherGroup {
+  matcher?: string;
+  hooks: { type: string; command: string; timeout?: number }[];
+}
+
+/**
+ * Build hooks for the target platform.
+ *
+ * VS Code: copies per-hook JSONs with rewritten script paths.
+ * Claude Code: consolidates all hooks into one hooks/hooks.json with matchers.
+ */
+async function buildHooks(
+  outDir: string,
+  isClaudeCode: boolean,
+): Promise<string[]> {
+  const hookFiles = await findFiles(join(ROOT, "hooks"), /\.json$/);
+  if (hookFiles.length === 0) return [];
+
+  // Copy hook scripts to output
+  const srcScripts = join(ROOT, "scripts", "hooks");
+  const destScripts = join(outDir, "scripts", "hooks");
+  try {
+    await cp(srcScripts, destScripts, { recursive: true });
+  } catch {
+    // no scripts to copy
+  }
+
+  const hooksOutDir = join(outDir, "hooks");
+  await mkdir(hooksOutDir, { recursive: true });
+
+  if (isClaudeCode) {
+    // Consolidate into one hooks.json with CC nesting format
+    const consolidated: Record<string, CCMatcherGroup[]> = {};
+
+    for (const file of hookFiles) {
+      const src = JSON.parse(await readFile(file, "utf-8")) as SourceHook;
+
+      for (const [event, handlers] of Object.entries(src.hooks)) {
+        consolidated[event] ??= [];
+
+        const ccHandlers = handlers.map((h) => ({
+          ...h,
+          command: h.command.replace(
+            /^node scripts\/hooks\//,
+            'node "$CLAUDE_PLUGIN_ROOT/scripts/hooks/',
+          ).replace(/\.ts$/, '.ts"'),
+        }));
+
+        const group: CCMatcherGroup = { hooks: ccHandlers };
+        if (src.match) group.matcher = src.match;
+        consolidated[event].push(group);
+      }
+    }
+
+    await writeFile(
+      join(hooksOutDir, "hooks.json"),
+      JSON.stringify({ hooks: consolidated }, null, 2) + "\n",
+    );
+
+    return ["./hooks/hooks.json"];
+  } else {
+    // VS Code: copy each hook JSON with rewritten paths
+    const outPaths: string[] = [];
+
+    for (const file of hookFiles) {
+      const src = JSON.parse(await readFile(file, "utf-8")) as SourceHook;
+
+      // Rewrite command paths to point at the output scripts directory
+      const rewritten: Record<string, unknown[]> = {};
+      for (const [event, handlers] of Object.entries(src.hooks)) {
+        rewritten[event] = handlers.map((h) => ({
+          ...h,
+          command: h.command.replace(
+            /^node scripts\/hooks\//,
+            "node scripts/hooks/",
+          ),
+        }));
+      }
+
+      const outFile = join(hooksOutDir, relative(join(ROOT, "hooks"), file));
+      await mkdir(dirname(outFile), { recursive: true });
+      // Write without the match field (VS Code doesn't use it)
+      await writeFile(outFile, JSON.stringify({ hooks: rewritten }, null, 2) + "\n");
+      outPaths.push("./" + relative(outDir, outFile));
+    }
+
+    return outPaths;
+  }
+}
+
 async function copyDir(
   srcName: string,
   outDir: string,
@@ -228,6 +323,15 @@ async function build() {
 
   const isClaudeCode = config.target === "claude-code";
 
+  // Build hooks (both targets)
+  const hookPaths = await buildHooks(outDir, isClaudeCode);
+
+  // Generate package.json for script portability
+  await writeFile(
+    join(outDir, "package.json"),
+    JSON.stringify({ type: "module" }, null, 2) + "\n",
+  );
+
   if (isClaudeCode) {
     // Claude Code: generate .claude-plugin/plugin.json
     const ccManifest: Record<string, unknown> = {
@@ -236,9 +340,9 @@ async function build() {
       description: pluginMeta.description,
     };
 
-    // CC manifest uses directory paths, not individual file paths
     if (agentPaths.length > 0) ccManifest.agents = "./agents/";
     if (skillPaths.length > 0) ccManifest.skills = "./skills/";
+    if (hookPaths.length > 0) ccManifest.hooks = "./hooks/hooks.json";
 
     const manifestDir = join(outDir, ".claude-plugin");
     await mkdir(manifestDir, { recursive: true });
@@ -250,16 +354,14 @@ async function build() {
     console.log(`Built to ${relative(ROOT, outDir)}/`);
     console.log(`  agents:       ${String(agentPaths.length)}`);
     console.log(`  skills:       ${String(skillPaths.length)}`);
+    console.log(`  hooks:        ${String(hookPaths.length)}`);
     console.log(`  manifest:     .claude-plugin/plugin.json`);
   } else {
-    // VS Code: copy instructions, hooks, stances; generate plugin.json
+    // VS Code: copy instructions, stances; generate plugin.json
     const allInstructionPaths = await copyDir("instructions", outDir);
     const instructionPaths = allInstructionPaths.filter((p) =>
       p.endsWith(".instructions.md"),
     );
-
-    const allHookPaths = await copyDir("hooks", outDir);
-    const hookPaths = allHookPaths.filter((p) => p.endsWith(".json"));
 
     await copyDir("stances", outDir);
 
