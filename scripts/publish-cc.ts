@@ -14,6 +14,7 @@
 import {
   readFile,
   writeFile,
+  mkdir,
   cp,
   mkdtemp,
   rm,
@@ -88,14 +89,15 @@ async function publish() {
     await readFile(manifestPath, "utf-8"),
   ) as { name: string; version: string; description: string };
 
-  // Create temp directory with build output
+  // Create temp directory: marketplace at root, plugin in plugin/ subdir
   const tmp = await mkdtemp(join(tmpdir(), "cc-plugin-"));
 
   try {
-    // Copy build output
-    await cp(CC_OUT, tmp, { recursive: true });
+    // Copy build output into plugin/ subdirectory
+    const pluginDir = join(tmp, "plugin");
+    await cp(CC_OUT, pluginDir, { recursive: true });
 
-    // Generate marketplace.json
+    // Generate marketplace.json at the repo root
     const marketplace = {
       $schema: "https://anthropic.com/claude-code/marketplace.schema.json",
       name: pluginMeta.name,
@@ -105,14 +107,16 @@ async function publish() {
       plugins: [
         {
           name: pluginMeta.name,
-          source: ".",
+          source: "./plugin",
           description: pluginMeta.description,
         },
       ],
     };
 
+    const marketplaceDir = join(tmp, ".claude-plugin");
+    await mkdir(marketplaceDir, { recursive: true });
     await writeFile(
-      join(tmp, ".claude-plugin", "marketplace.json"),
+      join(marketplaceDir, "marketplace.json"),
       JSON.stringify(marketplace, null, 2) + "\n",
     );
 
