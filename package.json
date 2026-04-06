@@ -7,7 +7,6 @@
   "scripts": {
     "setup": "node scripts/setup.ts",
     "build": "node scripts/build.ts",
-    "build-plugin": "node scripts/build-plugin.ts",
     "watch": "node scripts/watch.ts",
     "install-local": "node scripts/install-local.ts",
     "launch-claude": "node scripts/launch-claude.ts",

@@ -73,10 +73,6 @@ async function installLocal() {
   if (content.includes(outPath)) {
     console.log(`Plugin already registered at ${outPath}`);
   } else {
-    // Remove old ROOT registration if present
-    if (content.includes(ROOT) && !content.includes(outPath)) {
-      // We'll just add the new path; user can clean up old ones
-    }
     content = setJsoncValue(content, ["chat.plugins.paths", outPath], true);
     await writeFile(SETTINGS_PATH, content, "utf-8");
     console.log(`Registered plugin at ${outPath} in ${SETTINGS_PATH}`);
