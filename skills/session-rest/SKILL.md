@@ -1,7 +1,6 @@
 ---
 name: session-rest
 description: "End-of-cycle transition: interpret the session, triage dangling threads with the user, and prepare SESSION-TRAJECTORY.md for the next cycle. The user is still around and serves as a light bridge. Invoke with /session-rest."
-disable-model-invocation: true
 ---
 
 # Session Rest

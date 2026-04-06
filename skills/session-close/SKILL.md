@@ -1,7 +1,6 @@
 ---
 name: session-close
 description: "End-of-day close: the user is stepping away and won't serve as a bridge. Full collaborative triage, working-style reflection, and anticipatory framing for the next day. Invoke with /session-close."
-disable-model-invocation: true
 ---
 
 # Session Close
