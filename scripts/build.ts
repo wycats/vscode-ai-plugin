@@ -322,7 +322,7 @@ async function build() {
   // Generate package.json for script portability
   await writeFile(
     join(outDir, "package.json"),
-    JSON.stringify({ type: "module" }, null, 2) + "\n",
+    JSON.stringify({ type: "module", engines: { node: ">=22.6.0" } }, null, 2) + "\n",
   );
 
   if (isClaudeCode) {
