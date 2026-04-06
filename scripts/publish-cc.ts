@@ -85,9 +85,11 @@ async function publish() {
   }
 
   // Read plugin metadata for marketplace
-  const pluginMeta = JSON.parse(
-    await readFile(manifestPath, "utf-8"),
-  ) as { name: string; version: string; description: string };
+  const pluginMeta = JSON.parse(await readFile(manifestPath, "utf-8")) as {
+    name: string;
+    version: string;
+    description: string;
+  };
 
   // Create temp directory: marketplace at root, plugin in plugin/ subdir
   const tmp = await mkdtemp(join(tmpdir(), "cc-plugin-"));
@@ -133,19 +135,15 @@ async function publish() {
       `git commit -m "Update Claude Code plugin (${pluginMeta.version})"`,
       { cwd: tmp, stdio: "pipe" },
     );
-    execSync(
-      `git push ${remoteUrl} HEAD:refs/heads/cc-plugin --force`,
-      { cwd: tmp, stdio: "inherit" },
-    );
+    execSync(`git push ${remoteUrl} HEAD:refs/heads/cc-plugin --force`, {
+      cwd: tmp,
+      stdio: "inherit",
+    });
 
     console.log("\nPublished to cc-plugin branch.");
     console.log("\nFor first-time install:");
-    console.log(
-      `  /plugin marketplace add wycats/vscode-ai-plugin@cc-plugin`,
-    );
-    console.log(
-      `  /plugin install ${pluginMeta.name}@${pluginMeta.name}`,
-    );
+    console.log(`  /plugin marketplace add wycats/vscode-ai-plugin@cc-plugin`);
+    console.log(`  /plugin install ${pluginMeta.name}@${pluginMeta.name}`);
     console.log("\nTo update after publishing:");
     console.log(`  /plugin marketplace update ${pluginMeta.name}`);
   } finally {
