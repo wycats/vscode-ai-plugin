@@ -7,7 +7,7 @@ description: "Review the conversation for threads that were started but not foll
 
 Read back through the conversation and surface the threads that were started but not followed.
 
-**Stances used:** dangling thread review, interpretive synthesis, collaborative grounding. See `stances/` for details.
+**Stances used:** dangling thread review, interpretive synthesis, diagnostic questioning, collaborative grounding. See `stances/` for details.
 
 ## What to do
 
