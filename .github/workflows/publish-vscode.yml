@@ -1,0 +1,59 @@
+name: Publish VS Code Plugin
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build and publish VS Code plugin
+        run: |
+          cp config.example.json config.json
+          pnpm build
+
+          # Marketplace at root, plugin in plugin/ subdirectory
+          tmp=$(mktemp -d)
+          mkdir -p "$tmp/plugin" "$tmp/.claude-plugin"
+          cp -r out/vscode/* "$tmp/plugin/"
+
+          cat > "$tmp/.claude-plugin/marketplace.json" << 'EOF'
+          {
+            "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+            "name": "wycats-ai-plugin",
+            "version": "0.1.0",
+            "description": "Agent toolkit: workflow agents, skills, and prompts.",
+            "owner": { "name": "wycats" },
+            "plugins": [
+              {
+                "name": "wycats-ai-plugin",
+                "source": "./plugin",
+                "description": "Agent toolkit: workflow agents, skills, and prompts."
+              }
+            ]
+          }
+          EOF
+
+          cd "$tmp"
+          git init
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Update VS Code plugin"
+          git push --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:refs/heads/vscode-plugin
