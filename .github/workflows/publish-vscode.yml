@@ -3,12 +3,17 @@ name: Publish VS Code Plugin
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'dist/**'
+      - 'marketplace.json'
+
+concurrency:
+  group: publish-vscode
+  cancel-in-progress: true
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -23,19 +28,32 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Build and publish VS Code plugin
+      - name: Build VS Code plugin
         run: |
           cp config.example.json config.json
           pnpm build
 
-          # Marketplace at root, plugin in plugin/ subdirectory
-          tmp=$(mktemp -d)
-          mkdir -p "$tmp/plugin" "$tmp/.claude-plugin"
-          cp -r out/vscode/* "$tmp/plugin/"
+      - name: Commit build output to main
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+        run: |
+          # Set up SSH for deploy key
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no"
 
-          cat > "$tmp/.claude-plugin/marketplace.json" << 'EOF'
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Force-add dist/vscode/ (overrides .gitignore)
+          rm -rf dist/vscode
+          cp -r out/vscode dist/vscode
+
+          # Create marketplace.json at repo root if it doesn't exist
+          cat > marketplace.json << 'MARKETPLACE'
           {
-            "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
             "name": "wycats-ai-plugin",
             "version": "0.1.0",
             "description": "Agent toolkit: workflow agents, skills, and prompts.",
@@ -43,17 +61,23 @@ jobs:
             "plugins": [
               {
                 "name": "wycats-ai-plugin",
-                "source": "./plugin",
+                "source": "./dist/vscode",
                 "description": "Agent toolkit: workflow agents, skills, and prompts."
               }
             ]
           }
-          EOF
+          MARKETPLACE
 
-          cd "$tmp"
-          git init
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "Update VS Code plugin"
-          git push --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:refs/heads/vscode-plugin
+          git add -f dist/vscode/ marketplace.json
+          
+          # Only commit and push if there are changes
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update VS Code plugin build [skip ci]"
+            git remote set-url origin "git@github.com:${{ github.repository }}.git"
+            git push origin main
+          fi
+
+          # Clean up
+          rm -f ~/.ssh/deploy_key
