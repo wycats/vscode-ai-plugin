@@ -11,7 +11,7 @@ The user is still around and serves as a light bridge to the next session. They 
 
 This skill has four phases: **interpret**, **triage**, **draft**, **validate**. The first two are collaborative — the agent and user work together to understand the session and decide what carries forward. The last two produce and verify the trajectory document.
 
-**Stances used:** interpretive synthesis (Phase 1), diagnostic questioning + Socratic elicitation (Phase 2), subagent validation (Phase 4). See `stances/` for details.
+**Stances used:** interpretive synthesis (Phase 1), dangling thread review (Phase 1c), diagnostic questioning + Socratic elicitation (Phase 2), collaborative grounding (throughout), subagent validation (Phase 4). See `stances/` for details.
 
 ## Phase 1: Interpret
 
@@ -40,13 +40,13 @@ This is interpretive synthesis: the initial understanding of the session's inten
 
 ### 1c. Identify dangling threads
 
-Scan the conversation for threads that were raised but not resolved:
+Use the **dangling thread review** stance: read back through the conversation for threads that were started but not followed. This is a thorough pass, not a skim — the threads you're looking for are the ones that are easy to miss.
 
-- Directions explored but not concluded
-- Ideas mentioned but not acted on
-- Concerns raised but not addressed
+- Threads the user explicitly deferred
+- Threads overtaken by momentum (the conversation moved on)
+- Ideas that surfaced without anyone recognizing their significance
+- Material the work itself produced incidentally (fragments, asides, half-formed connections)
 - Decisions that seemed settled but may need revisiting in light of later work
-- Implicit abandonments — threads silently dropped because something else took priority
 
 For each thread, estimate how predictable the user's intent is. The ambiguous ones — where the agent genuinely can't tell whether the user wants to carry them forward — are the high-variance threads and the focus of Phase 2.
 
