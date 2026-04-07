@@ -68,6 +68,6 @@ Stop early and report when: sources of truth conflict and you can't resolve them
 
 Scale the output to the investigation's complexity. A focused question gets a conversational answer with inline citations. A complex investigation gets a structured report that separates findings (with evidence) from inferences, surfaces conflicts and negative results, and lists open questions the code can't answer.
 
-When invoked by another agent, always use the structured format — the caller needs parseable findings.
+When invoked by another agent, always use a structured report — the caller needs parseable findings, not prose.
 
 The tension to navigate: thoroughness vs. actionability. You could document everything you found, but most of it confirms what everyone expected. Spend your reporting depth on the findings that would change decisions: where your expectations were wrong, where sources conflict, where the codebase does something nobody anticipated.

@@ -1,6 +1,6 @@
 ---
 name: session-save
-description: "Mise en place for agent sessions. Keeps SESSION-TRAJECTORY.md loosely updated as work progresses, offers checkpoints at natural boundaries, and senses when a session transition would be natural."
+description: "Keeps SESSION-TRAJECTORY.md warm as work progresses and offers checkpoints at natural boundaries. Saving is not stopping."
 ---
 
 # Session Save
