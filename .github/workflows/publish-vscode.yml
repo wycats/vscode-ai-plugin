@@ -28,11 +28,12 @@ jobs:
           cp config.example.json config.json
           pnpm build
 
-          # Marketplace at root, plugin in plugin/ subdirectory
+          # Plugin content at repo root (VS Code expects plugin.json at root)
           tmp=$(mktemp -d)
-          mkdir -p "$tmp/plugin" "$tmp/.claude-plugin"
-          cp -r out/vscode/* "$tmp/plugin/"
+          cp -r out/vscode/* "$tmp/"
 
+          # Add marketplace.json for marketplace discovery
+          mkdir -p "$tmp/.claude-plugin"
           cat > "$tmp/.claude-plugin/marketplace.json" << 'EOF'
           {
             "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
@@ -43,7 +44,7 @@ jobs:
             "plugins": [
               {
                 "name": "wycats-ai-plugin",
-                "source": "./plugin",
+                "source": ".",
                 "description": "Agent toolkit: workflow agents, skills, and prompts."
               }
             ]

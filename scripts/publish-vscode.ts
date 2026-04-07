@@ -91,16 +91,14 @@ async function publish() {
     description: string;
   };
 
-  // Create temp directory: marketplace at root, plugin in plugin/ subdir
+  // Create temp directory: plugin content at root (VS Code expects plugin.json at root)
   const tmp = await mkdtemp(join(tmpdir(), "vscode-plugin-"));
 
   try {
-    // Copy build output into plugin/ subdirectory
-    const pluginDir = join(tmp, "plugin");
-    await cp(VSCODE_OUT, pluginDir, { recursive: true });
+    // Copy build output directly to root
+    await cp(VSCODE_OUT, tmp, { recursive: true });
 
-    // Generate marketplace.json at the repo root
-    // VS Code uses the same .claude-plugin/marketplace.json format
+    // Generate marketplace.json for marketplace discovery
     const marketplace = {
       $schema: "https://anthropic.com/claude-code/marketplace.schema.json",
       name: pluginMeta.name,
@@ -110,7 +108,7 @@ async function publish() {
       plugins: [
         {
           name: pluginMeta.name,
-          source: "./plugin",
+          source: ".",
           description: pluginMeta.description,
         },
       ],
