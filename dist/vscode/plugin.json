@@ -1,0 +1,70 @@
+{
+  "name": "wycats-ai-plugin",
+  "version": "0.1.0",
+  "description": "Personal agent toolkit: workflow agents, skills, and prompts.",
+  "agents": [
+    {
+      "path": "./agents/execute.agent.md"
+    },
+    {
+      "path": "./agents/pre-read.agent.md"
+    },
+    {
+      "path": "./agents/prepare.agent.md"
+    },
+    {
+      "path": "./agents/recon-worker.agent.md"
+    },
+    {
+      "path": "./agents/recon.agent.md"
+    },
+    {
+      "path": "./agents/review.agent.md"
+    },
+    {
+      "path": "./agents/slop-linter.agent.md"
+    }
+  ],
+  "skills": [
+    {
+      "path": "./skills/dangling-thread-review/SKILL.md"
+    },
+    {
+      "path": "./skills/per-cycle/SKILL.md"
+    },
+    {
+      "path": "./skills/recon/SKILL.md"
+    },
+    {
+      "path": "./skills/session-close/SKILL.md"
+    },
+    {
+      "path": "./skills/session-load/SKILL.md"
+    },
+    {
+      "path": "./skills/session-rest/SKILL.md"
+    },
+    {
+      "path": "./skills/session-save/SKILL.md"
+    },
+    {
+      "path": "./skills/walkthrough/SKILL.md"
+    }
+  ],
+  "instructions": [
+    {
+      "path": "./instructions/environment.instructions.md"
+    }
+  ],
+  "hooks": [
+    {
+      "path": "./hooks/native-ts-enforcement.json"
+    },
+    {
+      "path": "./hooks/pnpm-enforcement.json"
+    },
+    {
+      "path": "./hooks/tool-call-logging.json"
+    }
+  ]
+}

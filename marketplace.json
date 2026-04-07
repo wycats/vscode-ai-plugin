@@ -1,7 +1,7 @@
 {
     "name": "wycats-ai-plugin",
     "version": "0.1.0",
-    "description": "Agent toolkit",
+    "description": "Agent toolkit: workflow agents, skills, and prompts.",
     "owner": {
         "name": "wycats"
     },
@@ -9,7 +9,7 @@
         {
             "name": "wycats-ai-plugin",
             "source": "./dist/vscode",
-            "description": "Agent toolkit"
+            "description": "Agent toolkit: workflow agents, skills, and prompts."
         }
     ]
 }
