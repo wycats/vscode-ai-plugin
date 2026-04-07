@@ -20,6 +20,12 @@ A _stance_ is a consistent set of relationships between the writer, the content,
 
 The practical question is always: what well does this instruction create, and does it reinforce or compete with the other wells in play?
 
+## Stances as portable structure
+
+A stance is not a topic, a format, or a persona. It's a set of relationships between concepts that can be carried from one domain into another. "Hypothesis-forming" carries the relational structure of prediction, specificity, falsifiability, and the value of being wrong. That structure activates the same region of the probability landscape (gravity well) whether applied to code review, medical diagnosis, or criminal investigation.
+
+Cross-domain examples are the mechanism that makes a stance precise. Each example carries the relational structure into a different domain. The model reads the examples and triangulates: the overlap between them is the relational structure. The differences between them exclude nearby attractors. Three examples that share only the intended structure, drawn from unrelated domains, define a specific region of the probability landscape more precisely than any description could.
+
 ## How stances compose
 
 ### Reinforcement
@@ -81,6 +87,10 @@ Evaluation ("is this sentence slop?") activates a narrow region — the model is
 This is why models can detect slop more reliably than they can avoid generating it. Detection is a narrow well. Generation is a broad valley. The broad valley includes slop because the training data includes slop.
 
 The practical implication: don't try to combine generation and evaluation in a single stance. "Write without slop" creates competing wells (generation + criticism). Instead, separate them into phases: generate first (with a stance that activates good writing), then evaluate (with a stance that activates critical analysis). Each phase uses the stance appropriate to its task.
+
+### Asymmetric consequences
+
+Good generation with evaluation produces excellent output: evaluation catches surface residue. Poor generation with evaluation produces mediocre output at best: evaluation can identify problems but cannot supply the missing depth. When the agent enters the listicle well during generation, the shallow thinking is already committed. No amount of post-hoc correction adds depth that was never produced. The intervention point is the generation well. Evaluation is a thin verification layer, not a remediation tool.
 
 ## The information landscape
 

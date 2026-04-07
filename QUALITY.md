@@ -65,6 +65,10 @@ Natural language is uniquely good at encoding conditional precision — statemen
 
 Use language to describe constraints in a way that captures the tensions between them. Formal specification language pushes the model toward exhaustive enumeration and mechanical verification, which is the opposite of contextual judgment.
 
+## Agents crystallize stances; skills compose them
+
+An agent file establishes a cognitive mode: a small number of stances fused so deeply that the seams disappear. The agent doesn't alternate between stances. It *is* the fused mode. A skill composes stances with visible seams and managed transitions, orchestrating when each one is active.
+
 ## Negative instructions cluster with poor work
 
 Dense blocks of "don't do X" instructions are correlated in the training data with corrective feedback, low-trust delegation, and defensive documentation. The model has learned that this pattern surrounds contexts where expected output quality is low.
@@ -79,6 +83,10 @@ Agents read skills front-to-back with highest attention at the beginning. This m
 - Critical path early
 - Reference material last
 - The most important "do not skip" instruction at the transition point where the agent is most likely to take a shortcut
+
+## Triangulate stances with cross-domain examples
+
+When defining a stance, choose 3-4 examples from unrelated domains whose overlap is precisely the relational structure you want. The examples do two jobs: they activate the right well (through their shared structure) and they exclude nearby attractors (through their differences). A fourth example is needed when the first three accidentally include an attractor that the variation doesn't carve out. A framing sentence that marks which axis is variation and which is invariant helps the model read the examples correctly.
 
 ## Collaboration over inference for situated decisions
 
