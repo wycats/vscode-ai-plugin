@@ -47,24 +47,6 @@ Offer a checkpoint when:
 - The session is about to shift to a different kind of task
 - Significant progress has accumulated since the last checkpoint
 
-## Transition awareness
-
-Sessions deplete context. The returns on continued work diminish as context gets crowded. A transition isn't something to force or resist — it's something to sense.
-
-When the tension between continuing and transitioning becomes relevant, collaborate:
-
-- Share what you observe: how much context has been used, how complex the remaining work appears
-- Ask the user to combine that with what they know
-- "We've used substantial context and the remaining work looks moderate — does continuing feel right to you, or would you rather checkpoint?" is more useful than "should we wrap up?"
-
-The user may want to:
-
-- **Continue working** — the momentum is valuable and there's capacity left
-- **Checkpoint and continue** — capture the trajectory but keep going
-- **Transition** — invoke `/session-rest` or `/session-close` for the transition protocol
-
-All three are valid. The agent's job is to surface the natural pressure, not to decide. And the default is to keep working — transition is something the user chooses, not something saving implies.
-
 ## What this skill does NOT do
 
-This skill does not run the transition protocol. When the user decides it's time to transition, they invoke `/session-rest` (between sessions, user is still around) or `/session-close` (end of day, user is leaving). This skill is the ongoing maintenance layer; those skills are the transition protocols.
+This skill does not run the transition protocol and does not decide whether to stop. When the user decides it's time to transition, they invoke `/session-rest` (between sessions, user is still around) or `/session-close` (end of day, user is leaving). This skill is the ongoing maintenance layer; those skills handle transition awareness and the transition protocols.
