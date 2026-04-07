@@ -50,6 +50,7 @@ jobs:
 
           # Force-add dist/vscode/ (overrides .gitignore)
           rm -rf dist/vscode
+          mkdir -p dist
           cp -r out/vscode dist/vscode
 
           # Create marketplace.json at repo root
