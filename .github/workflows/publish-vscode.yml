@@ -51,22 +51,8 @@ jobs:
           rm -rf dist/vscode
           cp -r out/vscode dist/vscode
 
-          # Create marketplace.json at repo root if it doesn't exist
-          cat > marketplace.json << 'MARKETPLACE'
-          {
-            "name": "wycats-ai-plugin",
-            "version": "0.1.0",
-            "description": "Agent toolkit: workflow agents, skills, and prompts.",
-            "owner": { "name": "wycats" },
-            "plugins": [
-              {
-                "name": "wycats-ai-plugin",
-                "source": "./dist/vscode",
-                "description": "Agent toolkit: workflow agents, skills, and prompts."
-              }
-            ]
-          }
-          MARKETPLACE
+          # Create marketplace.json at repo root
+          echo '{"name":"wycats-ai-plugin","version":"0.1.0","description":"Agent toolkit: workflow agents, skills, and prompts.","owner":{"name":"wycats"},"plugins":[{"name":"wycats-ai-plugin","source":"./dist/vscode","description":"Agent toolkit: workflow agents, skills, and prompts."}]}' | python3 -m json.tool > marketplace.json
 
           git add -f dist/vscode/ marketplace.json
           
