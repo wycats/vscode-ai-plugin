@@ -49,5 +49,9 @@
     "github": [
       "Bash"
     ]
+  },
+  "hookMatchers": {
+    "terminal": "Bash",
+    "edit": "Write|Edit|MultiEdit"
   }
 }

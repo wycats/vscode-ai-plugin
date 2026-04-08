@@ -1,12 +1,8 @@
 {
-  "match": "Bash",
-  "hooks": {
-    "PreToolUse": [
-      {
-        "type": "command",
-        "command": "node scripts/hooks/enforce-native-ts.ts",
-        "timeout": 5
-      }
-    ]
-  }
+  "type": "policy",
+  "name": "native-ts-enforcement",
+  "events": ["PreToolUse"],
+  "tool": "terminal",
+  "script": "enforce-native-ts.ts",
+  "timeout": 5
 }
