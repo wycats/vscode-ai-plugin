@@ -61,7 +61,7 @@ export interface ToolEvent {
   /** Full tool input from the platform */
   input: Record<string, unknown>;
   /** Convenience: the command string for terminal tools */
-  command?: string;
+  command?: string | undefined;
 }
 
 export type PolicyResult =
@@ -104,7 +104,8 @@ function parseEvent(raw: RawInput): ToolEvent {
   const rawTool = raw.tool_name ?? "";
   const tool = normalizeToolName(rawTool);
   const input = raw.tool_input ?? {};
-  const command = typeof input.command === "string" ? input.command : undefined;
+  const cmd = input["command"];
+  const command = typeof cmd === "string" ? cmd : undefined;
   const event = raw.hook_event_name ?? "unknown";
 
   return { event, tool, rawTool, input, command };
@@ -151,7 +152,6 @@ export function createPolicy(options: PolicyOptions): void {
 
   if (!result) {
     process.exit(0);
-    return; // unreachable, but satisfies type narrowing
   }
 
   if ("deny" in result) {
