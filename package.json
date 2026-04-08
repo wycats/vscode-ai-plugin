@@ -27,7 +27,11 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.2.0",
+    "@wycats/agent-hooks": "workspace:*",
     "gray-matter": "^4.0.3",
     "jsonc-parser": "^3.3.1"
+  },
+  "pnpm": {
+    "overrides": {}
   }
 }

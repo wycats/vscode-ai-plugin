@@ -1,4 +1,4 @@
-import { createPolicy } from "../../lib/hook-runtime.ts";
+import { createPolicy } from "@wycats/agent-hooks";
 
 createPolicy({
   name: "pnpm-enforcement",

@@ -12,6 +12,6 @@
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["scripts/**/*.ts", "lib/**/*.ts", "eslint.config.ts"],
+  "include": ["scripts/**/*.ts", "packages/*/src/**/*.ts", "eslint.config.ts"],
   "exclude": ["node_modules", "dist"]
 }
