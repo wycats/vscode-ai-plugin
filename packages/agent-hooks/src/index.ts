@@ -1,5 +1,7 @@
 /**
- * Hook runtime library for VS Code and Claude Code.
+ * @wycats/agent-hooks
+ *
+ * Cross-platform hook runtime for VS Code and Claude Code.
  *
  * Handles stdin/stdout boilerplate, tool name normalization,
  * and platform-appropriate output formatting. Hook scripts
@@ -7,41 +9,45 @@
  */
 
 import { readFileSync, appendFileSync, mkdirSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
-// --- Tool normalization ---
+// --- Tool normalization (derived from tools.json) ---
 
-const TOOL_MAP: Record<string, string> = {
-  // Terminal
-  run_in_terminal: "terminal",
-  Bash: "terminal",
-  // File editing
-  replace_string_in_file: "edit",
-  multi_replace_string_in_file: "edit",
-  create_file: "edit",
-  Edit: "edit",
-  Write: "edit",
-  MultiEdit: "edit",
-  // File reading
-  read_file: "read",
-  Read: "read",
-  // Search
-  grep_search: "search",
-  semantic_search: "search",
-  file_search: "search",
-  Grep: "search",
-  Glob: "search",
-  // Web
-  fetch_webpage: "web",
-  WebFetch: "web",
-  WebSearch: "web",
-  // Agent dispatch
-  runSubagent: "agent",
-  Agent: "agent",
-};
+interface ToolEntry {
+  canonical: string;
+  platforms: Record<string, string[]>;
+}
+
+interface ToolsJson {
+  [key: string]: ToolEntry | string;
+}
+
+const toolsPath = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "tools.json",
+);
+const toolsData = JSON.parse(readFileSync(toolsPath, "utf-8")) as ToolsJson;
+
+// Build the flat map: platform tool name → canonical name
+const TOOL_MAP: Record<string, string> = {};
+
+for (const [, entry] of Object.entries(toolsData)) {
+  if (typeof entry === "string") continue; // skip $comment
+  for (const platformTools of Object.values(entry.platforms)) {
+    for (const toolName of platformTools) {
+      TOOL_MAP[toolName] = entry.canonical;
+    }
+  }
+}
 
 export function normalizeToolName(raw: string): string {
   return TOOL_MAP[raw] ?? raw;
 }
+
+/** The raw tool normalization map for inspection/testing. */
+export const toolMap: Readonly<Record<string, string>> = TOOL_MAP;
 
 // --- Types ---
 

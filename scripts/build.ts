@@ -208,15 +208,17 @@ async function buildHooks(
     );
   }
 
-  // Copy hook scripts and lib to output
+  // Copy hook scripts and agent-hooks package to output
   await cp(
     join(ROOT, "scripts", "hooks"),
     join(outDir, "scripts", "hooks"),
     { recursive: true },
   ).catch(() => {});
-  await cp(join(ROOT, "lib"), join(outDir, "lib"), {
-    recursive: true,
-  }).catch(() => {});
+  // Copy the package so hook imports resolve in the output
+  const hooksPkg = join(ROOT, "packages", "agent-hooks");
+  const hooksDest = join(outDir, "node_modules", "@wycats", "agent-hooks");
+  await mkdir(dirname(hooksDest), { recursive: true });
+  await cp(hooksPkg, hooksDest, { recursive: true }).catch(() => {});
 
   const hooksOutDir = join(outDir, "hooks");
   await mkdir(hooksOutDir, { recursive: true });
