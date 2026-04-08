@@ -1,18 +1,7 @@
 {
-  "hooks": {
-    "PreToolUse": [
-      {
-        "type": "command",
-        "command": "node scripts/hooks/log-tool-calls.ts",
-        "timeout": 5
-      }
-    ],
-    "PostToolUse": [
-      {
-        "type": "command",
-        "command": "node scripts/hooks/log-tool-calls.ts",
-        "timeout": 5
-      }
-    ]
-  }
+  "type": "observer",
+  "name": "tool-call-logging",
+  "events": ["PreToolUse", "PostToolUse"],
+  "script": "log-tool-calls.ts",
+  "timeout": 5
 }

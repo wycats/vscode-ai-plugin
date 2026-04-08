@@ -20,6 +20,7 @@ interface Config {
   target: string;
   models: Record<string, string | null>;
   toolGroups: Record<string, string[]>;
+  hookMatchers?: Record<string, string>;
 }
 
 interface PluginEntry {
@@ -175,104 +176,123 @@ async function buildAgent(
   return `./agents/${filename}`;
 }
 
-interface SourceHook {
-  match?: string;
-  hooks: Record<string, { type: string; command: string; timeout?: number }[]>;
-}
+// --- Hook manifest (neutral format) ---
 
-interface CCMatcherGroup {
-  matcher?: string;
-  hooks: { type: string; command: string; timeout?: number }[];
+interface HookManifest {
+  type: "policy" | "observer" | "side-effect";
+  name: string;
+  events: string[];
+  tool?: string;
+  script: string;
+  timeout?: number;
 }
 
 /**
- * Build hooks for the target platform.
+ * Build hooks for the target platform from neutral manifests.
  *
- * VS Code: copies per-hook JSONs with rewritten script paths.
- * Claude Code: consolidates all hooks into one hooks/hooks.json with matchers.
+ * Reads manifests from hooks/*.json, copies scripts + lib to output,
+ * then delegates to a platform-specific adapter.
  */
 async function buildHooks(
   outDir: string,
-  isClaudeCode: boolean,
+  config: Config,
 ): Promise<string[]> {
   const hookFiles = await findFiles(join(ROOT, "hooks"), /\.json$/);
   if (hookFiles.length === 0) return [];
 
-  // Copy hook scripts to output
-  const srcScripts = join(ROOT, "scripts", "hooks");
-  const destScripts = join(outDir, "scripts", "hooks");
-  try {
-    await cp(srcScripts, destScripts, { recursive: true });
-  } catch {
-    // no scripts to copy
+  // Load all manifests
+  const manifests: HookManifest[] = [];
+  for (const file of hookFiles) {
+    manifests.push(
+      JSON.parse(await readFile(file, "utf-8")) as HookManifest,
+    );
   }
+
+  // Copy hook scripts and lib to output
+  await cp(
+    join(ROOT, "scripts", "hooks"),
+    join(outDir, "scripts", "hooks"),
+    { recursive: true },
+  ).catch(() => {});
+  await cp(join(ROOT, "lib"), join(outDir, "lib"), {
+    recursive: true,
+  }).catch(() => {});
 
   const hooksOutDir = join(outDir, "hooks");
   await mkdir(hooksOutDir, { recursive: true });
 
-  if (isClaudeCode) {
-    // Consolidate into one hooks.json with CC nesting format
-    const consolidated: Record<string, CCMatcherGroup[]> = {};
-
-    for (const file of hookFiles) {
-      const src = JSON.parse(await readFile(file, "utf-8")) as SourceHook;
-
-      for (const [event, handlers] of Object.entries(src.hooks)) {
-        consolidated[event] ??= [];
-
-        const ccHandlers = handlers.map((h) => ({
-          ...h,
-          command: h.command
-            .replace(
-              /^node scripts\/hooks\//,
-              'node "$CLAUDE_PLUGIN_ROOT/scripts/hooks/',
-            )
-            .replace(/\.ts$/, '.ts"'),
-        }));
-
-        const group: CCMatcherGroup = { hooks: ccHandlers };
-        if (src.match) group.matcher = src.match;
-        consolidated[event].push(group);
-      }
-    }
-
-    await writeFile(
-      join(hooksOutDir, "hooks.json"),
-      JSON.stringify({ hooks: consolidated }, null, 2) + "\n",
-    );
-
-    return ["./hooks/hooks.json"];
+  if (config.target === "claude-code") {
+    return buildCCHooks(manifests, config, hooksOutDir);
   } else {
-    // VS Code: copy each hook JSON with rewritten paths
-    const outPaths: string[] = [];
+    return buildVSCodeHooks(manifests, hooksOutDir, outDir);
+  }
+}
 
-    for (const file of hookFiles) {
-      const src = JSON.parse(await readFile(file, "utf-8")) as SourceHook;
+/** VS Code adapter: one JSON file per hook, flat handler arrays. */
+function buildVSCodeHooks(
+  manifests: HookManifest[],
+  hooksOutDir: string,
+  outDir: string,
+): Promise<string[]> {
+  const writes: Promise<void>[] = [];
+  const outPaths: string[] = [];
 
-      // Rewrite command paths to point at the output scripts directory
-      const rewritten: Record<string, unknown[]> = {};
-      for (const [event, handlers] of Object.entries(src.hooks)) {
-        rewritten[event] = handlers.map((h) => ({
-          ...h,
-          command: h.command.replace(
-            /^node scripts\/hooks\//,
-            "node scripts/hooks/",
-          ),
-        }));
-      }
-
-      const outFile = join(hooksOutDir, relative(join(ROOT, "hooks"), file));
-      await mkdir(dirname(outFile), { recursive: true });
-      // Write without the match field (VS Code doesn't use it)
-      await writeFile(
-        outFile,
-        JSON.stringify({ hooks: rewritten }, null, 2) + "\n",
-      );
-      outPaths.push("./" + relative(outDir, outFile));
+  for (const m of manifests) {
+    const hooks: Record<string, { type: string; command: string; timeout?: number }[]> = {};
+    for (const event of m.events) {
+      hooks[event] = [
+        {
+          type: "command",
+          command: `node scripts/hooks/${m.script}`,
+          ...(m.timeout !== undefined ? { timeout: m.timeout } : {}),
+        },
+      ];
     }
 
-    return outPaths;
+    const outFile = join(hooksOutDir, `${m.name}.json`);
+    writes.push(writeFile(outFile, JSON.stringify({ hooks }, null, 2) + "\n"));
+    outPaths.push("./" + relative(outDir, outFile));
   }
+
+  return Promise.all(writes).then(() => outPaths);
+}
+
+/** Claude Code adapter: consolidated hooks.json with matcher groups. */
+function buildCCHooks(
+  manifests: HookManifest[],
+  config: Config,
+  hooksOutDir: string,
+): Promise<string[]> {
+  const matchers = config.hookMatchers ?? {};
+  const consolidated: Record<
+    string,
+    { matcher?: string; hooks: { type: string; command: string; timeout?: number }[] }[]
+  > = {};
+
+  for (const m of manifests) {
+    const handler = {
+      type: "command" as const,
+      command: `node "$CLAUDE_PLUGIN_ROOT/scripts/hooks/${m.script}"`,
+      ...(m.timeout !== undefined ? { timeout: m.timeout } : {}),
+    };
+
+    const group: { matcher?: string; hooks: typeof handler[] } = {
+      hooks: [handler],
+    };
+    if (m.tool && matchers[m.tool]) {
+      group.matcher = matchers[m.tool];
+    }
+
+    for (const event of m.events) {
+      consolidated[event] ??= [];
+      consolidated[event].push(group);
+    }
+  }
+
+  return writeFile(
+    join(hooksOutDir, "hooks.json"),
+    JSON.stringify({ hooks: consolidated }, null, 2) + "\n",
+  ).then(() => ["./hooks/hooks.json"]);
 }
 
 async function copyDir(srcName: string, outDir: string): Promise<string[]> {
@@ -317,7 +337,7 @@ async function build() {
   const isClaudeCode = config.target === "claude-code";
 
   // Build hooks (both targets)
-  const hookPaths = await buildHooks(outDir, isClaudeCode);
+  const hookPaths = await buildHooks(outDir, config);
 
   // Generate package.json for script portability
   await writeFile(

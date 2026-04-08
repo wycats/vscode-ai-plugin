@@ -9,8 +9,9 @@
     "outDir": "dist",
     "rootDir": ".",
     "declaration": false,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true
   },
-  "include": ["scripts/**/*.ts", "eslint.config.ts"],
+  "include": ["scripts/**/*.ts", "lib/**/*.ts", "eslint.config.ts"],
   "exclude": ["node_modules", "dist"]
 }
