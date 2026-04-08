@@ -40,7 +40,11 @@ importers:
         specifier: ^8.57.0
         version: 8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
 
-  packages/agent-hooks: {}
+  packages/agent-hooks:
+    devDependencies:
+      '@types/node':
+        specifier: ^25.5.0
+        version: 25.5.0
 
 packages:
 
