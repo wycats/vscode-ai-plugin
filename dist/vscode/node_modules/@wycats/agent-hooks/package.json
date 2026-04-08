@@ -9,5 +9,8 @@
   "files": [
     "src",
     "tools.json"
-  ]
+  ],
+  "devDependencies": {
+    "@types/node": "^25.5.0"
+  }
 }

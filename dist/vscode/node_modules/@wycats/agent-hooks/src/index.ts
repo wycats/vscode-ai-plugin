@@ -103,9 +103,9 @@ function readInput(): RawInput {
 function parseEvent(raw: RawInput): ToolEvent {
   const rawTool = raw.tool_name ?? "";
   const tool = normalizeToolName(rawTool);
-  const input = (raw.tool_input ?? {}) as Record<string, unknown>;
+  const input = raw.tool_input ?? {};
   const command = typeof input.command === "string" ? input.command : undefined;
-  const event = (raw.hook_event_name as string) ?? "unknown";
+  const event = raw.hook_event_name ?? "unknown";
 
   return { event, tool, rawTool, input, command };
 }
@@ -151,6 +151,7 @@ export function createPolicy(options: PolicyOptions): void {
 
   if (!result) {
     process.exit(0);
+    return; // unreachable, but satisfies type narrowing
   }
 
   if ("deny" in result) {
