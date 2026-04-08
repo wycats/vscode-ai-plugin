@@ -52,6 +52,7 @@ jobs:
           rm -rf dist/vscode
           mkdir -p dist
           cp -r out/vscode dist/vscode
+          cp README.md dist/vscode/README.md
 
           # Create marketplace.json at repo root
           echo '{"name":"wycats-ai-plugin","version":"0.1.0","description":"Agent toolkit: workflow agents, skills, and prompts.","owner":{"name":"wycats"},"plugins":[{"name":"wycats-ai-plugin","source":"./dist/vscode","description":"Agent toolkit: workflow agents, skills, and prompts."}]}' | python3 -m json.tool > marketplace.json
