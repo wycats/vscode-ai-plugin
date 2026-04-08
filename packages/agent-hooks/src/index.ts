@@ -51,6 +51,18 @@ export const toolMap: Readonly<Record<string, string>> = TOOL_MAP;
 
 // --- Types ---
 
+/** Known canonical tool names. Use these for autocomplete; unknown tools pass through as-is. */
+export type CanonicalTool =
+  | "terminal"
+  | "edit"
+  | "read"
+  | "search"
+  | "web"
+  | "agent";
+
+/** A canonical tool name, or any string for platform-specific / unknown tools. */
+export type ToolFilter = CanonicalTool | (string & {});
+
 export interface ToolEvent {
   /** Hook event name (PreToolUse, PostToolUse, etc.) */
   event: string;
@@ -71,19 +83,19 @@ export type PolicyResult =
 
 interface PolicyOptions {
   name: string;
-  tool?: string;
+  tool?: ToolFilter;
   check: (event: ToolEvent) => PolicyResult;
 }
 
 interface ObserverOptions {
   name: string;
-  tool?: string;
+  tool?: ToolFilter;
   handle: (event: ToolEvent) => void;
 }
 
 interface SideEffectOptions {
   name: string;
-  tool?: string;
+  tool?: ToolFilter;
   handle: (event: ToolEvent) => void;
 }
 
