@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { createObserver, appendLog } from "../../lib/hook-runtime.ts";
+import { createObserver, appendLog } from "@wycats/agent-hooks";
 
 const LOG_DIR = process.env.CLAUDE_PLUGIN_DATA
   ?? join(process.env.HOME ?? "", ".ai-plugin");
