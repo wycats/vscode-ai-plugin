@@ -63,6 +63,35 @@ export type CanonicalTool =
 /** A canonical tool name, or any string for platform-specific / unknown tools. */
 export type ToolFilter = CanonicalTool | (string & {});
 
+// --- Platform context (discriminated union) ---
+
+export interface VSCodeContext {
+  platform: "vscode";
+  /** ISO timestamp of the hook invocation */
+  timestamp: string;
+  sessionId?: string | undefined;
+  transcriptPath?: string | undefined;
+  cwd?: string | undefined;
+  toolUseId: string;
+  /** Tool response text (PostToolUse only) */
+  toolResponse?: string | undefined;
+}
+
+export interface ClaudeCodeContext {
+  platform: "claude-code";
+  sessionId: string;
+  transcriptPath: string;
+  cwd: string;
+  permissionMode: string;
+  toolUseId: string;
+}
+
+export interface UnknownPlatformContext {
+  platform: "unknown";
+}
+
+export type HookContext = VSCodeContext | ClaudeCodeContext | UnknownPlatformContext;
+
 export interface ToolEvent {
   /** Hook event name (PreToolUse, PostToolUse, etc.) */
   event: string;
@@ -74,6 +103,8 @@ export interface ToolEvent {
   input: Record<string, unknown>;
   /** Convenience: the command string for terminal tools */
   command?: string | undefined;
+  /** Platform-specific context (session, cwd, etc.) */
+  context: HookContext;
 }
 
 export type PolicyResult =
@@ -112,6 +143,39 @@ function readInput(): RawInput {
   return JSON.parse(readFileSync("/dev/stdin", "utf-8")) as RawInput;
 }
 
+function detectContext(raw: RawInput): HookContext {
+  const str = (key: string): string | undefined => {
+    const v = raw[key];
+    return typeof v === "string" ? v : undefined;
+  };
+
+  // CC sends permission_mode; VS Code sends timestamp
+  if (str("permission_mode") !== undefined) {
+    return {
+      platform: "claude-code",
+      sessionId: str("session_id") ?? "",
+      transcriptPath: str("transcript_path") ?? "",
+      cwd: str("cwd") ?? "",
+      permissionMode: str("permission_mode") ?? "default",
+      toolUseId: str("tool_use_id") ?? "",
+    };
+  }
+
+  if (str("timestamp") !== undefined) {
+    return {
+      platform: "vscode",
+      timestamp: str("timestamp") ?? "",
+      sessionId: str("session_id"),
+      transcriptPath: str("transcript_path"),
+      cwd: str("cwd"),
+      toolUseId: str("tool_use_id") ?? "",
+      toolResponse: str("tool_response"),
+    };
+  }
+
+  return { platform: "unknown" };
+}
+
 function parseEvent(raw: RawInput): ToolEvent {
   const rawTool = raw.tool_name ?? "";
   const tool = normalizeToolName(rawTool);
@@ -119,8 +183,9 @@ function parseEvent(raw: RawInput): ToolEvent {
   const cmd = input["command"];
   const command = typeof cmd === "string" ? cmd : undefined;
   const event = raw.hook_event_name ?? "unknown";
+  const context = detectContext(raw);
 
-  return { event, tool, rawTool, input, command };
+  return { event, tool, rawTool, input, command, context };
 }
 
 function shouldFire(event: ToolEvent, toolFilter?: string): boolean {
