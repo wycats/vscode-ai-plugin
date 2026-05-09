@@ -6,7 +6,8 @@
  * 3. Copies skills and (for vscode) instructions, hooks, stances
  * 4. Generates the platform-specific manifest
  *
- * Output goes to out/<target>/ (e.g. out/vscode/ or out/claude-code/).
+ * Output goes to the target's platform output directory
+ * (vscode → out/wycats/, claude-code → out/claude-code/).
  */
 
 import { readFile, writeFile, mkdir, cp, rm } from "node:fs/promises";
@@ -14,6 +15,11 @@ import { join, relative, dirname } from "node:path";
 import matter from "gray-matter";
 import { ModuleKind, ScriptTarget, transpileModule } from "typescript";
 import { discoverResourceFiles } from "./resource-discovery.ts";
+import {
+  legacyVSCodeOutputPath,
+  outputPathForTarget,
+  VSCODE_TARGET,
+} from "./target-output.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
 const CONFIG_PATH = join(ROOT, "config.json");
@@ -326,10 +332,13 @@ async function copyDir(srcName: string, outDir: string): Promise<void> {
 
 async function build() {
   const config = await loadConfig();
-  const outDir = join(ROOT, "out", config.target);
+  const outDir = outputPathForTarget(ROOT, config.target);
   const resources = await discoverResourceFiles(ROOT);
 
   // Clean output
+  if (config.target === VSCODE_TARGET) {
+    await rm(legacyVSCodeOutputPath(ROOT), { recursive: true, force: true });
+  }
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
 

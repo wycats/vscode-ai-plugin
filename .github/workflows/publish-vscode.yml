@@ -48,16 +48,17 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Force-add dist/vscode/ (overrides .gitignore)
-          rm -rf dist/vscode
+          # Add dist/wycats/ and remove the old dist/vscode/ root
+          rm -rf dist/vscode dist/wycats
           mkdir -p dist
-          cp -r out/vscode dist/vscode
-          cp README.md dist/vscode/README.md
+          cp -r out/wycats dist/wycats
+          cp README.md dist/wycats/README.md
 
           # Create marketplace.json at repo root
-          echo '{"name":"wycats-ai-plugin","version":"0.1.0","description":"Agent toolkit: workflow agents, skills, and prompts.","owner":{"name":"wycats"},"plugins":[{"name":"wycats-ai-plugin","source":"./dist/vscode","description":"Agent toolkit: workflow agents, skills, and prompts."}]}' | python3 -m json.tool > marketplace.json
+          echo '{"name":"wycats-ai-plugin","version":"0.1.0","description":"Personal agent toolkit: workflow agents, skills, instructions, and hooks.","owner":{"name":"wycats"},"plugins":[{"name":"wycats-ai-plugin","source":"./dist/wycats","description":"Personal agent toolkit: workflow agents, skills, instructions, and hooks."}]}' | python3 -m json.tool > marketplace.json
 
-          git add -f dist/vscode/ marketplace.json
+          git rm -r --quiet --ignore-unmatch dist/vscode
+          git add dist/wycats/ marketplace.json
           
           # Only commit and push if there are changes
           if git diff --cached --quiet; then

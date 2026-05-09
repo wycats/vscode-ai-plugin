@@ -1,7 +1,11 @@
 node_modules/
 .runtime/
 .logs/
-dist/
+# Most dist output is generated scratch, but the VS Code marketplace source is
+# committed so normal git status/add catches newly generated published files.
+dist/*
+!dist/wycats/
+!dist/wycats/**
 out/
 config.json
 hooks-debug.log
