@@ -63,7 +63,7 @@ function removeJsoncValue(content: string, path: (string | number)[]): string {
   return applyEdits(content, edits);
 }
 
-function hasJsoncPath(content: string, path: string[]): boolean {
+function getJsoncValue(content: string, path: string[]): unknown {
   const parsed = parse(content) as unknown;
   let current = parsed;
 
@@ -74,13 +74,21 @@ function hasJsoncPath(content: string, path: string[]): boolean {
       Array.isArray(current) ||
       !Object.prototype.hasOwnProperty.call(current, segment)
     ) {
-      return false;
+      return undefined;
     }
 
     current = (current as Record<string, unknown>)[segment];
   }
 
-  return true;
+  return current;
+}
+
+function hasJsoncPath(content: string, path: string[]): boolean {
+  return getJsoncValue(content, path) !== undefined;
+}
+
+function isJsoncPathEnabled(content: string, path: string[]): boolean {
+  return getJsoncValue(content, path) === true;
 }
 
 async function installLocal() {
@@ -134,7 +142,7 @@ async function installLocal() {
   }
 
   // Step 5: register plugin output path if not already present
-  if (hasJsoncPath(content, ["chat.plugins.paths", outPath])) {
+  if (isJsoncPathEnabled(content, ["chat.plugins.paths", outPath])) {
     console.log(`Plugin already registered at ${outPath}`);
   } else {
     content = setJsoncValue(content, ["chat.plugins.paths", outPath], true);
@@ -144,7 +152,7 @@ async function installLocal() {
 
   // Step 6: register hooks directory in chat.hookFilesLocations
   const hooksPath = join(outPath, "hooks");
-  if (!hasJsoncPath(content, ["chat.hookFilesLocations", hooksPath])) {
+  if (!isJsoncPathEnabled(content, ["chat.hookFilesLocations", hooksPath])) {
     content = setJsoncValue(
       content,
       ["chat.hookFilesLocations", hooksPath],
