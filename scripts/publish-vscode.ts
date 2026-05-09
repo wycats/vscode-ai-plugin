@@ -1,9 +1,9 @@
 /**
- * Publishes the VS Code build output by committing dist/vscode/ and
+ * Publishes the VS Code build output by committing dist/wycats/ and
  * marketplace.json to main.
  *
  * This is the local equivalent of the CI workflow. It builds, copies
- * output to dist/vscode/, generates marketplace.json, and commits.
+ * output to dist/wycats/, generates marketplace.json, and commits.
  *
  * Requires a deploy key with write access (or admin push access).
  *
@@ -14,10 +14,21 @@
 import { readFile, writeFile, mkdir, cp, rm, access } from "node:fs/promises";
 import { join } from "node:path";
 import { execSync } from "node:child_process";
+import {
+  displayDistDirectoryForTarget,
+  displayOutputDirectoryForTarget,
+  distPathForTarget,
+  legacyVSCodeDistPath,
+  outputPathForTarget,
+  VSCODE_TARGET,
+} from "./target-output.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
-const VSCODE_OUT = join(ROOT, "out", "vscode");
-const DIST_DIR = join(ROOT, "dist", "vscode");
+const VSCODE_OUT = outputPathForTarget(ROOT, VSCODE_TARGET);
+const DIST_DIR = distPathForTarget(ROOT, VSCODE_TARGET);
+const LEGACY_DIST_DIR = legacyVSCodeDistPath(ROOT);
+const DIST_DIR_REL = displayDistDirectoryForTarget(VSCODE_TARGET);
+const MARKETPLACE_SOURCE = `./${DIST_DIR_REL}`;
 const CONFIG_PATH = join(ROOT, "config.json");
 const VSCODE_EXAMPLE = join(ROOT, "config.example.json");
 const MARKETPLACE_PATH = join(ROOT, "marketplace.json");
@@ -69,7 +80,9 @@ async function publish() {
 
   const manifestPath = join(VSCODE_OUT, "plugin.json");
   if (!(await fileExists(manifestPath))) {
-    console.error("Build output not found at out/vscode/");
+    console.error(
+      `Build output not found at ${displayOutputDirectoryForTarget(VSCODE_TARGET)}/`,
+    );
     process.exit(1);
   }
 
@@ -79,7 +92,8 @@ async function publish() {
     description: string;
   };
 
-  // Copy build output to dist/vscode/
+  // Copy build output to dist/wycats/ and remove the old tracked dist/vscode/
+  await rm(LEGACY_DIST_DIR, { recursive: true, force: true });
   await rm(DIST_DIR, { recursive: true, force: true });
   await mkdir(join(ROOT, "dist"), { recursive: true });
   await cp(VSCODE_OUT, DIST_DIR, { recursive: true });
@@ -94,7 +108,7 @@ async function publish() {
     plugins: [
       {
         name: pluginMeta.name,
-        source: "./dist/vscode",
+        source: MARKETPLACE_SOURCE,
         description: pluginMeta.description,
       },
     ],
@@ -106,7 +120,11 @@ async function publish() {
   );
 
   // Commit and push
-  execSync("git add -f dist/vscode/ marketplace.json", {
+  execSync("git rm -r --quiet --ignore-unmatch dist/vscode", {
+    cwd: ROOT,
+    stdio: "inherit",
+  });
+  execSync(`git add ${DIST_DIR_REL}/ marketplace.json`, {
     cwd: ROOT,
     stdio: "inherit",
   });

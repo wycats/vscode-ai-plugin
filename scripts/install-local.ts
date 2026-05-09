@@ -14,7 +14,12 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { execSync } from "node:child_process";
 import { platform } from "node:os";
-import { modify, applyEdits } from "jsonc-parser";
+import { modify, applyEdits, parse } from "jsonc-parser";
+import {
+  legacyVSCodeOutputPath,
+  outputPathForTarget,
+  VSCODE_TARGET,
+} from "./target-output.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
 const HOME = process.env.HOME ?? "";
@@ -50,14 +55,39 @@ function setJsoncValue(
   return applyEdits(content, edits);
 }
 
+/** Remove a JSONC path, preserving comments and formatting. */
+function removeJsoncValue(content: string, path: (string | number)[]): string {
+  const edits = modify(content, path, undefined, {
+    formattingOptions: { tabSize: 2, insertSpaces: false },
+  });
+  return applyEdits(content, edits);
+}
+
+function hasJsoncPath(content: string, path: string[]): boolean {
+  const parsed = parse(content) as unknown;
+  let current = parsed;
+
+  for (const segment of path) {
+    if (
+      typeof current !== "object" ||
+      current === null ||
+      Array.isArray(current) ||
+      !Object.prototype.hasOwnProperty.call(current, segment)
+    ) {
+      return false;
+    }
+
+    current = (current as Record<string, unknown>)[segment];
+  }
+
+  return true;
+}
+
 async function installLocal() {
   // Step 1: run the build
   execSync("node scripts/build.ts", { cwd: ROOT, stdio: "inherit" });
 
-  // Step 2: read current settings
-  let content = await readSettings();
-
-  // Step 3: determine output path from config
+  // Step 2: determine output path from config
   let target = "vscode";
   try {
     const config = JSON.parse(
@@ -67,10 +97,44 @@ async function installLocal() {
   } catch {
     // config.json missing — build.ts already errored
   }
-  const outPath = join(ROOT, "out", target);
+  const outPath = outputPathForTarget(ROOT, target);
 
-  // Step 4: register plugin output path if not already present
-  if (content.includes(outPath)) {
+  if (target !== VSCODE_TARGET) {
+    console.log(
+      `Built ${target} plugin at ${outPath}; no VS Code local registration needed.`,
+    );
+    return;
+  }
+
+  // Step 3: read current settings
+  let content = await readSettings();
+
+  // Step 4: remove stale repo-local registrations from the old VS Code root
+  const staleOutPath = legacyVSCodeOutputPath(ROOT);
+  const staleHooksPath = join(staleOutPath, "hooks");
+  let removedStaleEntry = false;
+
+  if (hasJsoncPath(content, ["chat.plugins.paths", staleOutPath])) {
+    content = removeJsoncValue(content, ["chat.plugins.paths", staleOutPath]);
+    removedStaleEntry = true;
+    console.log(`Removed stale plugin registration at ${staleOutPath}`);
+  }
+
+  if (hasJsoncPath(content, ["chat.hookFilesLocations", staleHooksPath])) {
+    content = removeJsoncValue(content, [
+      "chat.hookFilesLocations",
+      staleHooksPath,
+    ]);
+    removedStaleEntry = true;
+    console.log(`Removed stale hooks registration at ${staleHooksPath}`);
+  }
+
+  if (removedStaleEntry) {
+    await writeFile(SETTINGS_PATH, content, "utf-8");
+  }
+
+  // Step 5: register plugin output path if not already present
+  if (hasJsoncPath(content, ["chat.plugins.paths", outPath])) {
     console.log(`Plugin already registered at ${outPath}`);
   } else {
     content = setJsoncValue(content, ["chat.plugins.paths", outPath], true);
@@ -78,9 +142,9 @@ async function installLocal() {
     console.log(`Registered plugin at ${outPath} in ${SETTINGS_PATH}`);
   }
 
-  // Step 5: register hooks directory in chat.hookFilesLocations
+  // Step 6: register hooks directory in chat.hookFilesLocations
   const hooksPath = join(outPath, "hooks");
-  if (!content.includes(hooksPath)) {
+  if (!hasJsoncPath(content, ["chat.hookFilesLocations", hooksPath])) {
     content = setJsoncValue(
       content,
       ["chat.hookFilesLocations", hooksPath],

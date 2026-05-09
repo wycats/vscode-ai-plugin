@@ -19,7 +19,7 @@ If you prefer to configure manually, copy `config.example.json` to `config.json`
 
 Agent source files (in `agents/`) use abstract names for models and tools instead of hardcoded provider-specific values. For example, an agent says `model: fast` rather than naming a specific model.
 
-Your `config.json` maps those abstract names to concrete values for your environment. The build reads the source files and your config, resolves the names, and writes ready-to-use agent files to `out/<target>/`.
+Your `config.json` maps those abstract names to concrete values for your environment. The build reads the source files and your config, resolves the names, and writes ready-to-use agent files to the platform output directory: `out/wycats/` for VS Code, or `out/claude-code/` for Claude Code.
 
 This means the same agent definitions work for everyone — you just change the config.
 
@@ -29,10 +29,10 @@ The file has a JSON Schema (`config.schema.json`) that provides validation and a
 
 ### `target`
 
-Which platform you're building for. This determines the output directory and output format.
+Which platform you're building for. This determines the output format and platform output directory.
 
-- `"vscode"` — for VS Code with GitHub Copilot
-- `"claude-code"` — for Claude Code
+- `"vscode"` — for VS Code with GitHub Copilot; builds to `out/wycats/`
+- `"claude-code"` — for Claude Code; builds to `out/claude-code/`
 
 ### `models`
 

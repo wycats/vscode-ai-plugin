@@ -12,7 +12,7 @@
     },
     "target": {
       "type": "string",
-      "description": "Build target platform. Output goes to out/<target>/.",
+      "description": "Build target platform. VS Code builds to out/wycats/; Claude Code builds to out/claude-code/.",
       "enum": ["vscode", "claude-code"],
       "default": "vscode"
     },

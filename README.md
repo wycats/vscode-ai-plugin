@@ -81,7 +81,7 @@ Requires `chat.plugins.enabled: true` (agent plugins are preview).
 
 ### How the build works
 
-Agent source files use abstract role names for models and tool groups instead of hardcoded provider-specific values. A local `config.json` (gitignored) maps those roles to concrete values for your environment. The build resolves the names and writes ready-to-use files to `out/<target>/`.
+Agent source files use abstract role names for models and tool groups instead of hardcoded provider-specific values. A local `config.json` (gitignored) maps those roles to concrete values for your environment. The build resolves the names and writes ready-to-use files to the platform output directory: `out/wycats/` for VS Code, or `out/claude-code/` for Claude Code.
 
 See [docs/setup.md](docs/setup.md) for full configuration details, including model presets by provider and tool group reference.
 
@@ -94,4 +94,4 @@ pnpm validate  # Check discovered resources and plugin metadata
 pnpm check     # TypeScript + ESLint strict type-checked
 ```
 
-Edit agents, skills, and stances in this directory. The watch script rebuilds `out/vscode/` on every change. All VS Code windows consume the installed plugin.
+Edit agents, skills, and stances in this directory. For VS Code, the watch script rebuilds `out/wycats/` on every change. All VS Code windows consume the installed plugin.

@@ -8,6 +8,10 @@ import { join } from "node:path";
 import { execSync } from "node:child_process";
 import { platform } from "node:os";
 import * as p from "@clack/prompts";
+import {
+  displayOutputDirectoryForTarget,
+  outputPathForTarget,
+} from "./target-output.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
 const CONFIG_PATH = join(ROOT, "config.json");
@@ -225,7 +229,7 @@ async function setup() {
     }
   } else {
     // Offer to add a shell alias for persistent access
-    const pluginDir = join(ROOT, "out", target as string);
+    const pluginDir = outputPathForTarget(ROOT, target as string);
     const aliasLine = `alias claude-plugin='claude --plugin-dir "${pluginDir}"'`;
     const shellRc = join(
       process.env.HOME ?? "",
@@ -273,7 +277,7 @@ async function setup() {
   }
 
   // 7. Done
-  const outDir = `out/${target as string}`;
+  const outDir = displayOutputDirectoryForTarget(target as string);
 
   const nextSteps =
     target === "vscode"
