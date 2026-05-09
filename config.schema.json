@@ -103,6 +103,21 @@
           "items": { "type": "string" }
         }
       }
+    },
+    "hookMatchers": {
+      "type": "object",
+      "description": "Claude Code hook matcher strings keyed by neutral hook tool name. Used when building consolidated hooks.json.",
+      "additionalProperties": { "type": "string" },
+      "properties": {
+        "terminal": {
+          "type": "string",
+          "description": "Matcher for terminal hooks, e.g. Bash."
+        },
+        "edit": {
+          "type": "string",
+          "description": "Matcher for edit hooks, e.g. Write|Edit|MultiEdit."
+        }
+      }
     }
   }
 }

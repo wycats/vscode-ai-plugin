@@ -1,6 +1,6 @@
 /**
- * Watches the plugin source tree for changes to agents, skills, prompts,
- * and config.json. On any change, runs the full build.
+ * Watches the plugin source tree for changes to agents, skills, instructions,
+ * hooks, stances, and config.json. On any change, runs the full build.
  *
  * Uses Node.js native fs.watch (recursive) — no dependencies needed.
  */
@@ -10,7 +10,7 @@ import { execSync } from "node:child_process";
 import { join } from "node:path";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
-const WATCHED_DIRS = ["agents", "skills", "prompts", "instructions", "hooks"];
+const WATCHED_DIRS = ["agents", "skills", "instructions", "hooks", "stances"];
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 

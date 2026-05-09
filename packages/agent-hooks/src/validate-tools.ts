@@ -18,7 +18,11 @@ interface ToolsJson {
 }
 
 // Load tools.json
-const toolsPath = join(dirname(fileURLToPath(import.meta.url)), "..", "tools.json");
+const toolsPath = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "tools.json",
+);
 const toolsData = JSON.parse(readFileSync(toolsPath, "utf-8")) as ToolsJson;
 
 // Build per-platform sets of known tool names from tools.json
@@ -44,7 +48,9 @@ for (const [, entry] of Object.entries(toolsData)) {
   if (typeof entry === "string") continue;
   for (const platform of platforms) {
     if (!entry.platforms[platform] || entry.platforms[platform].length === 0) {
-      console.error(`  Canonical "${entry.canonical}" has no tools for platform "${platform}"`);
+      console.error(
+        `  Canonical "${entry.canonical}" has no tools for platform "${platform}"`,
+      );
       errors++;
     }
   }
@@ -58,7 +64,9 @@ for (const [, entry] of Object.entries(toolsData)) {
     for (const tool of tools) {
       const existing = seenTools.get(tool);
       if (existing && existing !== entry.canonical) {
-        console.error(`  Tool "${tool}" appears in both "${existing}" and "${entry.canonical}"`);
+        console.error(
+          `  Tool "${tool}" appears in both "${existing}" and "${entry.canonical}"`,
+        );
         errors++;
       }
       seenTools.set(tool, entry.canonical);
@@ -70,5 +78,7 @@ if (errors > 0) {
   console.error(`\n${String(errors)} issue(s) found in tools.json.`);
   process.exit(1);
 } else {
-  console.log(`tools.json valid: ${String(allCanonicals.size)} canonical tools, ${String(seenTools.size)} platform mappings, all platforms covered.`);
+  console.log(
+    `tools.json valid: ${String(allCanonicals.size)} canonical tools, ${String(seenTools.size)} platform mappings, all platforms covered.`,
+  );
 }

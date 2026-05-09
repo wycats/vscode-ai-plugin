@@ -11,14 +11,7 @@
  *   Chat: Install Plugin From Source → wycats/vscode-ai-plugin
  */
 
-import {
-  readFile,
-  writeFile,
-  mkdir,
-  cp,
-  rm,
-  access,
-} from "node:fs/promises";
+import { readFile, writeFile, mkdir, cp, rm, access } from "node:fs/promises";
 import { join } from "node:path";
 import { execSync } from "node:child_process";
 
@@ -90,6 +83,7 @@ async function publish() {
   await rm(DIST_DIR, { recursive: true, force: true });
   await mkdir(join(ROOT, "dist"), { recursive: true });
   await cp(VSCODE_OUT, DIST_DIR, { recursive: true });
+  await cp(join(ROOT, "README.md"), join(DIST_DIR, "README.md"));
 
   // Generate marketplace.json at repo root
   const marketplace = {
@@ -135,9 +129,7 @@ async function publish() {
 
   console.log("\nPublished VS Code plugin to main.");
   console.log("\nTo install in VS Code:");
-  console.log(
-    "  Chat: Install Plugin From Source → wycats/vscode-ai-plugin",
-  );
+  console.log("  Chat: Install Plugin From Source → wycats/vscode-ai-plugin");
 }
 
 publish().catch((err: unknown) => {

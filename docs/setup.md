@@ -29,10 +29,10 @@ The file has a JSON Schema (`config.schema.json`) that provides validation and a
 
 ### `target`
 
-Which platform you're building for. This determines the output directory and (eventually) the output format.
+Which platform you're building for. This determines the output directory and output format.
 
 - `"vscode"` — for VS Code with GitHub Copilot
-- `"claude-code"` — for Claude Code (coming soon)
+- `"claude-code"` — for Claude Code
 
 ### `models`
 
