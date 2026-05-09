@@ -19,6 +19,7 @@ interface Config {
   target: string;
   models: Record<string, string | null>;
   toolGroups: Record<string, string[]>;
+  hookMatchers?: Record<string, string>;
 }
 
 const PRESETS: Record<string, Record<string, string | null>> = {
@@ -72,7 +73,7 @@ async function setup() {
       {
         value: "claude-code",
         label: "Claude Code",
-        hint: "coming soon — builds agents in Claude Code format",
+        hint: "builds agents, skills, and hooks in Claude Code format",
       },
     ],
   });
@@ -185,6 +186,7 @@ async function setup() {
     target: target as string,
     models,
     toolGroups: example.toolGroups,
+    ...(example.hookMatchers ? { hookMatchers: example.hookMatchers } : {}),
   };
 
   await writeFile(CONFIG_PATH, JSON.stringify(config, null, 2) + "\n");

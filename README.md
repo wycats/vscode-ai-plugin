@@ -90,7 +90,7 @@ See [docs/setup.md](docs/setup.md) for full configuration details, including mod
 ```sh
 pnpm watch     # Auto-rebuild on source or config changes
 pnpm build     # One-off build
-pnpm validate  # Check all plugin entries are consistent
+pnpm validate  # Check discovered resources and plugin metadata
 pnpm check     # TypeScript + ESLint strict type-checked
 ```
 

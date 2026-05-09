@@ -2,22 +2,21 @@
  * Validates the plugin source tree:
  * - Every skill directory has a SKILL.md with valid frontmatter
  * - Every agent file has valid frontmatter with a description
- * - plugin.json references only files that exist
+ * - Every instruction file has valid frontmatter
+ * - Every neutral hook manifest has required fields and an existing script
+ * - plugin.json contains metadata only; resources are discovered from disk
  * - Skill directory names match the `name` field in SKILL.md
  */
 
 import { readFile, stat } from "node:fs/promises";
-import { join, basename, dirname } from "node:path";
+import { basename, dirname, isAbsolute, join } from "node:path";
+import {
+  RESOURCE_SECTIONS,
+  discoverResourceFiles,
+  type DiscoveredResource,
+} from "./resource-discovery.ts";
 
-interface PluginEntry {
-  path: string;
-}
-
-interface PluginJson {
-  skills?: PluginEntry[];
-  agents?: PluginEntry[];
-  prompts?: PluginEntry[];
-}
+const HOOK_TYPES = new Set(["policy", "observer", "side-effect"]);
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
 
@@ -49,95 +48,189 @@ function extractFrontmatter(content: string): Record<string, string> | null {
 
 async function fileExists(path: string): Promise<boolean> {
   try {
-    await stat(path);
-    return true;
+    return (await stat(path)).isFile();
   } catch {
     return false;
   }
 }
 
+function parseJsonObject(
+  path: string,
+  content: string,
+): Record<string, unknown> | null {
+  try {
+    const parsed = JSON.parse(content) as unknown;
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+      error(`${path}: expected a JSON object`);
+      return null;
+    }
+    return parsed as Record<string, unknown>;
+  } catch (err) {
+    error(`${path}: invalid JSON (${String(err)})`);
+    return null;
+  }
+}
+
 async function validatePluginJson() {
-  console.log("Checking plugin.json...");
+  console.log("Checking plugin metadata...");
   const pluginPath = join(ROOT, "plugin.json");
 
   if (!(await fileExists(pluginPath))) {
-    error("plugin.json not found. Run `npm run build` first.");
+    error("plugin.json not found.");
     return;
   }
 
-  const plugin = JSON.parse(await readFile(pluginPath, "utf-8")) as PluginJson;
+  const plugin = parseJsonObject(
+    "plugin.json",
+    await readFile(pluginPath, "utf-8"),
+  );
+  if (!plugin) return;
 
-  for (const section of ["skills", "agents", "prompts"] as const) {
-    const entries = plugin[section] ?? [];
-    for (const entry of entries) {
-      const fullPath = join(ROOT, entry.path);
-      if (!(await fileExists(fullPath))) {
-        error(`${section} entry references missing file: ${entry.path}`);
-      }
+  for (const field of ["name", "version", "description"] as const) {
+    const value = plugin[field];
+    if (typeof value !== "string" || value.trim() === "") {
+      error(`plugin.json: missing non-empty '${field}' metadata field`);
+    }
+  }
+
+  for (const section of RESOURCE_SECTIONS) {
+    if (section in plugin) {
+      error(
+        `plugin.json: remove '${section}' entries; build/validate discover resources from the filesystem`,
+      );
     }
   }
 }
 
-async function validateSkills() {
-  console.log("Checking skills...");
-  const plugin = JSON.parse(
-    await readFile(join(ROOT, "plugin.json"), "utf-8"),
-  ) as PluginJson;
+async function validateSkills(skills: DiscoveredResource[]) {
+  console.log(`Checking skills (${String(skills.length)})...`);
 
-  for (const entry of plugin.skills ?? []) {
-    const fullPath = join(ROOT, entry.path);
+  for (const skill of skills) {
+    const fullPath = skill.sourcePath;
     const content = await readFile(fullPath, "utf-8");
     const fm = extractFrontmatter(content);
 
     if (!fm) {
-      error(`${entry.path}: missing YAML frontmatter`);
+      error(`${skill.pluginPath}: missing YAML frontmatter`);
       continue;
     }
 
     if (!fm.name) {
-      error(`${entry.path}: missing 'name' in frontmatter`);
+      error(`${skill.pluginPath}: missing 'name' in frontmatter`);
     }
 
     if (!fm.description) {
-      error(`${entry.path}: missing 'description' in frontmatter`);
+      error(`${skill.pluginPath}: missing 'description' in frontmatter`);
     }
 
     // Check name matches directory
     const dirName = basename(dirname(fullPath));
     if (fm.name && fm.name !== dirName) {
       error(
-        `${entry.path}: name '${fm.name}' does not match directory '${dirName}'`,
+        `${skill.pluginPath}: name '${fm.name}' does not match directory '${dirName}'`,
       );
     }
   }
 }
 
-async function validateAgents() {
-  console.log("Checking agents...");
-  const plugin = JSON.parse(
-    await readFile(join(ROOT, "plugin.json"), "utf-8"),
-  ) as PluginJson;
+async function validateAgents(agents: DiscoveredResource[]) {
+  console.log(`Checking agents (${String(agents.length)})...`);
 
-  for (const entry of plugin.agents ?? []) {
-    const fullPath = join(ROOT, entry.path);
+  for (const agent of agents) {
+    const fullPath = agent.sourcePath;
     const content = await readFile(fullPath, "utf-8");
     const fm = extractFrontmatter(content);
 
     if (!fm) {
-      error(`${entry.path}: missing YAML frontmatter`);
+      error(`${agent.pluginPath}: missing YAML frontmatter`);
       continue;
     }
 
     if (!fm.description) {
-      error(`${entry.path}: missing 'description' in frontmatter`);
+      error(`${agent.pluginPath}: missing 'description' in frontmatter`);
+    }
+  }
+}
+
+async function validateInstructions(instructions: DiscoveredResource[]) {
+  console.log(`Checking instructions (${String(instructions.length)})...`);
+
+  for (const instruction of instructions) {
+    const content = await readFile(instruction.sourcePath, "utf-8");
+    const fm = extractFrontmatter(content);
+
+    if (!fm) {
+      error(`${instruction.pluginPath}: missing YAML frontmatter`);
+      continue;
+    }
+
+    if (!fm.description) {
+      error(`${instruction.pluginPath}: missing 'description' in frontmatter`);
+    }
+
+    if (!fm.applyTo) {
+      error(`${instruction.pluginPath}: missing 'applyTo' in frontmatter`);
+    }
+  }
+}
+
+async function validateHooks(hooks: DiscoveredResource[]) {
+  console.log(`Checking hooks (${String(hooks.length)})...`);
+
+  for (const hook of hooks) {
+    const manifest = parseJsonObject(
+      hook.pluginPath,
+      await readFile(hook.sourcePath, "utf-8"),
+    );
+    if (!manifest) continue;
+
+    const type = manifest.type;
+    if (typeof type !== "string" || !HOOK_TYPES.has(type)) {
+      error(
+        `${hook.pluginPath}: 'type' must be one of policy, observer, side-effect`,
+      );
+    }
+
+    if (typeof manifest.name !== "string" || manifest.name.trim() === "") {
+      error(`${hook.pluginPath}: missing non-empty 'name'`);
+    }
+
+    const events = manifest.events;
+    if (
+      !Array.isArray(events) ||
+      events.length === 0 ||
+      events.some((event) => typeof event !== "string" || event.trim() === "")
+    ) {
+      error(`${hook.pluginPath}: 'events' must be a non-empty string array`);
+    }
+
+    if (manifest.tool !== undefined && typeof manifest.tool !== "string") {
+      error(`${hook.pluginPath}: optional 'tool' must be a string`);
+    }
+
+    const script = manifest.script;
+    if (typeof script !== "string" || script.trim() === "") {
+      error(`${hook.pluginPath}: missing non-empty 'script'`);
+    } else if (isAbsolute(script) || script.split(/[\\/]/).includes("..")) {
+      error(`${hook.pluginPath}: 'script' must stay under scripts/hooks/`);
+    } else if (!(await fileExists(join(ROOT, "scripts", "hooks", script)))) {
+      error(`${hook.pluginPath}: script not found: scripts/hooks/${script}`);
+    }
+
+    if (manifest.timeout !== undefined && typeof manifest.timeout !== "number") {
+      error(`${hook.pluginPath}: optional 'timeout' must be a number`);
     }
   }
 }
 
 async function main() {
+  const resources = await discoverResourceFiles(ROOT);
+
   await validatePluginJson();
-  await validateSkills();
-  await validateAgents();
+  await validateSkills(resources.skills);
+  await validateAgents(resources.agents);
+  await validateInstructions(resources.instructions);
+  await validateHooks(resources.hooks);
 
   console.log("");
   if (errors > 0) {

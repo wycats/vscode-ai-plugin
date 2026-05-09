@@ -9,9 +9,11 @@
  * Output goes to out/<target>/ (e.g. out/vscode/ or out/claude-code/).
  */
 
-import { readFile, writeFile, readdir, mkdir, cp, rm } from "node:fs/promises";
+import { readFile, writeFile, mkdir, cp, rm } from "node:fs/promises";
 import { join, relative, dirname } from "node:path";
 import matter from "gray-matter";
+import { ModuleKind, ScriptTarget, transpileModule } from "typescript";
+import { discoverResourceFiles } from "./resource-discovery.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
 const CONFIG_PATH = join(ROOT, "config.json");
@@ -27,13 +29,15 @@ interface PluginEntry {
   path: string;
 }
 
-interface PluginJson {
+interface PluginMetadata {
   name: string;
   version: string;
   description: string;
+}
+
+interface PluginJson extends PluginMetadata {
   skills?: PluginEntry[];
   agents?: PluginEntry[];
-  prompts?: PluginEntry[];
   instructions?: PluginEntry[];
   hooks?: PluginEntry[];
 }
@@ -68,24 +72,6 @@ function resolveTools(toolList: unknown[], config: Config): string[] {
     }
   }
   return resolved;
-}
-
-async function findFiles(dir: string, pattern: RegExp): Promise<string[]> {
-  const results: string[] = [];
-  try {
-    const entries = await readdir(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) {
-        results.push(...(await findFiles(full, pattern)));
-      } else if (pattern.test(entry.name)) {
-        results.push(full);
-      }
-    }
-  } catch {
-    // directory doesn't exist
-  }
-  return results;
 }
 
 function serializeFrontmatter(data: Record<string, unknown>): string {
@@ -196,29 +182,22 @@ interface HookManifest {
 async function buildHooks(
   outDir: string,
   config: Config,
+  hookFiles: string[],
 ): Promise<string[]> {
-  const hookFiles = await findFiles(join(ROOT, "hooks"), /\.json$/);
   if (hookFiles.length === 0) return [];
 
   // Load all manifests
   const manifests: HookManifest[] = [];
   for (const file of hookFiles) {
-    manifests.push(
-      JSON.parse(await readFile(file, "utf-8")) as HookManifest,
-    );
+    manifests.push(JSON.parse(await readFile(file, "utf-8")) as HookManifest);
   }
 
   // Copy hook scripts and agent-hooks package to output
-  await cp(
-    join(ROOT, "scripts", "hooks"),
-    join(outDir, "scripts", "hooks"),
-    { recursive: true },
-  ).catch(() => {});
+  await cp(join(ROOT, "scripts", "hooks"), join(outDir, "scripts", "hooks"), {
+    recursive: true,
+  }).catch(() => {});
   // Copy the package so hook imports resolve in the output
-  const hooksPkg = join(ROOT, "packages", "agent-hooks");
-  const hooksDest = join(outDir, "node_modules", "@wycats", "agent-hooks");
-  await mkdir(dirname(hooksDest), { recursive: true });
-  await cp(hooksPkg, hooksDest, { recursive: true }).catch(() => {});
+  await copyAgentHooksPackage(outDir);
 
   const hooksOutDir = join(outDir, "hooks");
   await mkdir(hooksOutDir, { recursive: true });
@@ -228,6 +207,38 @@ async function buildHooks(
   } else {
     return buildVSCodeHooks(manifests, hooksOutDir, outDir);
   }
+}
+
+async function copyAgentHooksPackage(outDir: string): Promise<void> {
+  const hooksPkg = join(ROOT, "packages", "agent-hooks");
+  const hooksDest = join(outDir, "node_modules", "@wycats", "agent-hooks");
+
+  await mkdir(join(hooksDest, "src"), { recursive: true });
+
+  const packageJson = JSON.parse(
+    await readFile(join(hooksPkg, "package.json"), "utf-8"),
+  ) as Record<string, unknown>;
+  packageJson.exports = { ".": "./src/index.js" };
+
+  await writeFile(
+    join(hooksDest, "package.json"),
+    JSON.stringify(packageJson, null, 2) + "\n",
+  );
+  await cp(join(hooksPkg, "tools.json"), join(hooksDest, "tools.json"));
+
+  const runtimeSource = await readFile(
+    join(hooksPkg, "src", "index.ts"),
+    "utf-8",
+  );
+  const { outputText } = transpileModule(runtimeSource, {
+    compilerOptions: {
+      target: ScriptTarget.ES2024,
+      module: ModuleKind.ESNext,
+    },
+    fileName: join(hooksPkg, "src", "index.ts"),
+  });
+
+  await writeFile(join(hooksDest, "src", "index.js"), outputText);
 }
 
 /** VS Code adapter: one JSON file per hook, flat handler arrays. */
@@ -240,7 +251,10 @@ function buildVSCodeHooks(
   const outPaths: string[] = [];
 
   for (const m of manifests) {
-    const hooks: Record<string, { type: string; command: string; timeout?: number }[]> = {};
+    const hooks: Record<
+      string,
+      { type: string; command: string; timeout?: number }[]
+    > = {};
     for (const event of m.events) {
       hooks[event] = [
         {
@@ -268,7 +282,10 @@ function buildCCHooks(
   const matchers = config.hookMatchers ?? {};
   const consolidated: Record<
     string,
-    { matcher?: string; hooks: { type: string; command: string; timeout?: number }[] }[]
+    {
+      matcher?: string;
+      hooks: { type: string; command: string; timeout?: number }[];
+    }[]
   > = {};
 
   for (const m of manifests) {
@@ -278,7 +295,7 @@ function buildCCHooks(
       ...(m.timeout !== undefined ? { timeout: m.timeout } : {}),
     };
 
-    const group: { matcher?: string; hooks: typeof handler[] } = {
+    const group: { matcher?: string; hooks: (typeof handler)[] } = {
       hooks: [handler],
     };
     if (m.tool && matchers[m.tool]) {
@@ -297,23 +314,20 @@ function buildCCHooks(
   ).then(() => ["./hooks/hooks.json"]);
 }
 
-async function copyDir(srcName: string, outDir: string): Promise<string[]> {
+async function copyDir(srcName: string, outDir: string): Promise<void> {
   const srcDir = join(ROOT, srcName);
   const destDir = join(outDir, srcName);
   try {
     await cp(srcDir, destDir, { recursive: true });
   } catch {
-    return [];
+    return;
   }
-
-  // Return relative paths for plugin.json
-  const files = await findFiles(destDir, /.*/);
-  return files.map((f) => "./" + relative(outDir, f));
 }
 
 async function build() {
   const config = await loadConfig();
   const outDir = join(ROOT, "out", config.target);
+  const resources = await discoverResourceFiles(ROOT);
 
   // Clean output
   await rm(outDir, { recursive: true, force: true });
@@ -322,10 +336,10 @@ async function build() {
   // Read plugin metadata
   const pluginMeta = JSON.parse(
     await readFile(join(ROOT, "plugin.json"), "utf-8"),
-  ) as PluginJson;
+  ) as PluginMetadata;
 
   // Build agents
-  const agentSources = await findFiles(join(ROOT, "agents"), /\.agent\.md$/);
+  const agentSources = resources.agents.map((resource) => resource.sourcePath);
   const agentPaths: string[] = [];
   for (const src of agentSources) {
     const relPath = await buildAgent(src, outDir, config);
@@ -333,18 +347,23 @@ async function build() {
   }
 
   // Copy skills (shared by both targets)
-  const allSkillPaths = await copyDir("skills", outDir);
-  const skillPaths = allSkillPaths.filter((p) => p.endsWith("/SKILL.md"));
+  await copyDir("skills", outDir);
+  const skillPaths = resources.skills.map((resource) => resource.pluginPath);
 
   const isClaudeCode = config.target === "claude-code";
 
   // Build hooks (both targets)
-  const hookPaths = await buildHooks(outDir, config);
+  const hookPaths = await buildHooks(
+    outDir,
+    config,
+    resources.hooks.map((resource) => resource.sourcePath),
+  );
 
   // Generate package.json for script portability
   await writeFile(
     join(outDir, "package.json"),
-    JSON.stringify({ type: "module", engines: { node: ">=22.6.0" } }, null, 2) + "\n",
+    JSON.stringify({ type: "module", engines: { node: ">=24.0.0" } }, null, 2) +
+      "\n",
   );
 
   if (isClaudeCode) {
@@ -373,9 +392,9 @@ async function build() {
     console.log(`  manifest:     .claude-plugin/plugin.json`);
   } else {
     // VS Code: copy instructions, stances; generate plugin.json
-    const allInstructionPaths = await copyDir("instructions", outDir);
-    const instructionPaths = allInstructionPaths.filter((p) =>
-      p.endsWith(".instructions.md"),
+    await copyDir("instructions", outDir);
+    const instructionPaths = resources.instructions.map(
+      (resource) => resource.pluginPath,
     );
 
     await copyDir("stances", outDir);

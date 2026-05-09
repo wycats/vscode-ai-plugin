@@ -1,6 +1,6 @@
 # Quality Principles
 
-These principles govern how skills, agents, and prompts in this plugin are written. They are the practical application of the distributional mechanics described in [FOUNDATIONS.md](FOUNDATIONS.md) — how stances create gravitational wells in the probability landscape, how wells compose through reinforcement and orthogonality, and how information flows between agent and user.
+These principles govern how skills, agents, instructions, and hooks in this plugin are written. They are the practical application of the distributional mechanics described in [FOUNDATIONS.md](FOUNDATIONS.md) — how stances create gravitational wells in the probability landscape, how wells compose through reinforcement and orthogonality, and how information flows between agent and user.
 
 They are not style guidelines. They are first-principles observations about how the model's probability engine works. If a skill deviates from these principles, it should be for one of two reasons:
 

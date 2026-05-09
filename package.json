@@ -2,7 +2,7 @@
   "name": "wycats-ai-plugin",
   "version": "0.1.0",
   "private": true,
-  "description": "Personal agent toolkit: workflow agents, skills, and prompts.",
+  "description": "Personal agent toolkit: workflow agents, skills, instructions, and hooks.",
   "type": "module",
   "scripts": {
     "setup": "node scripts/setup.ts",
