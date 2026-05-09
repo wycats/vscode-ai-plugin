@@ -1,7 +1,7 @@
 {
   "name": "wycats-ai-plugin",
   "version": "0.1.0",
-  "description": "Personal agent toolkit: workflow agents, skills, and prompts.",
+  "description": "Personal agent toolkit: workflow agents, skills, instructions, and hooks.",
   "agents": [
     {
       "path": "./agents/execute.agent.md"
