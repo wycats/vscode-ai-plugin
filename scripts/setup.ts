@@ -5,7 +5,7 @@
 
 import { readFile, writeFile, appendFile, access } from "node:fs/promises";
 import { join } from "node:path";
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { platform } from "node:os";
 import * as p from "@clack/prompts";
 import {
@@ -199,7 +199,7 @@ async function setup() {
   const s = p.spinner();
   s.start("Building plugin");
   try {
-    execSync("node scripts/build.ts", { cwd: ROOT, stdio: "pipe" });
+    execFileSync("node", ["scripts/build.ts"], { cwd: ROOT, stdio: "pipe" });
     s.stop("Plugin built");
   } catch (err) {
     s.stop("Build failed");
@@ -209,22 +209,76 @@ async function setup() {
 
   // 6. Register / launch
   if (target === "vscode") {
-    const install = await p.confirm({
-      message: "Register the plugin with VS Code now?",
-      initialValue: true,
+    const registrationTarget = await p.select({
+      message: "Register the plugin with which VS Code target?",
+      options: [
+        {
+          value: "stable",
+          label: "Stable VS Code",
+          hint: "updates Code/User/settings.json",
+        },
+        {
+          value: "insiders",
+          label: "VS Code Insiders",
+          hint: "updates Code - Insiders/User/settings.json",
+        },
+        {
+          value: "custom",
+          label: "Custom settings path",
+          hint: "choose an exact settings.json file",
+        },
+        {
+          value: "skip",
+          label: "Skip registration",
+          hint: "build only; register manually later",
+        },
+      ],
     });
 
-    if (!p.isCancel(install) && install) {
-      s.start("Registering with VS Code");
-      try {
-        execSync("node scripts/install-local.ts", {
-          cwd: ROOT,
-          stdio: "pipe",
+    if (p.isCancel(registrationTarget) || registrationTarget === "skip") {
+      p.log.info("Skipped VS Code settings registration.");
+    } else {
+      const installArgs = ["scripts/install-local.ts"];
+
+      if (registrationTarget === "custom") {
+        const settingsPath = await p.text({
+          message: "Path to VS Code settings.json:",
+          placeholder: "~/Library/Application Support/Code - Insiders/User/settings.json",
+          validate(value) {
+            if (value === undefined || value.trim().length === 0) {
+              return "Enter a settings path, or go back and choose Skip registration.";
+            }
+
+            return undefined;
+          },
         });
-        s.stop("Registered with VS Code");
-      } catch (err) {
-        s.stop("Registration failed");
-        console.error(err);
+
+        if (p.isCancel(settingsPath)) {
+          p.log.info("Skipped VS Code settings registration.");
+        } else {
+          installArgs.push("--settings", settingsPath);
+        }
+      } else {
+        installArgs.push("--vscode-channel", registrationTarget);
+      }
+
+      if (installArgs.length > 1) {
+        const label =
+          registrationTarget === "custom"
+            ? "custom VS Code settings"
+            : `VS Code ${registrationTarget}`;
+
+        s.start(`Registering with ${label}`);
+        try {
+          execFileSync("node", installArgs, {
+            cwd: ROOT,
+            stdio: "pipe",
+          });
+          s.stop(`Registered with ${label}`);
+        } catch (err) {
+          s.stop("Registration failed");
+          console.error(err);
+        }
       }
     }
   } else {
@@ -268,7 +322,7 @@ async function setup() {
 
     if (!p.isCancel(launch) && launch) {
       p.outro(`Launching Claude Code...`);
-      execSync(`node scripts/launch-claude.ts`, {
+      execFileSync("node", ["scripts/launch-claude.ts"], {
         cwd: ROOT,
         stdio: "inherit",
       });

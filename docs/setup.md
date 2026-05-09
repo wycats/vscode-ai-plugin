@@ -11,9 +11,9 @@ pnpm install
 pnpm run setup
 ```
 
-The setup wizard asks which platform and model provider you use, writes your `config.json`, builds the plugin, and (for VS Code) registers it. Reload VS Code and you're done.
+The setup wizard asks which platform and model provider you use, writes your `config.json`, builds the plugin, and (for VS Code) asks whether to register Stable, Insiders, a custom settings path, or skip registration. Reload the selected VS Code channel and you're done.
 
-If you prefer to configure manually, copy `config.example.json` to `config.json`, edit it, and run `pnpm build` followed by `pnpm install-local`.
+If you prefer to configure manually, copy `config.example.json` to `config.json`, edit it, and run `pnpm build` followed by an explicit local registration command such as `pnpm install-local -- --vscode-channel insiders` or `pnpm install-local -- --settings <path>`.
 
 ## How it works
 
@@ -22,6 +22,48 @@ Agent source files (in `agents/`) use abstract names for models and tools instea
 Your `config.json` maps those abstract names to concrete values for your environment. The build reads the source files and your config, resolves the names, and writes ready-to-use agent files to the platform output directory: `out/wycats/` for VS Code, or `out/claude-code/` for Claude Code.
 
 This means the same agent definitions work for everyone — you just change the config.
+
+## VS Code local registration
+
+For VS Code, the build writes the plugin to `out/wycats/`. Local registration adds that output directory to `chat.plugins.paths` and the hooks directory to `chat.hookFilesLocations` in a VS Code `settings.json` file.
+
+The registration target is explicit. The installer does not default to Stable VS Code, because many local development sessions run in VS Code Insiders.
+
+### Choose Stable or Insiders
+
+```sh
+pnpm install-local -- --vscode-channel stable
+pnpm install-local -- --vscode-channel insiders
+```
+
+The standard settings paths are:
+
+| OS      | Stable                                                                 | Insiders                                                                            |
+| ------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| macOS   | `~/Library/Application Support/Code/User/settings.json`                | `~/Library/Application Support/Code - Insiders/User/settings.json`                  |
+| Linux   | `${XDG_CONFIG_HOME:-~/.config}/Code/User/settings.json`                | `${XDG_CONFIG_HOME:-~/.config}/Code - Insiders/User/settings.json`                  |
+| Windows | `${APPDATA:-~/AppData/Roaming}/Code/User/settings.json`                | `${APPDATA:-~/AppData/Roaming}/Code - Insiders/User/settings.json`                  |
+
+### Use an exact settings path
+
+Use `--settings` when you want full control, including temp fixtures or nonstandard VS Code profiles:
+
+```sh
+pnpm install-local -- --settings "~/Library/Application Support/Code - Insiders/User/settings.json"
+```
+
+Direct `--settings` and direct `--vscode-channel` are mutually exclusive. If both environment fallbacks and CLI flags are present, precedence is: `--settings`, `VSCODE_SETTINGS_PATH`, `--vscode-channel`, `VSCODE_CHANNEL`.
+
+### Preview without writing
+
+`--dry-run` runs the build, resolves the settings target, and reports stale registrations, already-enabled entries, and entries that would be added. It does not create directories, create settings files, or write changes.
+
+```sh
+pnpm install-local -- --dry-run --vscode-channel insiders
+pnpm install-local -- --dry-run --settings /tmp/vscode-settings.json
+```
+
+Running `pnpm install-local` with no explicit target exits with a helpful error instead of guessing.
 
 ## Configuring `config.json`
 

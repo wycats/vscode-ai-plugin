@@ -11,10 +11,16 @@
  */
 
 import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { join, dirname } from "node:path";
+import { join, dirname, resolve } from "node:path";
 import { execSync } from "node:child_process";
-import { platform } from "node:os";
-import { modify, applyEdits, parse } from "jsonc-parser";
+import { homedir, platform } from "node:os";
+import {
+  modify,
+  applyEdits,
+  parse,
+  printParseErrorCode,
+  type ParseError,
+} from "jsonc-parser";
 import {
   legacyVSCodeOutputPath,
   outputPathForTarget,
@@ -22,24 +28,250 @@ import {
 } from "./target-output.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
-const HOME = process.env.HOME ?? "";
-const SETTINGS_PATH =
-  platform() === "darwin"
-    ? join(HOME, "Library/Application Support/Code/User/settings.json")
-    : join(
-        process.env.XDG_CONFIG_HOME ?? join(HOME, ".config"),
-        "Code/User/settings.json",
-      );
 
-/** Read settings.json, creating a minimal one if it doesn't exist. */
-async function readSettings(): Promise<string> {
+type VSCodeChannel = "stable" | "insiders";
+
+interface CliOptions {
+  settingsPath?: string;
+  vscodeChannel?: VSCodeChannel;
+  dryRun: boolean;
+}
+
+interface ResolvedSettingsTarget {
+  path: string;
+  source: string;
+}
+
+interface RegistrationActions {
+  staleEntriesRemoved: string[];
+  alreadyEnabledEntries: string[];
+  entriesEnabled: string[];
+  content: string;
+}
+
+function usage(): string {
+  return [
+    "Usage: pnpm install-local -- --settings <path>",
+    "   or: pnpm install-local -- --vscode-channel <stable|insiders>",
+    "",
+    "Options:",
+    "  --settings <path>                 Settings JSONC file to update.",
+    "  --vscode-channel <stable|insiders> Convenience alias for the standard VS Code settings path.",
+    "  --dry-run                         Build and report changes without writing settings.",
+    "",
+    "Environment fallbacks, in precedence order after direct CLI settings:",
+    "  VSCODE_SETTINGS_PATH, VSCODE_CHANNEL",
+  ].join("\n");
+}
+
+function parseVSCodeChannel(value: string, source: string): VSCodeChannel {
+  if (value === "stable" || value === "insiders") {
+    return value;
+  }
+
+  throw new Error(
+    `${source} must be "stable" or "insiders"; received ${JSON.stringify(value)}.`,
+  );
+}
+
+function takeOptionValue(args: string[], index: number, name: string): string {
+  if (index + 1 >= args.length) {
+    throw new Error(`${name} requires a value.\n\n${usage()}`);
+  }
+
+  const value = args[index + 1];
+
+  if (value.startsWith("--")) {
+    throw new Error(`${name} requires a value.\n\n${usage()}`);
+  }
+
+  return value;
+}
+
+function parseCliOptions(args: string[]): CliOptions {
+  const options: CliOptions = { dryRun: false };
+  let sawCliSettings = false;
+  let sawCliChannel = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === "--dry-run") {
+      options.dryRun = true;
+      continue;
+    }
+
+    if (arg === "--settings") {
+      options.settingsPath = takeOptionValue(args, index, "--settings");
+      sawCliSettings = true;
+      index += 1;
+      continue;
+    }
+
+    if (arg.startsWith("--settings=")) {
+      options.settingsPath = arg.slice("--settings=".length);
+      sawCliSettings = true;
+      continue;
+    }
+
+    if (arg === "--vscode-channel") {
+      options.vscodeChannel = parseVSCodeChannel(
+        takeOptionValue(args, index, "--vscode-channel"),
+        "--vscode-channel",
+      );
+      sawCliChannel = true;
+      index += 1;
+      continue;
+    }
+
+    if (arg.startsWith("--vscode-channel=")) {
+      options.vscodeChannel = parseVSCodeChannel(
+        arg.slice("--vscode-channel=".length),
+        "--vscode-channel",
+      );
+      sawCliChannel = true;
+      continue;
+    }
+
+    if (arg === "--help" || arg === "-h") {
+      console.log(usage());
+      process.exit(0);
+    }
+
+    throw new Error(`Unknown argument: ${arg}\n\n${usage()}`);
+  }
+
+  if (sawCliSettings && sawCliChannel) {
+    throw new Error(
+      "Use either direct --settings or direct --vscode-channel, not both.",
+    );
+  }
+
+  return options;
+}
+
+function expandHome(path: string): string {
+  if (path === "~") {
+    return homedir();
+  }
+
+  if (path.startsWith("~/")) {
+    return join(homedir(), path.slice(2));
+  }
+
+  return path;
+}
+
+function resolveSettingsPath(path: string): string {
+  if (path.trim().length === 0) {
+    throw new Error("Settings path must not be empty.");
+  }
+
+  return resolve(expandHome(path));
+}
+
+function isFileNotFoundError(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    err.code === "ENOENT"
+  );
+}
+
+function settingsPathForChannel(channel: VSCodeChannel): string {
+  const appName = channel === "stable" ? "Code" : "Code - Insiders";
+
+  switch (platform()) {
+    case "darwin":
+      return join(
+        homedir(),
+        "Library/Application Support",
+        appName,
+        "User/settings.json",
+      );
+    case "win32":
+      return join(
+        process.env.APPDATA ?? join(homedir(), "AppData/Roaming"),
+        appName,
+        "User/settings.json",
+      );
+    default:
+      return join(
+        process.env.XDG_CONFIG_HOME ?? join(homedir(), ".config"),
+        appName,
+        "User/settings.json",
+      );
+  }
+}
+
+function resolveSettingsTarget(options: CliOptions): ResolvedSettingsTarget {
+  if (options.settingsPath !== undefined) {
+    return {
+      path: resolveSettingsPath(options.settingsPath),
+      source: "--settings",
+    };
+  }
+
+  if (process.env.VSCODE_SETTINGS_PATH !== undefined) {
+    return {
+      path: resolveSettingsPath(process.env.VSCODE_SETTINGS_PATH),
+      source: "VSCODE_SETTINGS_PATH",
+    };
+  }
+
+  if (options.vscodeChannel !== undefined) {
+    return {
+      path: settingsPathForChannel(options.vscodeChannel),
+      source: `--vscode-channel ${options.vscodeChannel}`,
+    };
+  }
+
+  if (process.env.VSCODE_CHANNEL !== undefined) {
+    const channel = parseVSCodeChannel(process.env.VSCODE_CHANNEL, "VSCODE_CHANNEL");
+    return {
+      path: settingsPathForChannel(channel),
+      source: `VSCODE_CHANNEL=${channel}`,
+    };
+  }
+
+  throw new Error(
+    [
+      "Refusing to guess which VS Code settings file to mutate.",
+      "Pass --settings <path> for an explicit settings file, or --vscode-channel stable|insiders for the standard VS Code location.",
+      "You can also set VSCODE_SETTINGS_PATH or VSCODE_CHANNEL.",
+      "",
+      usage(),
+    ].join("\n"),
+  );
+}
+
+/** Read settings.json, using a minimal in-memory object if it doesn't exist yet. */
+async function readSettings(settingsPath: string): Promise<string> {
   try {
-    return await readFile(SETTINGS_PATH, "utf-8");
-  } catch {
-    await mkdir(dirname(SETTINGS_PATH), { recursive: true });
-    const initial = "{}\n";
-    await writeFile(SETTINGS_PATH, initial, "utf-8");
-    return initial;
+    return await readFile(settingsPath, "utf-8");
+  } catch (err: unknown) {
+    if (!isFileNotFoundError(err)) {
+      throw err;
+    }
+
+    return "{}\n";
+  }
+}
+
+function validateJsonc(content: string, settingsPath: string): void {
+  const errors: ParseError[] = [];
+  parse(content, errors, { allowTrailingComma: true });
+
+  if (errors.length > 0) {
+    const details = errors
+      .map(
+        (error) =>
+          `${printParseErrorCode(error.error)} at offset ${String(error.offset)}`,
+      )
+      .join(", ");
+
+    throw new Error(`Invalid JSONC in ${settingsPath}: ${details}`);
   }
 }
 
@@ -64,7 +296,9 @@ function removeJsoncValue(content: string, path: (string | number)[]): string {
 }
 
 function getJsoncValue(content: string, path: string[]): unknown {
-  const parsed = parse(content) as unknown;
+  const parsed = parse(content, undefined, {
+    allowTrailingComma: true,
+  }) as unknown;
   let current = parsed;
 
   for (const segment of path) {
@@ -91,20 +325,104 @@ function isJsoncPathEnabled(content: string, path: string[]): boolean {
   return getJsoncValue(content, path) === true;
 }
 
-async function installLocal() {
-  // Step 1: run the build
-  execSync("node scripts/build.ts", { cwd: ROOT, stdio: "inherit" });
+function applyRegistrationActions(
+  content: string,
+  outPath: string,
+): RegistrationActions {
+  const staleOutPath = legacyVSCodeOutputPath(ROOT);
+  const staleHooksPath = join(staleOutPath, "hooks");
+  const hooksPath = join(outPath, "hooks");
+  const staleEntriesRemoved: string[] = [];
+  const alreadyEnabledEntries: string[] = [];
+  const entriesEnabled: string[] = [];
 
-  // Step 2: determine output path from config
-  let target = "vscode";
+  if (hasJsoncPath(content, ["chat.plugins.paths", staleOutPath])) {
+    content = removeJsoncValue(content, ["chat.plugins.paths", staleOutPath]);
+    staleEntriesRemoved.push(`chat.plugins.paths[${staleOutPath}]`);
+  }
+
+  if (hasJsoncPath(content, ["chat.hookFilesLocations", staleHooksPath])) {
+    content = removeJsoncValue(content, [
+      "chat.hookFilesLocations",
+      staleHooksPath,
+    ]);
+    staleEntriesRemoved.push(`chat.hookFilesLocations[${staleHooksPath}]`);
+  }
+
+  if (isJsoncPathEnabled(content, ["chat.plugins.paths", outPath])) {
+    alreadyEnabledEntries.push(`chat.plugins.paths[${outPath}]`);
+  } else {
+    content = setJsoncValue(content, ["chat.plugins.paths", outPath], true);
+    entriesEnabled.push(`chat.plugins.paths[${outPath}]`);
+  }
+
+  if (isJsoncPathEnabled(content, ["chat.hookFilesLocations", hooksPath])) {
+    alreadyEnabledEntries.push(`chat.hookFilesLocations[${hooksPath}]`);
+  } else {
+    content = setJsoncValue(
+      content,
+      ["chat.hookFilesLocations", hooksPath],
+      true,
+    );
+    entriesEnabled.push(`chat.hookFilesLocations[${hooksPath}]`);
+  }
+
+  return {
+    staleEntriesRemoved,
+    alreadyEnabledEntries,
+    entriesEnabled,
+    content,
+  };
+}
+
+function logList(title: string, entries: string[]): void {
+  if (entries.length === 0) {
+    console.log(`${title}: none`);
+    return;
+  }
+
+  console.log(`${title}:`);
+  for (const entry of entries) {
+    console.log(`  - ${entry}`);
+  }
+}
+
+function logRegistrationPlan(
+  actions: RegistrationActions,
+  settingsTarget: ResolvedSettingsTarget,
+  outPath: string,
+): void {
+  const hooksPath = join(outPath, "hooks");
+
+  console.log(`Resolved settings path: ${settingsTarget.path}`);
+  console.log(`Settings source: ${settingsTarget.source}`);
+  console.log(`Plugin path: ${outPath}`);
+  console.log(`Hooks path: ${hooksPath}`);
+  logList("Stale entries that would be removed", actions.staleEntriesRemoved);
+  logList("Entries already enabled", actions.alreadyEnabledEntries);
+  logList("Entries that would be added/enabled", actions.entriesEnabled);
+}
+
+async function readConfiguredTarget(): Promise<string> {
   try {
     const config = JSON.parse(
       await readFile(join(ROOT, "config.json"), "utf-8"),
     ) as { target?: string };
-    if (config.target) target = config.target;
+    return config.target ?? "vscode";
   } catch {
-    // config.json missing — build.ts already errored
+    // config.json missing or invalid — build.ts already errored or will error.
+    return "vscode";
   }
+}
+
+async function installLocal() {
+  const options = parseCliOptions(process.argv.slice(2));
+
+  // Step 1: run the build
+  execSync("node scripts/build.ts", { cwd: ROOT, stdio: "inherit" });
+
+  // Step 2: determine output path from config
+  const target = await readConfiguredTarget();
   const outPath = outputPathForTarget(ROOT, target);
 
   if (target !== VSCODE_TARGET) {
@@ -114,52 +432,38 @@ async function installLocal() {
     return;
   }
 
-  // Step 3: read current settings
-  let content = await readSettings();
+  // Step 3: resolve and read current settings
+  const settingsTarget = resolveSettingsTarget(options);
+  const originalContent = await readSettings(settingsTarget.path);
+  validateJsonc(originalContent, settingsTarget.path);
 
-  // Step 4: remove stale repo-local registrations from the old VS Code root
-  const staleOutPath = legacyVSCodeOutputPath(ROOT);
-  const staleHooksPath = join(staleOutPath, "hooks");
-  let removedStaleEntry = false;
+  // Step 4: compute registration changes in memory
+  const actions = applyRegistrationActions(originalContent, outPath);
 
-  if (hasJsoncPath(content, ["chat.plugins.paths", staleOutPath])) {
-    content = removeJsoncValue(content, ["chat.plugins.paths", staleOutPath]);
-    removedStaleEntry = true;
-    console.log(`Removed stale plugin registration at ${staleOutPath}`);
+  if (options.dryRun) {
+    logRegistrationPlan(actions, settingsTarget, outPath);
+    console.log("Dry run only; settings file was not changed.");
+    return;
   }
 
-  if (hasJsoncPath(content, ["chat.hookFilesLocations", staleHooksPath])) {
-    content = removeJsoncValue(content, [
-      "chat.hookFilesLocations",
-      staleHooksPath,
-    ]);
-    removedStaleEntry = true;
-    console.log(`Removed stale hooks registration at ${staleHooksPath}`);
+  for (const entry of actions.staleEntriesRemoved) {
+    console.log(`Removed stale registration ${entry}`);
   }
 
-  if (removedStaleEntry) {
-    await writeFile(SETTINGS_PATH, content, "utf-8");
+  for (const entry of actions.alreadyEnabledEntries) {
+    console.log(`Already enabled ${entry}`);
   }
 
-  // Step 5: register plugin output path if not already present
-  if (isJsoncPathEnabled(content, ["chat.plugins.paths", outPath])) {
-    console.log(`Plugin already registered at ${outPath}`);
+  for (const entry of actions.entriesEnabled) {
+    console.log(`Enabled ${entry}`);
+  }
+
+  if (actions.content !== originalContent) {
+    await mkdir(dirname(settingsTarget.path), { recursive: true });
+    await writeFile(settingsTarget.path, actions.content, "utf-8");
+    console.log(`Updated VS Code settings at ${settingsTarget.path}`);
   } else {
-    content = setJsoncValue(content, ["chat.plugins.paths", outPath], true);
-    await writeFile(SETTINGS_PATH, content, "utf-8");
-    console.log(`Registered plugin at ${outPath} in ${SETTINGS_PATH}`);
-  }
-
-  // Step 6: register hooks directory in chat.hookFilesLocations
-  const hooksPath = join(outPath, "hooks");
-  if (!isJsoncPathEnabled(content, ["chat.hookFilesLocations", hooksPath])) {
-    content = setJsoncValue(
-      content,
-      ["chat.hookFilesLocations", hooksPath],
-      true,
-    );
-    await writeFile(SETTINGS_PATH, content, "utf-8");
-    console.log(`Registered hooks directory at ${hooksPath}`);
+    console.log(`No VS Code settings changes needed at ${settingsTarget.path}`);
   }
 
   console.log("Reload VS Code windows to pick up changes.");
