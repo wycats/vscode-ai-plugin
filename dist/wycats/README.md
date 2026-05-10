@@ -75,9 +75,28 @@ pnpm install
 pnpm run setup
 ```
 
-The interactive setup wizard asks which platform (VS Code or Claude Code) and model provider you use, writes a `config.json`, builds the plugin, and registers it. Reload VS Code and you're done.
+The interactive setup wizard asks which platform (VS Code or Claude Code) and model provider you use, writes a `config.json`, builds the plugin, and, for VS Code, asks whether to register Stable, Insiders, a custom settings path, or skip registration. Reload the selected VS Code channel and you're done.
 
 Requires `chat.plugins.enabled: true` (agent plugins are preview).
+
+### VS Code local registration
+
+Local registration is explicit so the installer never silently edits Stable VS Code settings when you meant Insiders. Pick a target channel or an exact settings file:
+
+```sh
+pnpm install-local -- --vscode-channel insiders
+pnpm install-local -- --vscode-channel stable
+pnpm install-local -- --settings "~/Library/Application Support/Code - Insiders/User/settings.json"
+```
+
+Preview the build and settings changes without creating or writing settings files:
+
+```sh
+pnpm install-local -- --dry-run --vscode-channel insiders
+pnpm install-local -- --dry-run --settings /tmp/vscode-settings.json
+```
+
+`--settings` is the core form; `--vscode-channel stable|insiders` is a convenience alias for the standard settings path on your OS. You can also use `VSCODE_SETTINGS_PATH` or `VSCODE_CHANNEL`, but running `pnpm install-local` with no target now fails instead of guessing.
 
 ### How the build works
 
