@@ -1,3 +1,9 @@
+---
+name: hypothesis-forming
+description: "Use when predicting what code looks like before reading it, anticipating where a plan will encounter friction, or forming expectations specific enough to be tested. The prepare agent crystallizes this."
+user-invocable: false
+---
+
 # Hypothesis Forming
 
 Making specific predictions about what reality looks like before checking, where the value is in being specific enough to be wrong.

@@ -4,6 +4,7 @@ import { join, relative } from "node:path";
 export const RESOURCE_SECTIONS = [
   "agents",
   "skills",
+  "stances",
   "instructions",
   "hooks",
 ] as const;
@@ -24,6 +25,7 @@ interface ResourcePattern {
 const RESOURCE_PATTERNS = {
   agents: { directory: "agents", pattern: /\.agent\.md$/ },
   skills: { directory: "skills", pattern: /^SKILL\.md$/ },
+  stances: { directory: "stances", pattern: /^SKILL\.md$/ },
   instructions: { directory: "instructions", pattern: /\.instructions\.md$/ },
   hooks: { directory: "hooks", pattern: /\.json$/ },
 } satisfies Record<ResourceSection, ResourcePattern>;
@@ -63,6 +65,7 @@ export async function discoverResourceFiles(
   const resources: Record<ResourceSection, DiscoveredResource[]> = {
     agents: [],
     skills: [],
+    stances: [],
     instructions: [],
     hooks: [],
   };

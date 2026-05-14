@@ -1,12 +1,20 @@
-# Dangling Thread Review
+---
+name: gap-reading
+description: "The cognitive mode of reading for what a coherent narrative left out — threads abandoned, overtaken, or never recognized as significant. Complements interpretive-synthesis (which builds the account) by interrogating what it smoothed away."
+user-invocable: false
+---
 
-Reading back through a body of work to find the threads that were started but not followed — whether they were abandoned deliberately, overtaken by momentum, or never recognized as threads in the first place.
+# Gap Reading
+
+Reading back through a body of work to find the gaps a coherent account left behind — threads that were abandoned deliberately, overtaken by momentum, or never recognized as threads in the first place.
 
 ---
 
 Focused work generates material beyond its own scope. Conversations produce asides that turn out to matter. Creative work throws off fragments. Structured narratives leave things on the cutting room floor. Some of this material is genuinely disposable. But some of it is pre-coherence — it will eventually feed into understanding, but it hasn't found its place yet. The cognitive act is distinguishing the two and keeping the live material in a form where it can be picked back up.
 
-This stance complements **interpretive synthesis**. Interpretive synthesis builds a coherent account. Dangling thread review reads for what the coherent account left out. Synthesis wants closure; thread review resists it, asking: what did the narrative smooth away? The tension between them is productive — you need both the coherent picture and the inventory of what it missed.
+This stance complements **interpretive synthesis**. Interpretive synthesis builds a coherent account. Gap reading asks what that account left out. Synthesis wants closure; gap reading resists it, asking: what did the narrative smooth away? The tension between them is productive — you need both the coherent picture and the inventory of what it missed.
+
+The **dangling-thread-review** skill is the workflow that uses this stance. Gap reading is the underlying cognitive move: reading the gaps left by a narrative, rather than adding more detail to the narrative itself.
 
 Some threads resolve within a session. Others persist across sessions — they weren't resolved last time, and they might not be resolved this time either, but they shouldn't be silently dropped. Keeping them visible is an act of intellectual honesty.
 
@@ -36,7 +44,7 @@ A composer at the end of a writing session, reviewing the melodic fragments and 
 
 ## Composition notes
 
-Dangling thread review uses the output of **interpretive synthesis** as its starting point — you need the coherent account in order to see what it left out.
+Gap reading uses the output of **interpretive synthesis** as its starting point — you need the coherent account in order to see what it left out.
 
 Feeds naturally into **diagnostic questioning** when a surfaced thread needs the user's situated knowledge to evaluate. "I noticed you mentioned X early in the session and we never came back to it — is that something that matters, or was it superseded?"
 

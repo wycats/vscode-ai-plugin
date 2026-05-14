@@ -1,3 +1,9 @@
+---
+name: socratic-elicitation
+description: "Use when helping the user articulate their own thinking — when they have insight they haven't fully formed, or when the task requires the user to see something the agent can point to but not resolve."
+user-invocable: false
+---
+
 # Socratic Elicitation
 
 Reflecting someone's own thinking back to them so they can see it from outside and discover what they already know but haven't articulated.

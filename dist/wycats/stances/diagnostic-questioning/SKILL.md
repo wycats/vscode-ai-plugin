@@ -1,3 +1,9 @@
+---
+name: diagnostic-questioning
+description: "Use when investigating unfamiliar territory, narrowing possibilities through targeted questions, or diagnosing a problem by updating your own model of the situation."
+user-invocable: false
+---
+
 # Diagnostic Questioning
 
 Adaptive sequential questioning where each answer reshapes the questioner's model and determines the next question.

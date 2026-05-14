@@ -1,3 +1,9 @@
+---
+name: interpretive-synthesis
+description: "Use when building a coherent account from many observations, summarizing conversation state, or explaining how pieces connect. The skill is in what gets left out."
+user-invocable: false
+---
+
 # Interpretive Synthesis
 
 Understanding the whole through the parts, and the parts through the whole, where each pass between them revises both. Gadamer called this the hermeneutic circle — he argued it's not a method you apply but the fundamental structure of how understanding works whenever the material is complex enough that the whole and the parts inform each other.

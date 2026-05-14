@@ -1,11 +1,12 @@
 /**
  * Validates the plugin source tree:
  * - Every skill directory has a SKILL.md with valid frontmatter
+ * - Every stance directory has a SKILL.md with valid frontmatter
  * - Every agent file has valid frontmatter with a description
  * - Every instruction file has valid frontmatter
  * - Every neutral hook manifest has required fields and an existing script
  * - plugin.json contains metadata only; resources are discovered from disk
- * - Skill directory names match the `name` field in SKILL.md
+ * - Skill and stance directory names match the `name` field in SKILL.md
  */
 
 import { readFile, stat } from "node:fs/promises";
@@ -60,7 +61,11 @@ function parseJsonObject(
 ): Record<string, unknown> | null {
   try {
     const parsed = JSON.parse(content) as unknown;
-    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    if (
+      typeof parsed !== "object" ||
+      parsed === null ||
+      Array.isArray(parsed)
+    ) {
       error(`${path}: expected a JSON object`);
       return null;
     }
@@ -105,29 +110,39 @@ async function validatePluginJson() {
 async function validateSkills(skills: DiscoveredResource[]) {
   console.log(`Checking skills (${String(skills.length)})...`);
 
-  for (const skill of skills) {
-    const fullPath = skill.sourcePath;
+  await validateSkillLikeResources(skills);
+}
+
+async function validateStances(stances: DiscoveredResource[]) {
+  console.log(`Checking stances (${String(stances.length)})...`);
+
+  await validateSkillLikeResources(stances);
+}
+
+async function validateSkillLikeResources(resources: DiscoveredResource[]) {
+  for (const resource of resources) {
+    const fullPath = resource.sourcePath;
     const content = await readFile(fullPath, "utf-8");
     const fm = extractFrontmatter(content);
 
     if (!fm) {
-      error(`${skill.pluginPath}: missing YAML frontmatter`);
+      error(`${resource.pluginPath}: missing YAML frontmatter`);
       continue;
     }
 
     if (!fm.name) {
-      error(`${skill.pluginPath}: missing 'name' in frontmatter`);
+      error(`${resource.pluginPath}: missing 'name' in frontmatter`);
     }
 
     if (!fm.description) {
-      error(`${skill.pluginPath}: missing 'description' in frontmatter`);
+      error(`${resource.pluginPath}: missing 'description' in frontmatter`);
     }
 
     // Check name matches directory
     const dirName = basename(dirname(fullPath));
     if (fm.name && fm.name !== dirName) {
       error(
-        `${skill.pluginPath}: name '${fm.name}' does not match directory '${dirName}'`,
+        `${resource.pluginPath}: name '${fm.name}' does not match directory '${dirName}'`,
       );
     }
   }
@@ -217,7 +232,10 @@ async function validateHooks(hooks: DiscoveredResource[]) {
       error(`${hook.pluginPath}: script not found: scripts/hooks/${script}`);
     }
 
-    if (manifest.timeout !== undefined && typeof manifest.timeout !== "number") {
+    if (
+      manifest.timeout !== undefined &&
+      typeof manifest.timeout !== "number"
+    ) {
       error(`${hook.pluginPath}: optional 'timeout' must be a number`);
     }
   }
@@ -228,6 +246,7 @@ async function main() {
 
   await validatePluginJson();
   await validateSkills(resources.skills);
+  await validateStances(resources.stances);
   await validateAgents(resources.agents);
   await validateInstructions(resources.instructions);
   await validateHooks(resources.hooks);

@@ -1,3 +1,9 @@
+---
+name: joint-reading
+description: "Use when walking through code, documents, or changes with the user where both perspectives contribute — the agent sees structural patterns, the user sees design intent."
+user-invocable: false
+---
+
 # Joint Reading
 
 Two people examining the same material together, where each perceives things the other doesn't, and the conversation is anchored to specific locations in the shared artifact.

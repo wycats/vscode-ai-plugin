@@ -11,10 +11,13 @@
  */
 
 import { readFile, writeFile, mkdir, cp, rm } from "node:fs/promises";
-import { join, relative, dirname } from "node:path";
+import { join, relative, dirname, basename } from "node:path";
 import matter from "gray-matter";
 import { ModuleKind, ScriptTarget, transpileModule } from "typescript";
-import { discoverResourceFiles } from "./resource-discovery.ts";
+import {
+  discoverResourceFiles,
+  type DiscoveredResource,
+} from "./resource-discovery.ts";
 import {
   legacyVSCodeOutputPath,
   outputPathForTarget,
@@ -330,10 +333,28 @@ async function copyDir(srcName: string, outDir: string): Promise<void> {
   }
 }
 
+async function copyStancesAsClaudeSkills(
+  outDir: string,
+  stances: DiscoveredResource[],
+): Promise<string[]> {
+  const outPaths: string[] = [];
+
+  for (const stance of stances) {
+    const dirName = basename(dirname(stance.sourcePath));
+    const outPath = join(outDir, "skills", dirName, "SKILL.md");
+    await mkdir(dirname(outPath), { recursive: true });
+    await cp(stance.sourcePath, outPath);
+    outPaths.push(`./skills/${dirName}/SKILL.md`);
+  }
+
+  return outPaths;
+}
+
 async function build() {
   const config = await loadConfig();
   const outDir = outputPathForTarget(ROOT, config.target);
   const resources = await discoverResourceFiles(ROOT);
+  const isClaudeCode = config.target === "claude-code";
 
   // Clean output
   if (config.target === VSCODE_TARGET) {
@@ -355,11 +376,23 @@ async function build() {
     agentPaths.push(relPath);
   }
 
-  // Copy skills (shared by both targets)
+  // Copy workflow skills (shared by both targets)
   await copyDir("skills", outDir);
   const skillPaths = resources.skills.map((resource) => resource.pluginPath);
+  let stancePaths: string[];
 
-  const isClaudeCode = config.target === "claude-code";
+  if (isClaudeCode) {
+    // Claude Code auto-discovers only the default skills/ tree, so materialize
+    // stance-skills there while preserving source files under stances/.
+    stancePaths = await copyStancesAsClaudeSkills(outDir, resources.stances);
+  } else {
+    // VS Code uses explicit manifest paths, so stances can remain grouped under
+    // stances/ and be registered as hidden skills.
+    await copyDir("stances", outDir);
+    stancePaths = resources.stances.map((resource) => resource.pluginPath);
+  }
+
+  const allSkillPaths = [...skillPaths, ...stancePaths];
 
   // Build hooks (both targets)
   const hookPaths = await buildHooks(
@@ -396,17 +429,17 @@ async function build() {
 
     console.log(`Built to ${relative(ROOT, outDir)}/`);
     console.log(`  agents:       ${String(agentPaths.length)}`);
-    console.log(`  skills:       ${String(skillPaths.length)}`);
+    console.log(
+      `  skills:       ${String(skillPaths.length)} workflow + ${String(stancePaths.length)} stances = ${String(allSkillPaths.length)}`,
+    );
     console.log(`  hooks:        ${String(hookPaths.length)}`);
     console.log(`  manifest:     .claude-plugin/plugin.json`);
   } else {
-    // VS Code: copy instructions, stances; generate plugin.json
+    // VS Code: copy instructions; generate plugin.json
     await copyDir("instructions", outDir);
     const instructionPaths = resources.instructions.map(
       (resource) => resource.pluginPath,
     );
-
-    await copyDir("stances", outDir);
 
     const pluginJson: PluginJson = {
       name: pluginMeta.name,
@@ -417,8 +450,8 @@ async function build() {
     if (agentPaths.length > 0) {
       pluginJson.agents = agentPaths.map((p) => ({ path: p }));
     }
-    if (skillPaths.length > 0) {
-      pluginJson.skills = skillPaths.map((p) => ({ path: p }));
+    if (allSkillPaths.length > 0) {
+      pluginJson.skills = allSkillPaths.map((p) => ({ path: p }));
     }
     if (instructionPaths.length > 0) {
       pluginJson.instructions = instructionPaths.map((p) => ({ path: p }));
@@ -434,7 +467,9 @@ async function build() {
 
     console.log(`Built to ${relative(ROOT, outDir)}/`);
     console.log(`  agents:       ${String(agentPaths.length)}`);
-    console.log(`  skills:       ${String(skillPaths.length)}`);
+    console.log(
+      `  skills:       ${String(skillPaths.length)} workflow + ${String(stancePaths.length)} stances = ${String(allSkillPaths.length)}`,
+    );
     console.log(`  instructions: ${String(instructionPaths.length)}`);
     console.log(`  hooks:        ${String(hookPaths.length)}`);
   }
