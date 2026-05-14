@@ -7,7 +7,7 @@ description: "Keeps SESSION-TRAJECTORY.md warm as work progresses and offers che
 
 Saving is not stopping. This skill keeps the trajectory warm so that if the session ends — planned or not — the next session can start with the right direction and momentum. Think of it as version control for context: commit early, commit often, keep working.
 
-**Stances used:** dangling thread review (for thorough checkpoints), collaborative grounding (for timing decisions). See `stances/` for details.
+**Stances used:** Load the **gap-reading** stance for thorough checkpoints and the **collaborative-grounding** stance for timing decisions.
 
 ## What SESSION-TRAJECTORY.md is
 
@@ -35,7 +35,7 @@ A checkpoint has two parts:
 
 1. **Update the trajectory.** Capture what's done, what's next, any new decisions or gotchas.
 
-2. **Gather dangling threads.** Use the **dangling thread review** stance: read back through the conversation since the last checkpoint and look for what the trajectory update didn't capture. Ideas mentioned in passing. Decisions deferred implicitly. Tensions named but not resolved. Fragments that emerged from the work itself. Add what you find to the trajectory's live tensions or what's-next sections.
+2. **Gather dangling threads.** Use the **gap-reading** stance: read back through the conversation since the last checkpoint and look for what the trajectory update didn't capture. Ideas mentioned in passing. Decisions deferred implicitly. Tensions named but not resolved. Fragments that emerged from the work itself. Add what you find to the trajectory's live tensions or what's-next sections.
 
 The second part is what distinguishes a checkpoint from a quick trajectory update. The trajectory captures the main narrative. Dangling thread review catches what the narrative left out.
 

@@ -1,3 +1,9 @@
+---
+name: hypothesis-evaluating
+description: "Use when comparing expected outcomes against actual results, judging what a gap means, or evaluating whether a change achieved its intent. The review agent crystallizes this."
+user-invocable: false
+---
+
 # Hypothesis Evaluating
 
 Comparing what was expected with what actually happened, where the divergences between prediction and reality are the most valuable findings.

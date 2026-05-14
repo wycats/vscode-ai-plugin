@@ -11,7 +11,7 @@ The user is still around and serves as a light bridge to the next session. They 
 
 This skill has four phases: **interpret**, **triage**, **draft**, **validate**. The first two are collaborative — the agent and user work together to understand the session and decide what carries forward. The last two produce and verify the trajectory document.
 
-**Stances used:** interpretive synthesis (Phase 1), dangling thread review (Phase 1c), diagnostic questioning + Socratic elicitation (Phase 2), collaborative grounding (throughout), subagent validation (Phase 4). See `stances/` for details.
+**Stances used:** Load the **interpretive-synthesis** stance (Phase 1), **gap-reading** stance (Phase 1c), **diagnostic-questioning** + **socratic-elicitation** stances (Phase 2), and **collaborative-grounding** stance (throughout).
 
 ## Phase 1: Interpret
 
@@ -40,7 +40,7 @@ This is interpretive synthesis: the initial understanding of the session's inten
 
 ### 1c. Identify dangling threads
 
-Use the **dangling thread review** stance: read back through the conversation for threads that were started but not followed. This is a thorough pass, not a skim — the threads you're looking for are the ones that are easy to miss.
+Use the **gap-reading** stance: read back through the conversation for threads that were started but not followed. This is a thorough pass, not a skim — the threads you're looking for are the ones that are easy to miss.
 
 - Threads the user explicitly deferred
 - Threads overtaken by momentum (the conversation moved on)
@@ -70,7 +70,7 @@ The questions should:
 - Reflect the agent's interpretation and invite correction. "My read is that the session shifted from planning to implementation around the middleware discussion. Does that match how it felt to you?"
 - Name tensions when they exist. "There's a tension between finishing the type migration and addressing the test gaps it revealed. Which feels more urgent for the next session?"
 
-If the user's response reveals a thread or priority the diagnostic sequence didn't anticipate, follow it before returning to the sequence. See `stances/diagnostic-questioning.md` and `stances/socratic-elicitation.md` for the deeper treatment of this tension.
+If the user's response reveals a thread or priority the diagnostic sequence didn't anticipate, follow it before returning to the sequence. Load the **diagnostic-questioning** and **socratic-elicitation** stances for the deeper treatment of this tension.
 
 ### Building the picture
 
