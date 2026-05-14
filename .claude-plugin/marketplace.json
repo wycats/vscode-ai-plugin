@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "wycats-ai-plugin",
+  "version": "0.1.0",
+  "description": "Agent toolkit: workflow agents, skills, and prompts.",
+  "owner": { "name": "wycats" },
+  "plugins": [
+    {
+      "name": "wycats-ai-plugin",
+      "source": "./plugin",
+      "description": "Agent toolkit: workflow agents, skills, and prompts."
+    }
+  ]
+}
