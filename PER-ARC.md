@@ -8,7 +8,7 @@ The project is moving from "local toolkit that works" toward "self-consistent pl
 
 ## Current phase / position
 
-First cycle completed and committed on `pipeline-source-truth-hardening`. The publish/build source-truth slice is ready for PR review. The next cycle should not widen until this branch lands; after that, the best follow-up is likely validation hardening for hidden stance resources and resource discovery errors.
+Two hardening cycles have landed: publish/build source-truth cleanup and validation/resource-discovery hardening. The current bounded move is setup registration outcome UX: make the setup wizard's final message reflect whether VS Code registration succeeded, was skipped, was cancelled, or failed.
 
 ## Hypothesis / current move
 
@@ -65,20 +65,15 @@ Another divergence: stances have moved from plain copied markdown into hidden sk
 
 ## Next good move
 
-Open a PR for the committed publish/build source-truth cleanup and let CI exercise the workflow changes.
+Run a bounded PER on setup registration outcome UX:
 
-After that lands, run the next PER on validation hardening:
-
-1. Enforce `user-invocable: false` for all `stances/*/SKILL.md`.
-2. Tighten `resource-discovery` so expected missing optional directories are tolerated, but other filesystem errors surface.
-3. Preserve the current hidden stance resource behavior and generated plugin counts.
-
-Do not fold that validation work into the publish/build PR unless review uncovers a direct dependency.
+1. Track whether VS Code registration succeeded, was skipped, was cancelled, or failed.
+2. Make the final setup note reflect that outcome instead of always saying to reload VS Code.
+3. Surface captured installer output when registration fails so the user can recover.
+4. Keep registration mechanics and exit-code policy unchanged unless the setup UX fix directly requires widening.
 
 ## Parked threads
 
-- Enforce `user-invocable: false` for all `stances/*/SKILL.md` in validation.
-- Tighten `resource-discovery` so it only swallows expected missing optional directories and surfaces other read errors.
 - Make `setup` report registration failure more explicitly instead of ending with generic success language.
 - Replace manual YAML serialization sharp edges in `scripts/build.ts` with safer quoting or a serializer.
 - Consider whether TypeScript `dist` output and published plugin `dist/wycats` should remain under the same top-level directory long term.
@@ -124,3 +119,23 @@ Review calibration:
 - Targeted fix changed workflow commands to `pnpm build --config ...`.
 - Copilot review correctly generalized that `scripts/build.ts` should also tolerate the common separator form.
 - Targeted fix made standalone `--` a no-op in build argument parsing and documented both invocation styles in usage text.
+
+### 2026-05-23 — Validation/resource discovery hardening
+
+Prepare hypothesis:
+
+- Stance hiddenness belongs in `scripts/validate.ts`, specifically under stance validation.
+- Resource discovery should tolerate missing optional top-level resource directories but surface other filesystem errors.
+- Build output behavior should remain unchanged when discovery succeeds.
+
+Execution result:
+
+- `scripts/validate.ts` now enforces `user-invocable: false` for every `stances/*/SKILL.md`.
+- `scripts/resource-discovery.ts` now lets traversal errors surface and only treats top-level `ENOENT` as an empty optional section.
+- Copilot review improved validation by reusing already-parsed stance frontmatter instead of re-reading stance files.
+
+Review calibration:
+
+- The two-file implementation stayed within scope and merged in PR #29.
+- Source validation still reports 8 skills, 8 stances, 7 agents, 1 instruction, and 3 hook manifests.
+- Claude Code still emits one consolidated hooks file; that is expected build-reporting semantics, not a discovery regression.
