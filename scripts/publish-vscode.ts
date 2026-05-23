@@ -13,7 +13,7 @@
 
 import { readFile, writeFile, mkdir, cp, rm, access } from "node:fs/promises";
 import { join } from "node:path";
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import {
   displayDistDirectoryForTarget,
   displayOutputDirectoryForTarget,
@@ -29,8 +29,7 @@ const DIST_DIR = distPathForTarget(ROOT, VSCODE_TARGET);
 const LEGACY_DIST_DIR = legacyVSCodeDistPath(ROOT);
 const DIST_DIR_REL = displayDistDirectoryForTarget(VSCODE_TARGET);
 const MARKETPLACE_SOURCE = `./${DIST_DIR_REL}`;
-const CONFIG_PATH = join(ROOT, "config.json");
-const VSCODE_EXAMPLE = join(ROOT, "config.example.json");
+const VSCODE_CONFIG = "config.example.json";
 const MARKETPLACE_PATH = join(ROOT, "marketplace.json");
 
 async function fileExists(path: string): Promise<boolean> {
@@ -42,41 +41,16 @@ async function fileExists(path: string): Promise<boolean> {
   }
 }
 
-async function ensureVSCodeBuild(): Promise<void> {
-  let needsRestore = false;
-  let originalConfig = "";
-
-  try {
-    originalConfig = await readFile(CONFIG_PATH, "utf-8");
-    const config = JSON.parse(originalConfig) as { target?: string };
-
-    if (config.target !== "vscode") {
-      needsRestore = true;
-      const vsConfig = await readFile(VSCODE_EXAMPLE, "utf-8");
-      await writeFile(CONFIG_PATH, vsConfig);
-    }
-  } catch {
-    needsRestore = true;
-    const vsConfig = await readFile(VSCODE_EXAMPLE, "utf-8");
-    await writeFile(CONFIG_PATH, vsConfig);
-  }
-
-  try {
-    execSync("node scripts/build.ts", { cwd: ROOT, stdio: "inherit" });
-  } finally {
-    if (needsRestore) {
-      if (originalConfig) {
-        await writeFile(CONFIG_PATH, originalConfig);
-      } else {
-        await rm(CONFIG_PATH, { force: true });
-      }
-    }
-  }
+function ensureVSCodeBuild(): void {
+  execFileSync(process.execPath, ["scripts/build.ts", "--config", VSCODE_CONFIG], {
+    cwd: ROOT,
+    stdio: "inherit",
+  });
 }
 
 async function publish() {
   console.log("Building VS Code plugin...\n");
-  await ensureVSCodeBuild();
+  ensureVSCodeBuild();
 
   const manifestPath = join(VSCODE_OUT, "plugin.json");
   if (!(await fileExists(manifestPath))) {
