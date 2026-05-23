@@ -18,6 +18,15 @@ The practical question for skill design is always: **does each instruction deepe
 
 This idea has consequences for how skills should be written: described honestly rather than prescriptively, using tensions rather than rules, separating generation from evaluation. [FOUNDATIONS.md](FOUNDATIONS.md) develops the full framework. [QUALITY.md](QUALITY.md) translates it into practical principles.
 
+## Concept map
+
+The repo has two kinds of documentation: foundational theory that explains why the plugin is written this way, and design notes that explore emerging workflow concepts before they become skills.
+
+- [FOUNDATIONS.md](FOUNDATIONS.md) — distributional mechanics: probability landscapes, stances, information boundaries, generation vs. evaluation.
+- [QUALITY.md](QUALITY.md) — practical principles for writing skills, agents, instructions, and hooks from those mechanics.
+- [docs/per-arc.md](docs/per-arc.md) — design note for a lightweight PER arc/dashboard that preserves project motion across repeated PER cycles without turning into ceremony.
+- [docs/setup.md](docs/setup.md) — configuration, local registration, and build setup details.
+
 ## Stances
 
 When writing a skill, you're choosing *how the agent should think about the task*. We've found that certain collaborative patterns recur across different skills, and naming them makes them composable. The `stances/` directory contains these named patterns:
