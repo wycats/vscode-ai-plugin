@@ -1,15 +1,15 @@
 {
-    "name": "wycats-ai-plugin",
-    "version": "0.1.0",
-    "description": "Personal agent toolkit: workflow agents, skills, instructions, and hooks.",
-    "owner": {
-        "name": "wycats"
-    },
-    "plugins": [
-        {
-            "name": "wycats-ai-plugin",
-            "source": "./dist/wycats",
-            "description": "Personal agent toolkit: workflow agents, skills, instructions, and hooks."
-        }
-    ]
+  "name": "wycats-ai-plugin",
+  "version": "0.1.0",
+  "description": "Personal agent toolkit: workflow agents, skills, instructions, and hooks.",
+  "owner": {
+    "name": "wycats"
+  },
+  "plugins": [
+    {
+      "name": "wycats-ai-plugin",
+      "source": "./dist/wycats",
+      "description": "Personal agent toolkit: workflow agents, skills, instructions, and hooks."
+    }
+  ]
 }
