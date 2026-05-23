@@ -117,6 +117,21 @@ async function validateStances(stances: DiscoveredResource[]) {
   console.log(`Checking stances (${String(stances.length)})...`);
 
   await validateSkillLikeResources(stances);
+
+  for (const stance of stances) {
+    const content = await readFile(stance.sourcePath, "utf-8");
+    const fm = extractFrontmatter(content);
+
+    if (!fm) {
+      continue;
+    }
+
+    if (fm["user-invocable"] !== "false") {
+      error(
+        `${stance.pluginPath}: stances must declare 'user-invocable: false'`,
+      );
+    }
+  }
 }
 
 async function validateSkillLikeResources(resources: DiscoveredResource[]) {
