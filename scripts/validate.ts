@@ -116,10 +116,22 @@ async function validateSkills(skills: DiscoveredResource[]) {
 async function validateStances(stances: DiscoveredResource[]) {
   console.log(`Checking stances (${String(stances.length)})...`);
 
-  await validateSkillLikeResources(stances);
+  await validateSkillLikeResources(stances, (stance, fm) => {
+    if (fm["user-invocable"] !== "false") {
+      error(
+        `${stance.pluginPath}: stances must declare 'user-invocable: false'`,
+      );
+    }
+  });
 }
 
-async function validateSkillLikeResources(resources: DiscoveredResource[]) {
+async function validateSkillLikeResources(
+  resources: DiscoveredResource[],
+  validateFrontmatter?: (
+    resource: DiscoveredResource,
+    frontmatter: Record<string, string>,
+  ) => void,
+) {
   for (const resource of resources) {
     const fullPath = resource.sourcePath;
     const content = await readFile(fullPath, "utf-8");
@@ -145,6 +157,8 @@ async function validateSkillLikeResources(resources: DiscoveredResource[]) {
         `${resource.pluginPath}: name '${fm.name}' does not match directory '${dirName}'`,
       );
     }
+
+    validateFrontmatter?.(resource, fm);
   }
 }
 
