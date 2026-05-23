@@ -8,17 +8,18 @@ The project is moving from "local toolkit that works" toward "self-consistent pl
 
 ## Current phase / position
 
-Between cycles. A read-only codebase review surfaced a prioritized set of pipeline hardening opportunities. The next PER cycle should choose a bounded slice and test it against the repo.
+First cycle completed and committed on `pipeline-source-truth-hardening`. The publish/build source-truth slice is ready for PR review. The next cycle should not widen until this branch lands; after that, the best follow-up is likely validation hardening for hidden stance resources and resource discovery errors.
 
 ## Hypothesis / current move
 
-The highest-leverage first move is to make publish/build behavior share source truth instead of duplicating logic across local scripts and GitHub workflows.
+The first cycle tested the hypothesis that publish/build behavior could share source truth without redesigning publish credentials or branch semantics.
 
-Working hypothesis:
+Resulting calibration:
 
-- CI publish workflows and local publish scripts currently duplicate enough metadata/package logic that they can drift.
-- `scripts/build.ts` requiring `config.json` forces publish scripts to mutate local config rather than passing an explicit config path.
-- Adding an explicit config input to build/publish paths will simplify publish scripts, reduce restore-footguns, and make workflows easier to harden with `pnpm validate` / `pnpm check` gates.
+- The build entry point was the right place for explicit config selection.
+- Local publish scripts no longer need to mutate `config.json`.
+- Workflows can be hardened with validation/check gates and manifest-derived marketplace metadata without yet invoking the local publish scripts directly.
+- The remaining workflow inline publish logic is acceptable for this slice, but still represents future cleanup surface.
 
 ## Evidence
 
@@ -31,6 +32,15 @@ Recent read-only review found:
 - `scripts/target-output.ts` centralizes target output mapping, but `publish-cc` still has hardcoded Claude output paths.
 - Stances are now hidden skill resources, but validation should continue to enforce the hidden-user-facing boundary.
 - Resource discovery currently tolerates missing sections, but broad error swallowing may hide real filesystem problems.
+
+First cycle implementation found:
+
+- `scripts/build.ts` now accepts `--config <path>`, `--config=<path>`, and `VSCODE_AI_PLUGIN_CONFIG_PATH`, while preserving default `config.json` behavior.
+- `scripts/publish-vscode.ts` and `scripts/publish-cc.ts` now build from example configs without rewriting local `config.json`.
+- `scripts/publish-cc.ts` now uses shared target-output helpers for Claude Code output paths.
+- Both publish workflows now run `pnpm validate` and `pnpm check` before building/publishing.
+- Both publish workflows now derive marketplace name/version/description from built manifests rather than hardcoding stale metadata.
+- Workflow build commands must use `pnpm build --config ...`; the `pnpm build -- --config ...` form forwards a literal `--` and fails this repo's argument parser.
 
 Current repo state at arc setup:
 
@@ -55,17 +65,15 @@ Another divergence: stances have moved from plain copied markdown into hidden sk
 
 ## Next good move
 
-Run a PER on publish/build source-of-truth cleanup.
+Open a PR for the committed publish/build source-truth cleanup and let CI exercise the workflow changes.
 
-Suggested boundary:
+After that lands, run the next PER on validation hardening:
 
-1. Teach `scripts/build.ts` to accept an explicit config path via CLI flag or environment variable.
-2. Update `publish-vscode` and `publish-cc` to build from example configs without rewriting `config.json`.
-3. Make publish code use shared target-output helpers consistently.
-4. Update workflows to avoid hardcoded publish metadata where practical and add `pnpm validate` / `pnpm check` gates.
-5. Validate both VS Code and Claude Code build paths.
+1. Enforce `user-invocable: false` for all `stances/*/SKILL.md`.
+2. Tighten `resource-discovery` so expected missing optional directories are tolerated, but other filesystem errors surface.
+3. Preserve the current hidden stance resource behavior and generated plugin counts.
 
-Stop before widening into resource-discovery or stance-validation unless the build/publish changes force touching them.
+Do not fold that validation work into the publish/build PR unless review uncovers a direct dependency.
 
 ## Parked threads
 
@@ -91,4 +99,27 @@ Execution result:
 
 Review calibration:
 
-- Pending. The next PER should verify whether publish/build source-of-truth cleanup is the right first bounded cycle.
+- Confirmed. The next PER verified that publish/build source-of-truth cleanup was the right first bounded cycle.
+
+### 2026-05-23 — Publish/build source-truth cleanup
+
+Prepare hypothesis:
+
+- Add explicit config selection to `scripts/build.ts`.
+- Remove local `config.json` mutation from publish scripts.
+- Use shared target-output helpers consistently in publish code.
+- Add `pnpm validate` / `pnpm check` gates to publish workflows.
+- Reduce hardcoded workflow metadata where practical without redesigning credentials or branch semantics.
+
+Execution result:
+
+- Implemented explicit build config selection through CLI/env.
+- Updated local publish scripts to build from example configs.
+- Updated workflows with validation gates and manifest-derived marketplace metadata.
+- Kept workflows' inline publish logic to avoid expanding into credential and branch-semantics redesign.
+
+Review calibration:
+
+- Initial review found a concrete workflow invocation bug: `pnpm build -- --config ...` forwards a literal `--` and fails.
+- Targeted fix changed workflow commands to `pnpm build --config ...`.
+- Final review marked the five-file implementation commit-ready.
