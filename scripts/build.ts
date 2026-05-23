@@ -53,7 +53,11 @@ interface PluginJson extends PluginMetadata {
 }
 
 function usage(): string {
-  return `Usage: node scripts/build.ts [--config <path>]`;
+  return `Usage: node scripts/build.ts [--config <path>]
+
+Examples:
+  pnpm build --config config.example.json
+  pnpm build -- --config config.example.json`;
 }
 
 function failArgument(message: string): never {
@@ -66,6 +70,10 @@ function parseConfigPath(args = process.argv.slice(2)): string {
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
+
+    if (arg === "--") {
+      continue;
+    }
 
     if (arg === "--config") {
       const value = args[i + 1];

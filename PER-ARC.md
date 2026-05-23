@@ -40,7 +40,7 @@ First cycle implementation found:
 - `scripts/publish-cc.ts` now uses shared target-output helpers for Claude Code output paths.
 - Both publish workflows now run `pnpm validate` and `pnpm check` before building/publishing.
 - Both publish workflows now derive marketplace name/version/description from built manifests rather than hardcoding stale metadata.
-- Workflow build commands must use `pnpm build --config ...`; the `pnpm build -- --config ...` form forwards a literal `--` and fails this repo's argument parser.
+- `scripts/build.ts` accepts both direct package-script arguments (`pnpm build --config ...`) and the common npm/pnpm separator form (`pnpm build -- --config ...`).
 
 Current repo state at arc setup:
 
@@ -122,4 +122,5 @@ Review calibration:
 
 - Initial review found a concrete workflow invocation bug: `pnpm build -- --config ...` forwards a literal `--` and fails.
 - Targeted fix changed workflow commands to `pnpm build --config ...`.
-- Final review marked the five-file implementation commit-ready.
+- Copilot review correctly generalized that `scripts/build.ts` should also tolerate the common separator form.
+- Targeted fix made standalone `--` a no-op in build argument parsing and documented both invocation styles in usage text.
