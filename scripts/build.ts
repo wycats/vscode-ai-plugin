@@ -1,7 +1,7 @@
 /**
  * Builds the plugin from source agents + config into an output directory.
  *
- * 1. Reads config.json (errors if missing)
+ * 1. Reads config.json by default, or an explicit config path when provided
  * 2. For each source agent: resolves model and tool role names from config
  * 3. Copies skills and (for vscode) instructions, hooks, stances
  * 4. Generates the platform-specific manifest
@@ -11,7 +11,7 @@
  */
 
 import { readFile, writeFile, mkdir, cp, rm } from "node:fs/promises";
-import { join, relative, dirname, basename } from "node:path";
+import { join, relative, dirname, basename, resolve } from "node:path";
 import matter from "gray-matter";
 import { ModuleKind, ScriptTarget, transpileModule } from "typescript";
 import {
@@ -25,7 +25,8 @@ import {
 } from "./target-output.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
-const CONFIG_PATH = join(ROOT, "config.json");
+const DEFAULT_CONFIG_PATH = join(ROOT, "config.json");
+const CONFIG_ENV_VAR = "VSCODE_AI_PLUGIN_CONFIG_PATH";
 
 interface Config {
   target: string;
@@ -51,13 +52,77 @@ interface PluginJson extends PluginMetadata {
   hooks?: PluginEntry[];
 }
 
+function usage(): string {
+  return `Usage: node scripts/build.ts [--config <path>]`;
+}
+
+function failArgument(message: string): never {
+  console.error(`${message}\n\n${usage()}`);
+  process.exit(1);
+}
+
+function parseConfigPath(args = process.argv.slice(2)): string {
+  let selectedPath: string | undefined;
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+
+    if (arg === "--config") {
+      const value = args[i + 1];
+      if (!value || value.startsWith("--")) {
+        failArgument("Missing value for --config.");
+      }
+      selectedPath = value;
+      i++;
+      continue;
+    }
+
+    if (arg.startsWith("--config=")) {
+      const value = arg.slice("--config=".length);
+      if (!value) {
+        failArgument("Missing value for --config.");
+      }
+      selectedPath = value;
+      continue;
+    }
+
+    failArgument(`Unknown build argument: ${arg}`);
+  }
+
+  const envPath = process.env[CONFIG_ENV_VAR];
+  return resolve(ROOT, selectedPath ?? (envPath || DEFAULT_CONFIG_PATH));
+}
+
+function displayConfigPath(configPath: string): string {
+  const relPath = relative(ROOT, configPath);
+  if (relPath && !relPath.startsWith("..")) {
+    return relPath;
+  }
+  return configPath;
+}
+
+const CONFIG_PATH = parseConfigPath();
+
 async function loadConfig(): Promise<Config> {
   try {
     return JSON.parse(await readFile(CONFIG_PATH, "utf-8")) as Config;
-  } catch {
-    console.error(
-      `config.json not found.\n\nCopy config.example.json to config.json and customize it:\n  cp config.example.json config.json\n`,
-    );
+  } catch (err: unknown) {
+    const displayPath = displayConfigPath(CONFIG_PATH);
+    const error = err as NodeJS.ErrnoException;
+
+    if (error.code === "ENOENT") {
+      if (CONFIG_PATH === DEFAULT_CONFIG_PATH) {
+        console.error(
+          `config.json not found.\n\nCopy config.example.json to config.json and customize it:\n  cp config.example.json config.json\n`,
+        );
+      } else {
+        console.error(
+          `Config file not found: ${displayPath}\n\nPass a valid path with --config <path> or ${CONFIG_ENV_VAR}.\n`,
+        );
+      }
+    } else {
+      console.error(`Failed to load config from ${displayPath}:`, err);
+    }
     process.exit(1);
   }
 }

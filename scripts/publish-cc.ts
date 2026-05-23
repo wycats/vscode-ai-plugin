@@ -1,7 +1,7 @@
 /**
  * Publishes the Claude Code build output to the `cc-plugin` branch.
  *
- * 1. Builds with target: "claude-code" (using a temporary config if needed)
+ * 1. Builds with target: "claude-code" from the example config
  * 2. Copies build output to a temp directory
  * 3. Adds marketplace.json so the branch is both a plugin and a marketplace
  * 4. Force-pushes to origin/cc-plugin as an orphan commit
@@ -22,12 +22,17 @@ import {
 } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
+import {
+  CLAUDE_CODE_TARGET,
+  displayOutputDirectoryForTarget,
+  outputPathForTarget,
+} from "./target-output.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
-const CC_OUT = join(ROOT, "out", "claude-code");
-const CONFIG_PATH = join(ROOT, "config.json");
-const CC_EXAMPLE = join(ROOT, "config.claude-code.example.json");
+const CC_OUT = outputPathForTarget(ROOT, CLAUDE_CODE_TARGET);
+const CC_OUT_REL = displayOutputDirectoryForTarget(CLAUDE_CODE_TARGET);
+const CC_CONFIG = "config.claude-code.example.json";
 
 async function fileExists(path: string): Promise<boolean> {
   try {
@@ -38,49 +43,21 @@ async function fileExists(path: string): Promise<boolean> {
   }
 }
 
-async function ensureCCBuild(): Promise<void> {
-  // Check if current config targets claude-code
-  let needsRestore = false;
-  let originalConfig = "";
-
-  try {
-    originalConfig = await readFile(CONFIG_PATH, "utf-8");
-    const config = JSON.parse(originalConfig) as { target?: string };
-
-    if (config.target !== "claude-code") {
-      // Temporarily swap to CC config
-      needsRestore = true;
-      const ccConfig = await readFile(CC_EXAMPLE, "utf-8");
-      await writeFile(CONFIG_PATH, ccConfig);
-    }
-  } catch {
-    // No config.json — use the CC example
-    needsRestore = true;
-    const ccConfig = await readFile(CC_EXAMPLE, "utf-8");
-    await writeFile(CONFIG_PATH, ccConfig);
-  }
-
-  try {
-    execSync("node scripts/build.ts", { cwd: ROOT, stdio: "inherit" });
-  } finally {
-    if (needsRestore) {
-      if (originalConfig) {
-        await writeFile(CONFIG_PATH, originalConfig);
-      } else {
-        await rm(CONFIG_PATH, { force: true });
-      }
-    }
-  }
+function ensureCCBuild(): void {
+  execFileSync(process.execPath, ["scripts/build.ts", "--config", CC_CONFIG], {
+    cwd: ROOT,
+    stdio: "inherit",
+  });
 }
 
 async function publish() {
   console.log("Building Claude Code plugin...\n");
-  await ensureCCBuild();
+  ensureCCBuild();
 
   // Verify build output
   const manifestPath = join(CC_OUT, ".claude-plugin", "plugin.json");
   if (!(await fileExists(manifestPath))) {
-    console.error("Build output not found at out/claude-code/");
+    console.error(`Build output not found at ${CC_OUT_REL}/`);
     process.exit(1);
   }
 
