@@ -29,6 +29,7 @@ interface Config {
 type VSCodeRegistrationOutcome =
   | { status: "registered"; label: string }
   | { status: "skipped" }
+  | { status: "registration-cancelled" }
   | { status: "custom-cancelled" }
   | { status: "failed"; label: string; command: string };
 
@@ -59,10 +60,34 @@ async function configExists(): Promise<boolean> {
   }
 }
 
-function formatCommand(args: string[]): string {
-  return ["node", ...args]
-    .map((arg) => (arg.includes(" ") ? JSON.stringify(arg) : arg))
+function quoteShellArg(arg: string): string {
+  if (/^[A-Za-z0-9_./:=@+-]+$/.test(arg)) {
+    return arg;
+  }
+
+  return `'${arg.replaceAll("'", "'\\''")}'`;
+}
+
+function formatInstallLocalCommand(args: string[]): string {
+  const installArgs =
+    args[0] === "scripts/install-local.ts" ? args.slice(1) : args;
+
+  return ["pnpm", "install-local", "--", ...installArgs]
+    .map(quoteShellArg)
     .join(" ");
+}
+
+function vscodeRegistrationLabel(target: string): string {
+  switch (target) {
+    case "stable":
+      return "Stable VS Code";
+    case "insiders":
+      return "VS Code Insiders";
+    case "custom":
+      return "custom VS Code settings";
+    default:
+      return target;
+  }
 }
 
 function logExecFileSyncError(err: unknown): void {
@@ -109,6 +134,17 @@ function vscodeNextSteps(outcome: VSCodeRegistrationOutcome): {
         nextSteps: [
           "The plugin was built, but no VS Code settings were changed.",
           "Register later with one of:",
+          "  pnpm install-local -- --vscode-channel stable",
+          "  pnpm install-local -- --vscode-channel insiders",
+          "  pnpm install-local -- --settings <path>",
+        ].join("\n"),
+      };
+    case "registration-cancelled":
+      return {
+        title: "Setup finished; registration cancelled",
+        nextSteps: [
+          "The plugin was built, but VS Code settings registration was cancelled.",
+          "Rerun setup, choose Skip registration, or register manually with one of:",
           "  pnpm install-local -- --vscode-channel stable",
           "  pnpm install-local -- --vscode-channel insiders",
           "  pnpm install-local -- --settings <path>",
@@ -319,7 +355,10 @@ async function setup() {
       ],
     });
 
-    if (p.isCancel(registrationTarget) || registrationTarget === "skip") {
+    if (p.isCancel(registrationTarget)) {
+      vscodeRegistrationOutcome = { status: "registration-cancelled" };
+      p.log.info("Cancelled VS Code settings registration.");
+    } else if (registrationTarget === "skip") {
       vscodeRegistrationOutcome = { status: "skipped" };
       p.log.info("Skipped VS Code settings registration.");
     } else {
@@ -349,11 +388,8 @@ async function setup() {
       }
 
       if (installArgs.length > 1) {
-        const label =
-          registrationTarget === "custom"
-            ? "custom VS Code settings"
-            : `VS Code ${registrationTarget}`;
-        const command = formatCommand(installArgs);
+        const label = vscodeRegistrationLabel(registrationTarget);
+        const command = formatInstallLocalCommand(installArgs);
 
         s.start(`Registering with ${label}`);
         try {
