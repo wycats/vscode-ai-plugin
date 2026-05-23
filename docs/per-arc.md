@@ -6,6 +6,15 @@ The dashboard is the instrument panel for that arc. It is not a gate. It tells t
 
 The tension to navigate: continuity vs. ceremony. If the dashboard becomes a task tracker or ritual checklist, it steals momentum from the work. If nothing carries forward, every cycle rebuilds the project concept from memory and the user has to supply context the repo could have preserved.
 
+## Related context
+
+This note sits between the repo's foundational theory and its executable workflow skills:
+
+- [FOUNDATIONS.md](../FOUNDATIONS.md) explains the underlying mechanics: stances, generation vs. evaluation, and the boundary between observable state and situated judgment.
+- [QUALITY.md](../QUALITY.md) turns those mechanics into principles for writing skills and agents without drifting into checklist ceremony.
+- [skills/per-cycle/SKILL.md](../skills/per-cycle/SKILL.md) defines the local `prepare → execute → review` loop that a PER arc surrounds.
+- [skills/session-save/SKILL.md](../skills/session-save/SKILL.md), [skills/session-rest/SKILL.md](../skills/session-rest/SKILL.md), [skills/session-close/SKILL.md](../skills/session-close/SKILL.md), and [skills/session-load/SKILL.md](../skills/session-load/SKILL.md) preserve continuity across session boundaries; the PER arc preserves continuity across project cycles.
+
 ## What a PER arc is
 
 A PER arc is the project-level trajectory that emerges across one or more `prepare → execute → review` cycles.
