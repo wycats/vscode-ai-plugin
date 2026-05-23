@@ -5,7 +5,7 @@
 
 import { readFile, writeFile, appendFile, access } from "node:fs/promises";
 import { join } from "node:path";
-import { execFileSync } from "node:child_process";
+import { execFileSync, type ExecFileSyncOptionsWithBufferEncoding } from "node:child_process";
 import { platform } from "node:os";
 import * as p from "@clack/prompts";
 import {
@@ -25,6 +25,13 @@ interface Config {
   toolGroups: Record<string, string[]>;
   hookMatchers?: Record<string, string>;
 }
+
+type VSCodeRegistrationOutcome =
+  | { status: "registered"; label: string }
+  | { status: "skipped" }
+  | { status: "registration-cancelled" }
+  | { status: "custom-cancelled" }
+  | { status: "failed"; label: string; command: string };
 
 const PRESETS: Record<string, Record<string, string | null>> = {
   copilot: {
@@ -53,8 +60,121 @@ async function configExists(): Promise<boolean> {
   }
 }
 
+function quoteShellArg(arg: string): string {
+  if (/^[A-Za-z0-9_./:=@+-]+$/.test(arg)) {
+    return arg;
+  }
+
+  return `'${arg.replaceAll("'", "'\\''")}'`;
+}
+
+function formatInstallLocalCommand(args: string[]): string {
+  const installArgs =
+    args[0] === "scripts/install-local.ts" ? args.slice(1) : args;
+
+  return ["pnpm", "install-local", "--", ...installArgs]
+    .map(quoteShellArg)
+    .join(" ");
+}
+
+function vscodeRegistrationLabel(target: string): string {
+  switch (target) {
+    case "stable":
+      return "Stable VS Code";
+    case "insiders":
+      return "VS Code Insiders";
+    case "custom":
+      return "custom VS Code settings";
+    default:
+      return target;
+  }
+}
+
+function logExecFileSyncError(err: unknown): void {
+  if (typeof err !== "object" || err === null) {
+    console.error(err);
+    return;
+  }
+
+  const maybeOutput = err as {
+    stdout?: Buffer;
+    stderr?: Buffer;
+    message?: string;
+  };
+
+  const stderr = maybeOutput.stderr?.toString().trim();
+  const stdout = maybeOutput.stdout?.toString().trim();
+
+  if (stderr) {
+    console.error(stderr);
+  }
+
+  if (stdout) {
+    console.error(stdout);
+  }
+
+  if (!stderr && !stdout) {
+    console.error(maybeOutput.message ?? "Registration command failed.");
+  }
+}
+
+function vscodeNextSteps(outcome: VSCodeRegistrationOutcome): {
+  title: string;
+  nextSteps: string;
+} {
+  switch (outcome.status) {
+    case "registered":
+      return {
+        title: "All done",
+        nextSteps: `Reload ${outcome.label} to pick up the plugin.`,
+      };
+    case "skipped":
+      return {
+        title: "Setup finished; registration skipped",
+        nextSteps: [
+          "The plugin was built, but no VS Code settings were changed.",
+          "Register later with one of:",
+          "  pnpm install-local -- --vscode-channel stable",
+          "  pnpm install-local -- --vscode-channel insiders",
+          "  pnpm install-local -- --settings <path>",
+        ].join("\n"),
+      };
+    case "registration-cancelled":
+      return {
+        title: "Setup finished; registration cancelled",
+        nextSteps: [
+          "The plugin was built, but VS Code settings registration was cancelled.",
+          "Rerun setup, choose Skip registration, or register manually with one of:",
+          "  pnpm install-local -- --vscode-channel stable",
+          "  pnpm install-local -- --vscode-channel insiders",
+          "  pnpm install-local -- --settings <path>",
+        ].join("\n"),
+      };
+    case "custom-cancelled":
+      return {
+        title: "Setup finished; custom registration cancelled",
+        nextSteps: [
+          "The plugin was built, but custom VS Code settings registration was cancelled.",
+          "Rerun setup and choose Stable or Insiders, or register manually:",
+          "  pnpm install-local -- --settings <path>",
+        ].join("\n"),
+      };
+    case "failed":
+      return {
+        title: "Setup finished with registration follow-up needed",
+        nextSteps: [
+          `The plugin was built, but registration with ${outcome.label} failed.`,
+          "Review the installer output above, then rerun:",
+          `  ${outcome.command}`,
+          "VS Code will not pick up the plugin until registration succeeds.",
+        ].join("\n"),
+      };
+  }
+}
+
 async function setup() {
   p.intro("Plugin setup");
+  let vscodeRegistrationOutcome: VSCodeRegistrationOutcome | undefined;
 
   // Check for existing config
   if (await configExists()) {
@@ -235,7 +355,11 @@ async function setup() {
       ],
     });
 
-    if (p.isCancel(registrationTarget) || registrationTarget === "skip") {
+    if (p.isCancel(registrationTarget)) {
+      vscodeRegistrationOutcome = { status: "registration-cancelled" };
+      p.log.info("Cancelled VS Code settings registration.");
+    } else if (registrationTarget === "skip") {
+      vscodeRegistrationOutcome = { status: "skipped" };
       p.log.info("Skipped VS Code settings registration.");
     } else {
       const installArgs = ["scripts/install-local.ts"];
@@ -254,6 +378,7 @@ async function setup() {
         });
 
         if (p.isCancel(settingsPath)) {
+          vscodeRegistrationOutcome = { status: "custom-cancelled" };
           p.log.info("Skipped VS Code settings registration.");
         } else {
           installArgs.push("--settings", settingsPath);
@@ -263,21 +388,21 @@ async function setup() {
       }
 
       if (installArgs.length > 1) {
-        const label =
-          registrationTarget === "custom"
-            ? "custom VS Code settings"
-            : `VS Code ${registrationTarget}`;
+        const label = vscodeRegistrationLabel(registrationTarget);
+        const command = formatInstallLocalCommand(installArgs);
 
         s.start(`Registering with ${label}`);
         try {
           execFileSync("node", installArgs, {
             cwd: ROOT,
             stdio: "pipe",
-          });
+          } satisfies ExecFileSyncOptionsWithBufferEncoding);
+          vscodeRegistrationOutcome = { status: "registered", label };
           s.stop(`Registered with ${label}`);
         } catch (err) {
+          vscodeRegistrationOutcome = { status: "failed", label, command };
           s.stop("Registration failed");
-          console.error(err);
+          logExecFileSyncError(err);
         }
       }
     }
@@ -333,9 +458,14 @@ async function setup() {
   // 7. Done
   const outDir = displayOutputDirectoryForTarget(target as string);
 
+  const vscodeCompletion =
+    target === "vscode"
+      ? vscodeNextSteps(vscodeRegistrationOutcome ?? { status: "skipped" })
+      : undefined;
+
   const nextSteps =
     target === "vscode"
-      ? "Reload VS Code to pick up the plugin."
+      ? (vscodeCompletion?.nextSteps ?? "Reload VS Code to pick up the plugin.")
       : `To launch Claude Code with the plugin:\n  pnpm launch-claude\n\nUse /reload-plugins during a session to pick up rebuilds.`;
 
   p.note(
@@ -348,7 +478,7 @@ async function setup() {
       "To rebuild after changes:  pnpm build",
       "To auto-rebuild on save:  pnpm watch",
     ].join("\n"),
-    "All done",
+    vscodeCompletion?.title ?? "All done",
   );
 
   p.outro("Happy coding!");
