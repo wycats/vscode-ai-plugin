@@ -119,6 +119,14 @@ Threads intentionally kept visible but not active. These are neither forgotten n
 
 A compact record of completed cycles: date or rough sequence, prepare hypothesis, execute result, review calibration, and any arc update that followed.
 
+## Keeping the dashboard current
+
+The dashboard is a rolling calibration artifact, not an accumulating narrative. Its live sections should read like current instruments, not a transcript of prior flights.
+
+Update **Current phase / position** and **Next good move** at natural boundaries: after review, after merge, before starting a new cycle, or when a divergence changes the working model. Completed cycles should be compressed once they stop shaping the next move. Keep the cycle log as evidence of calibration, not as a place to preserve every detail.
+
+The useful question when editing the dashboard is: what does the next agent need to know to move with the current project motion? If a detail no longer changes the next move, it can be summarized or dropped.
+
 ## Non-goals
 
 The dashboard is not a task tracker. A task tracker optimizes for inventory and assignment. The PER arc optimizes for continuity of understanding.
