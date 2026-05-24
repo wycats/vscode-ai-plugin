@@ -156,6 +156,35 @@ function resolveTools(toolList: unknown[], config: Config): string[] {
   return resolved;
 }
 
+function shouldQuoteYamlString(value: string): boolean {
+  return (
+    value === "" ||
+    value.trim() !== value ||
+    /[:#{}[\],&*?|>'"@`!%\\\n\r]/.test(value) ||
+    /^[-?:](?:\s|$)/.test(value) ||
+    /^(?:true|false|null|~|yes|no|on|off)$/i.test(value) ||
+    /^[-+]?(?:\d+|\d+\.\d*|\.\d+)(?:[eE][-+]?\d+)?$/.test(value) ||
+    /^[-+]?(?:\.inf|\.nan)$/i.test(value) ||
+    !yamlPlainScalarRoundTrips(value)
+  );
+}
+
+function yamlPlainScalarRoundTrips(value: string): boolean {
+  try {
+    const parsed = matter(`---\nvalue: ${value}\n---\n`).data as Record<
+      string,
+      unknown
+    >;
+    return parsed.value === value;
+  } catch {
+    return false;
+  }
+}
+
+function formatYamlString(value: string): string {
+  return shouldQuoteYamlString(value) ? JSON.stringify(value) : value;
+}
+
 function serializeFrontmatter(data: Record<string, unknown>): string {
   const lines: string[] = [];
   for (const [key, value] of Object.entries(data)) {
@@ -166,20 +195,14 @@ function serializeFrontmatter(data: Record<string, unknown>): string {
       lines.push(`  [`);
       for (let i = 0; i < value.length; i++) {
         const item = String(value[i]);
-        // Quote items with special chars
-        const needsQuote = /[*{},[\]:#&!|>'"@`]/.test(item);
-        const formatted = needsQuote ? `"${item}"` : item;
-        const comma = i < value.length - 1 ? "," : ",";
-        lines.push(`    ${formatted}${comma}`);
+        const formatted = formatYamlString(item);
+        lines.push(`    ${formatted},`);
       }
       lines.push(`  ]`);
     } else if (typeof value === "boolean") {
       lines.push(`${key}: ${value ? "true" : "false"}`);
     } else if (typeof value === "string") {
-      const str = value;
-      // Quote strings that need it
-      const needsQuote = /[:#{}[\],&*?|>'"@`\n]/.test(str);
-      lines.push(`${key}: ${needsQuote ? JSON.stringify(str) : str}`);
+      lines.push(`${key}: ${formatYamlString(value)}`);
     }
   }
   return lines.join("\n");

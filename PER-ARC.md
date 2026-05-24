@@ -8,32 +8,33 @@ The project is moving from "local toolkit that works" toward "self-consistent pl
 
 ## Current phase / position
 
-Two hardening cycles have landed: publish/build source-truth cleanup and validation/resource-discovery hardening. The current bounded move is setup registration outcome UX: make the setup wizard's final message reflect whether VS Code registration succeeded, was skipped, was cancelled, or failed.
+Three hardening cycles have landed: publish/build source-truth cleanup, validation/resource-discovery hardening, and setup registration outcome UX. The YAML/frontmatter serialization hardening slice is in PR review. After that lands, the arc should either pause or choose a small follow-up from the remaining parked threads.
 
 ## Hypothesis / current move
 
-The first cycle tested the hypothesis that publish/build behavior could share source truth without redesigning publish credentials or branch semantics.
+The YAML/frontmatter cycle tested whether the manual serialization in `scripts/build.ts` could be made safer without widening into a full build rewrite or adding unnecessary ceremony.
 
 Resulting calibration:
 
-- The build entry point was the right place for explicit config selection.
-- Local publish scripts no longer need to mutate `config.json`.
-- Workflows can be hardened with validation/check gates and manifest-derived marketplace metadata without yet invoking the local publish scripts directly.
-- The remaining workflow inline publish logic is acceptable for this slice, but still represents future cleanup surface.
+- The risky surface is localized to frontmatter serialization for generated agent files.
+- The sharp edge is string quoting/escaping, especially arrays and model/tool values that contain quotes, backslashes, colons, commas, or brackets.
+- A small targeted formatter made generated frontmatter safer while preserving the current output shape.
+- Parser-backed plain-scalar round-trip checking was useful for YAML's less obvious ambiguous scalars, including dates and alternate numeric forms.
+- This stayed separate from broader generated-artifact, publish, or config-schema work.
 
 ## Evidence
 
-Recent read-only review found:
+Original read-only review found these hardening opportunities:
 
 - Local publish scripts derive metadata from built manifests, while CI workflows hardcode metadata and shell-copy artifacts.
 - `scripts/publish-vscode.ts` and `scripts/publish-cc.ts` temporarily overwrite `config.json` and restore it afterward.
-- `scripts/build.ts` currently hard-requires `config.json`.
-- Publish workflows install and build but do not run `pnpm validate` or `pnpm check` before publishing.
-- `scripts/target-output.ts` centralizes target output mapping, but `publish-cc` still has hardcoded Claude output paths.
-- Stances are now hidden skill resources, but validation should continue to enforce the hidden-user-facing boundary.
-- Resource discovery currently tolerates missing sections, but broad error swallowing may hide real filesystem problems.
+- `scripts/build.ts` hard-required `config.json`, which made automation mutate local state.
+- Publish workflows installed and built but did not run `pnpm validate` or `pnpm check` before publishing.
+- `scripts/target-output.ts` centralized target output mapping, but `publish-cc` still had hardcoded Claude output paths.
+- Stances had become hidden skill resources, making hiddenness a validation boundary.
+- Resource discovery tolerated missing sections by swallowing broad filesystem errors.
 
-First cycle implementation found:
+Completed hardening cycles found:
 
 - `scripts/build.ts` now accepts `--config <path>`, `--config=<path>`, and `VSCODE_AI_PLUGIN_CONFIG_PATH`, while preserving default `config.json` behavior.
 - `scripts/publish-vscode.ts` and `scripts/publish-cc.ts` now build from example configs without rewriting local `config.json`.
@@ -41,13 +42,17 @@ First cycle implementation found:
 - Both publish workflows now run `pnpm validate` and `pnpm check` before building/publishing.
 - Both publish workflows now derive marketplace name/version/description from built manifests rather than hardcoding stale metadata.
 - `scripts/build.ts` accepts both direct package-script arguments (`pnpm build --config ...`) and the common npm/pnpm separator form (`pnpm build -- --config ...`).
+- `scripts/validate.ts` now enforces hidden stance resources with `user-invocable: false`.
+- `scripts/resource-discovery.ts` now tolerates only missing top-level optional resource directories and surfaces other filesystem errors.
+- `scripts/setup.ts` now reports VS Code registration outcomes accurately instead of always ending with reload guidance.
+- `scripts/build.ts` now quotes/escapes generated YAML frontmatter strings through a shared formatter for scalar strings and array items.
+- `docs/per-arc.md` now records the arc maintenance lesson: the dashboard is a rolling calibration artifact, not an accumulating narrative.
 
-Current repo state at arc setup:
+Current slice state:
 
-- Branch: `main`
-- Status: clean
-- Latest merged work: PR #27, including `docs/per-arc.md` and `.github/pull_request_template.md`
-- Generated VS Code artifacts are under `dist/wycats/`
+- Active slice: YAML/frontmatter serialization hardening in PR review.
+- Source scope: `PER-ARC.md`, `docs/per-arc.md`, and `scripts/build.ts`.
+- Generated build output may exist under ignored `out/` from validation runs; published artifacts under `dist/wycats/` are not part of this slice.
 
 ## Divergences
 
@@ -65,18 +70,18 @@ Another divergence: stances have moved from plain copied markdown into hidden sk
 
 ## Next good move
 
-Run a bounded PER on setup registration outcome UX:
+Open a PR for the YAML/frontmatter serialization hardening slice.
 
-1. Track whether VS Code registration succeeded, was skipped, was cancelled, or failed.
-2. Make the final setup note reflect that outcome instead of always saying to reload VS Code.
-3. Surface captured installer output when registration fails so the user can recover.
-4. Keep registration mechanics and exit-code policy unchanged unless the setup UX fix directly requires widening.
+After that lands, decide whether to continue the hardening arc or pause it. If continuing, the next likely bounded move is one of:
+
+1. Resolve whether TypeScript output and published plugin artifacts should both live under top-level `dist/`.
+2. Extract safer non-publishing package-artifact helpers from the inline workflow logic.
+3. Pause the hardening arc and let the current improvements settle under real use.
 
 ## Parked threads
 
-- Make `setup` report registration failure more explicitly instead of ending with generic success language.
-- Replace manual YAML serialization sharp edges in `scripts/build.ts` with safer quoting or a serializer.
 - Consider whether TypeScript `dist` output and published plugin `dist/wycats` should remain under the same top-level directory long term.
+- Consider extracting shared package-artifact helpers so workflows and local publish scripts can share more logic without sharing credential/branch semantics.
 - Decide whether `PER-ARC.md` should remain a repo artifact, become a memory artifact, or eventually be managed by a `/per-arc` skill.
 
 ## Cycle log
@@ -139,3 +144,44 @@ Review calibration:
 - The two-file implementation stayed within scope and merged in PR #29.
 - Source validation still reports 8 skills, 8 stances, 7 agents, 1 instruction, and 3 hook manifests.
 - Claude Code still emits one consolidated hooks file; that is expected build-reporting semantics, not a discovery regression.
+
+### 2026-05-24 — Setup registration outcome UX
+
+Prepare hypothesis:
+
+- The setup wizard's final message should reflect whether VS Code registration succeeded, was skipped, was cancelled, or failed.
+- Registration failure should remain recoverable rather than aborting after config/build succeed.
+- Captured installer output should be surfaced so the user can recover.
+
+Execution result:
+
+- `scripts/setup.ts` now tracks VS Code registration outcome explicitly.
+- Final setup messaging distinguishes registered, skipped, registration-cancelled, custom-cancelled, and failed states.
+- Copilot review refined recovery commands, cancellation language, and Stable/Insiders labels.
+
+Review calibration:
+
+- The UX slice merged in PR #30 without changing registration mechanics or exit-code policy.
+- The arc needs current-position maintenance after merges; this prompted an update to `docs/per-arc.md` clarifying that the dashboard is a rolling calibration artifact, not an accumulating narrative.
+
+### 2026-05-24 — YAML/frontmatter serialization hardening
+
+Prepare hypothesis:
+
+- The risky serialization surface is localized to generated agent frontmatter in `scripts/build.ts`.
+- Array item quoting is the main sharp edge, but scalar strings should share the same safe formatter.
+- The output shape should stay close to the current hand-written frontmatter rather than switching to `matter.stringify()`.
+
+Execution result:
+
+- Added shared YAML string formatting for scalar strings and array items.
+- Preserved the current generated frontmatter shape and avoided broad build rewrites.
+- Added a parser-backed plain-scalar round-trip guard so YAML-sensitive strings are quoted before generation.
+- Updated `docs/per-arc.md` with the dashboard-current maintenance principle.
+
+Review calibration:
+
+- Initial review found missing YAML hazards such as leading `!`, `%`, dash-space prefixes, date-like strings, hex numerics, and underscore numerics.
+- Targeted fix expanded the quoting predicate and added gray-matter round-trip detection for ambiguous plain scalars.
+- Validation passed for normal VS Code and Claude Code builds plus an extended fixture covering quotes, backslashes, punctuation, booleans, numbers, tags, directives, dates, hex, and underscore numerics.
+- The slice is commit-ready with no tracked `dist/wycats` churn.
