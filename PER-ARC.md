@@ -8,7 +8,7 @@ The project is moving from "local toolkit that works" toward "self-consistent pl
 
 ## Current phase / position
 
-Three hardening cycles have landed: publish/build source-truth cleanup, validation/resource-discovery hardening, and setup registration outcome UX. The YAML/frontmatter serialization hardening slice is in PR review. After that lands, the arc should either pause or choose a small follow-up from the remaining parked threads.
+Four hardening cycles have landed: publish/build source-truth cleanup, validation/resource-discovery hardening, setup registration outcome UX, and YAML/frontmatter serialization hardening. The arc is now at a decision point: pause and let the pipeline changes settle under real use, or choose one more small follow-up from the remaining parked threads.
 
 ## Hypothesis / current move
 
@@ -21,6 +21,12 @@ Resulting calibration:
 - A small targeted formatter made generated frontmatter safer while preserving the current output shape.
 - Parser-backed plain-scalar round-trip checking was useful for YAML's less obvious ambiguous scalars, including dates and alternate numeric forms.
 - This stayed separate from broader generated-artifact, publish, or config-schema work.
+
+Current calibration:
+
+- The pipeline hardening arc has handled the obvious sharp edges that were producing drift or misleading success states.
+- Remaining work is more architectural than corrective.
+- The next decision should be situated: continue because there is active momentum on packaging/source-truth cleanup, or pause because the current improvements are coherent enough to observe in real use.
 
 ## Evidence
 
@@ -50,8 +56,8 @@ Completed hardening cycles found:
 
 Current slice state:
 
-- Active slice: YAML/frontmatter serialization hardening in PR review.
-- Source scope: `PER-ARC.md`, `docs/per-arc.md`, and `scripts/build.ts`.
+- Active slice: none; PR #31 has landed.
+- Current decision: pause the hardening arc or choose a small follow-up.
 - Generated build output may exist under ignored `out/` from validation runs; published artifacts under `dist/wycats/` are not part of this slice.
 
 ## Divergences
@@ -70,9 +76,7 @@ Another divergence: stances have moved from plain copied markdown into hidden sk
 
 ## Next good move
 
-Open a PR for the YAML/frontmatter serialization hardening slice.
-
-After that lands, decide whether to continue the hardening arc or pause it. If continuing, the next likely bounded move is one of:
+Decide whether to continue the hardening arc or pause it. If continuing, the next likely bounded move is one of:
 
 1. Resolve whether TypeScript output and published plugin artifacts should both live under top-level `dist/`.
 2. Extract safer non-publishing package-artifact helpers from the inline workflow logic.
@@ -184,4 +188,4 @@ Review calibration:
 - Initial review found missing YAML hazards such as leading `!`, `%`, dash-space prefixes, date-like strings, hex numerics, and underscore numerics.
 - Targeted fix expanded the quoting predicate and added gray-matter round-trip detection for ambiguous plain scalars.
 - Validation passed for normal VS Code and Claude Code builds plus an extended fixture covering quotes, backslashes, punctuation, booleans, numbers, tags, directives, dates, hex, and underscore numerics.
-- The slice is commit-ready with no tracked `dist/wycats` churn.
+- The slice merged in PR #31 with no tracked `dist/wycats` churn.
