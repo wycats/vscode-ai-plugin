@@ -8,7 +8,7 @@ The project is moving from "local toolkit that works" toward "self-consistent pl
 
 ## Current phase / position
 
-Three hardening cycles have landed: publish/build source-truth cleanup, validation/resource-discovery hardening, and setup registration outcome UX. The YAML/frontmatter serialization hardening slice is reviewed and ready to open as the next PR. After that lands, the arc should either pause or choose a small follow-up from the remaining parked threads.
+Three hardening cycles have landed: publish/build source-truth cleanup, validation/resource-discovery hardening, and setup registration outcome UX. The YAML/frontmatter serialization hardening slice is in PR review. After that lands, the arc should either pause or choose a small follow-up from the remaining parked threads.
 
 ## Hypothesis / current move
 
@@ -48,11 +48,10 @@ Completed hardening cycles found:
 - `scripts/build.ts` now quotes/escapes generated YAML frontmatter strings through a shared formatter for scalar strings and array items.
 - `docs/per-arc.md` now records the arc maintenance lesson: the dashboard is a rolling calibration artifact, not an accumulating narrative.
 
-Current repo state:
+Current slice state:
 
-- Branch: `per-arc-maintenance-and-yaml-hardening`
-- Active slice: YAML/frontmatter serialization hardening, reviewed and ready for PR
-- Tracked source changes: `PER-ARC.md`, `docs/per-arc.md`, and `scripts/build.ts`
+- Active slice: YAML/frontmatter serialization hardening in PR review.
+- Source scope: `PER-ARC.md`, `docs/per-arc.md`, and `scripts/build.ts`.
 - Generated build output may exist under ignored `out/` from validation runs; published artifacts under `dist/wycats/` are not part of this slice.
 
 ## Divergences

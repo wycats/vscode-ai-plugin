@@ -196,8 +196,7 @@ function serializeFrontmatter(data: Record<string, unknown>): string {
       for (let i = 0; i < value.length; i++) {
         const item = String(value[i]);
         const formatted = formatYamlString(item);
-        const comma = i < value.length - 1 ? "," : ",";
-        lines.push(`    ${formatted}${comma}`);
+        lines.push(`    ${formatted},`);
       }
       lines.push(`  ]`);
     } else if (typeof value === "boolean") {
