@@ -94,7 +94,7 @@ async function publish() {
   console.log("  marketplace: .agents/plugins/marketplace.json");
   console.log("\nTo install in Codex:");
   console.log(`  codex plugin marketplace add ${ROOT}`);
-  console.log(`  codex plugin install ${pluginMeta.name}@${pluginMeta.name}`);
+  console.log(`  codex plugin add ${pluginMeta.name}@${pluginMeta.name}`);
 }
 
 publish().catch((err: unknown) => {

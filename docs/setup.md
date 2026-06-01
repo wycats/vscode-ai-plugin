@@ -88,7 +88,14 @@ Add the repo as a Codex marketplace and install:
 
 ```sh
 codex plugin marketplace add /path/to/vscode-ai-plugin
-codex plugin install wycats-ai-plugin@wycats-ai-plugin
+codex plugin add wycats-ai-plugin@wycats-ai-plugin
+```
+
+After `dist/codex/` and `.agents/plugins/marketplace.json` are published on the default branch, the GitHub repo can also be added directly as a Codex marketplace:
+
+```sh
+codex plugin marketplace add wycats/vscode-ai-plugin
+codex plugin add wycats-ai-plugin@wycats-ai-plugin
 ```
 
 ## Configuring `config.json`

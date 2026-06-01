@@ -119,7 +119,14 @@ That writes `dist/codex/` and `.agents/plugins/marketplace.json`. Add this repo 
 
 ```sh
 codex plugin marketplace add /path/to/vscode-ai-plugin
-codex plugin install wycats-ai-plugin@wycats-ai-plugin
+codex plugin add wycats-ai-plugin@wycats-ai-plugin
+```
+
+Once the Codex artifact is published on the default branch, the GitHub repo can also be added directly as a Codex marketplace:
+
+```sh
+codex plugin marketplace add wycats/vscode-ai-plugin
+codex plugin add wycats-ai-plugin@wycats-ai-plugin
 ```
 
 ### How the build works
