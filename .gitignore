@@ -6,6 +6,8 @@ node_modules/
 dist/*
 !dist/wycats/
 !dist/wycats/**
+!dist/codex/
+!dist/codex/**
 out/
 config.json
 hooks-debug.log

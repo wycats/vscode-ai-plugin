@@ -1,0 +1,43 @@
+{
+  "$schema": "./config.schema.json",
+  "target": "codex",
+  "models": {
+    "fast": null,
+    "balanced": null,
+    "auxiliary": null
+  },
+  "toolGroups": {
+    "core": [
+      "functions.exec_command",
+      "functions.update_plan",
+      "web.run"
+    ],
+    "agent": [
+      "tool_search.tool_search_tool"
+    ],
+    "browser": [
+      "web.run"
+    ],
+    "edit": [
+      "functions.apply_patch"
+    ],
+    "memory": [],
+    "exo": [],
+    "terminal": [
+      "functions.exec_command",
+      "functions.write_stdin"
+    ],
+    "terminal-minimal": [
+      "functions.exec_command"
+    ],
+    "testing": [
+      "functions.exec_command"
+    ],
+    "tasks": [
+      "functions.update_plan"
+    ],
+    "github": [
+      "tool_search.tool_search_tool"
+    ]
+  }
+}

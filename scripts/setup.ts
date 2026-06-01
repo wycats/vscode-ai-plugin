@@ -9,14 +9,18 @@ import { execFileSync, type ExecFileSyncOptionsWithBufferEncoding } from "node:c
 import { platform } from "node:os";
 import * as p from "@clack/prompts";
 import {
+  CLAUDE_CODE_TARGET,
+  CODEX_TARGET,
   displayOutputDirectoryForTarget,
   outputPathForTarget,
+  VSCODE_TARGET,
 } from "./target-output.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
 const CONFIG_PATH = join(ROOT, "config.json");
 const VSCODE_EXAMPLE_PATH = join(ROOT, "config.example.json");
 const CC_EXAMPLE_PATH = join(ROOT, "config.claude-code.example.json");
+const CODEX_EXAMPLE_PATH = join(ROOT, "config.codex.example.json");
 
 interface Config {
   $schema: string;
@@ -34,6 +38,11 @@ type VSCodeRegistrationOutcome =
   | { status: "failed"; label: string; command: string };
 
 const PRESETS: Record<string, Record<string, string | null>> = {
+  codex: {
+    fast: null,
+    balanced: null,
+    auxiliary: null,
+  },
   copilot: {
     fast: null,
     balanced: null,
@@ -199,6 +208,11 @@ async function setup() {
         label: "Claude Code",
         hint: "builds agents, skills, and hooks in Claude Code format",
       },
+      {
+        value: "codex",
+        label: "Codex",
+        hint: "builds a .codex-plugin package with skills",
+      },
     ],
   });
 
@@ -209,7 +223,7 @@ async function setup() {
 
   // 2. Model provider (options depend on target)
   const providerOptions =
-    target === "claude-code"
+    target === CLAUDE_CODE_TARGET
       ? [
           {
             value: "claude",
@@ -222,6 +236,19 @@ async function setup() {
             hint: "you'll fill in model names yourself",
           },
         ]
+      : target === CODEX_TARGET
+        ? [
+            {
+              value: "codex",
+              label: "Codex defaults",
+              hint: "no specific models — Codex skills do not need model pins",
+            },
+            {
+              value: "custom",
+              label: "Custom",
+              hint: "you'll fill in model names yourself",
+            },
+          ]
       : [
           {
             value: "copilot",
@@ -302,7 +329,11 @@ async function setup() {
 
   // 4. Build config — use the right example for the target
   const examplePath =
-    target === "claude-code" ? CC_EXAMPLE_PATH : VSCODE_EXAMPLE_PATH;
+    target === CLAUDE_CODE_TARGET
+      ? CC_EXAMPLE_PATH
+      : target === CODEX_TARGET
+        ? CODEX_EXAMPLE_PATH
+        : VSCODE_EXAMPLE_PATH;
   const example = JSON.parse(await readFile(examplePath, "utf-8")) as Config;
 
   const config: Config = {
@@ -328,7 +359,7 @@ async function setup() {
   }
 
   // 6. Register / launch
-  if (target === "vscode") {
+  if (target === VSCODE_TARGET) {
     const registrationTarget = await p.select({
       message: "Register the plugin with which VS Code target?",
       options: [
@@ -406,7 +437,7 @@ async function setup() {
         }
       }
     }
-  } else {
+  } else if (target === CLAUDE_CODE_TARGET) {
     // Offer to add a shell alias for persistent access
     const pluginDir = outputPathForTarget(ROOT, target as string);
     const aliasLine = `alias claude-plugin='claude --plugin-dir "${pluginDir}"'`;
@@ -453,20 +484,30 @@ async function setup() {
       });
       return;
     }
+  } else {
+    p.log.info(
+      [
+        "Codex plugin built.",
+        "To package a shareable local marketplace artifact, run:",
+        "  pnpm publish-codex",
+      ].join("\n"),
+    );
   }
 
   // 7. Done
   const outDir = displayOutputDirectoryForTarget(target as string);
 
   const vscodeCompletion =
-    target === "vscode"
+    target === VSCODE_TARGET
       ? vscodeNextSteps(vscodeRegistrationOutcome ?? { status: "skipped" })
       : undefined;
 
   const nextSteps =
-    target === "vscode"
+    target === VSCODE_TARGET
       ? (vscodeCompletion?.nextSteps ?? "Reload VS Code to pick up the plugin.")
-      : `To launch Claude Code with the plugin:\n  pnpm launch-claude\n\nUse /reload-plugins during a session to pick up rebuilds.`;
+      : target === CLAUDE_CODE_TARGET
+        ? `To launch Claude Code with the plugin:\n  pnpm launch-claude\n\nUse /reload-plugins during a session to pick up rebuilds.`
+        : `To package for Codex:\n  pnpm publish-codex\n\nThen add this repo as a Codex marketplace:\n  codex plugin marketplace add ${ROOT}`;
 
   p.note(
     [
