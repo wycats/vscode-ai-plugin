@@ -2,10 +2,12 @@ import { join } from "node:path";
 
 export const VSCODE_TARGET = "vscode";
 export const CLAUDE_CODE_TARGET = "claude-code";
+export const CODEX_TARGET = "codex";
 
 export const OUTPUT_DIRECTORY_BY_TARGET = {
   [VSCODE_TARGET]: "wycats",
   [CLAUDE_CODE_TARGET]: "claude-code",
+  [CODEX_TARGET]: "codex",
 } as const;
 
 export const LEGACY_VSCODE_OUTPUT_DIRECTORY_NAME = "vscode";

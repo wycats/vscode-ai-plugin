@@ -3,11 +3,11 @@
  *
  * 1. Reads config.json by default, or an explicit config path when provided
  * 2. For each source agent: resolves model and tool role names from config
- * 3. Copies skills and (for vscode) instructions, hooks, stances
+ * 3. Copies skills and target-specific resources
  * 4. Generates the platform-specific manifest
  *
  * Output goes to the target's platform output directory
- * (vscode → out/wycats/, claude-code → out/claude-code/).
+ * (vscode → out/wycats/, claude-code → out/claude-code/, codex → out/codex/).
  */
 
 import { readFile, writeFile, mkdir, cp, rm } from "node:fs/promises";
@@ -19,6 +19,7 @@ import {
   type DiscoveredResource,
 } from "./resource-discovery.ts";
 import {
+  CODEX_TARGET,
   legacyVSCodeOutputPath,
   outputPathForTarget,
   VSCODE_TARGET,
@@ -50,6 +51,29 @@ interface PluginJson extends PluginMetadata {
   agents?: PluginEntry[];
   instructions?: PluginEntry[];
   hooks?: PluginEntry[];
+}
+
+interface CodexPluginJson extends PluginMetadata {
+  author: {
+    name: string;
+    url?: string;
+  };
+  homepage?: string;
+  repository?: string;
+  license?: string;
+  keywords?: string[];
+  skills?: string;
+  interface: {
+    displayName: string;
+    shortDescription: string;
+    longDescription: string;
+    developerName: string;
+    category: string;
+    capabilities: string[];
+    websiteURL?: string;
+    defaultPrompt: string[];
+    brandColor?: string;
+  };
 }
 
 function usage(): string {
@@ -429,7 +453,7 @@ async function copyDir(srcName: string, outDir: string): Promise<void> {
   }
 }
 
-async function copyStancesAsClaudeSkills(
+async function copyStancesAsSkills(
   outDir: string,
   stances: DiscoveredResource[],
 ): Promise<string[]> {
@@ -451,6 +475,7 @@ async function build() {
   const outDir = outputPathForTarget(ROOT, config.target);
   const resources = await discoverResourceFiles(ROOT);
   const isClaudeCode = config.target === "claude-code";
+  const isCodex = config.target === CODEX_TARGET;
 
   // Clean output
   if (config.target === VSCODE_TARGET) {
@@ -477,10 +502,10 @@ async function build() {
   const skillPaths = resources.skills.map((resource) => resource.pluginPath);
   let stancePaths: string[];
 
-  if (isClaudeCode) {
-    // Claude Code auto-discovers only the default skills/ tree, so materialize
-    // stance-skills there while preserving source files under stances/.
-    stancePaths = await copyStancesAsClaudeSkills(outDir, resources.stances);
+  if (isClaudeCode || isCodex) {
+    // Claude Code and Codex auto-discover only the default skills/ tree, so
+    // materialize stance-skills there while preserving source files under stances/.
+    stancePaths = await copyStancesAsSkills(outDir, resources.stances);
   } else {
     // VS Code uses explicit manifest paths, so stances can remain grouped under
     // stances/ and be registered as hidden skills.
@@ -490,12 +515,14 @@ async function build() {
 
   const allSkillPaths = [...skillPaths, ...stancePaths];
 
-  // Build hooks (both targets)
-  const hookPaths = await buildHooks(
-    outDir,
-    config,
-    resources.hooks.map((resource) => resource.sourcePath),
-  );
+  // Build hooks for platforms that support this plugin hook format.
+  const hookPaths = isCodex
+    ? []
+    : await buildHooks(
+        outDir,
+        config,
+        resources.hooks.map((resource) => resource.sourcePath),
+      );
 
   // Generate package.json for script portability
   await writeFile(
@@ -530,6 +557,53 @@ async function build() {
     );
     console.log(`  hooks:        ${String(hookPaths.length)}`);
     console.log(`  manifest:     .claude-plugin/plugin.json`);
+  } else if (isCodex) {
+    // Codex: generate .codex-plugin/plugin.json. Codex discovers skills from
+    // skills/; agents and hooks are copied only as source/reference material.
+    const codexManifest: CodexPluginJson = {
+      name: pluginMeta.name,
+      version: pluginMeta.version,
+      description: pluginMeta.description,
+      author: {
+        name: "wycats",
+        url: "https://github.com/wycats",
+      },
+      homepage: "https://github.com/wycats/vscode-ai-plugin",
+      repository: "https://github.com/wycats/vscode-ai-plugin",
+      license: "MIT",
+      keywords: ["codex", "agents", "skills", "workflow", "review"],
+      skills: "./skills/",
+      interface: {
+        displayName: "Wycats AI Plugin",
+        shortDescription: "Personal workflow skills for Codex",
+        longDescription:
+          "A personal agent toolkit for Codex with workflow skills, session lifecycle support, collaborative review patterns, and reusable stances for stronger agent collaboration.",
+        developerName: "wycats",
+        category: "Developer Tools",
+        capabilities: ["Interactive", "Write"],
+        websiteURL: "https://github.com/wycats/vscode-ai-plugin",
+        defaultPrompt: [
+          "Use the session lifecycle skills for this repo",
+          "Walk me through this code with the walkthrough skill",
+          "Run a recon pass over this project",
+        ],
+        brandColor: "#2F6FED",
+      },
+    };
+
+    const manifestDir = join(outDir, ".codex-plugin");
+    await mkdir(manifestDir, { recursive: true });
+    await writeFile(
+      join(manifestDir, "plugin.json"),
+      JSON.stringify(codexManifest, null, 2) + "\n",
+    );
+
+    console.log(`Built to ${relative(ROOT, outDir)}/`);
+    console.log(`  agents:       ${String(agentPaths.length)} copied`);
+    console.log(
+      `  skills:       ${String(skillPaths.length)} workflow + ${String(stancePaths.length)} stances = ${String(allSkillPaths.length)}`,
+    );
+    console.log(`  manifest:     .codex-plugin/plugin.json`);
   } else {
     // VS Code: copy instructions; generate plugin.json
     await copyDir("instructions", outDir);

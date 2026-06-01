@@ -1,6 +1,6 @@
 # Setup
 
-This plugin provides a set of AI agents, skills, and workflow tools. It works with VS Code (via Copilot) and Claude Code — you configure it for your environment once, and a build step produces the files your platform needs.
+This plugin provides a set of AI agents, skills, and workflow tools. It works with VS Code (via Copilot), Claude Code, and Codex — you configure it for your environment once, and a build step produces the files your platform needs.
 
 ## Quick start
 
@@ -19,7 +19,7 @@ If you prefer to configure manually, copy `config.example.json` to `config.json`
 
 Agent source files (in `agents/`) use abstract names for models and tools instead of hardcoded provider-specific values. For example, an agent says `model: fast` rather than naming a specific model.
 
-Your `config.json` maps those abstract names to concrete values for your environment. The build reads the source files and your config, resolves the names, and writes ready-to-use agent files to the platform output directory: `out/wycats/` for VS Code, or `out/claude-code/` for Claude Code.
+Your `config.json` maps those abstract names to concrete values for your environment. The build reads the source files and your config, resolves the names, and writes ready-to-use files to the platform output directory: `out/wycats/` for VS Code, `out/claude-code/` for Claude Code, or `out/codex/` for Codex.
 
 This means the same agent definitions work for everyone — you just change the config.
 
@@ -65,6 +65,32 @@ pnpm install-local -- --dry-run --settings /tmp/vscode-settings.json
 
 Running `pnpm install-local` with no explicit target exits with a helpful error instead of guessing.
 
+## Codex local marketplace
+
+Codex consumes a `.codex-plugin/plugin.json` manifest and discovers skills from the plugin's `skills/` directory. To build just the Codex target:
+
+```sh
+pnpm build:codex
+```
+
+To package the generated plugin into a local marketplace artifact:
+
+```sh
+pnpm publish-codex
+```
+
+That command writes:
+
+- `dist/codex/` — the Codex plugin package
+- `.agents/plugins/marketplace.json` — a repo-local Codex marketplace pointing at `dist/codex/`
+
+Add the repo as a Codex marketplace and install:
+
+```sh
+codex plugin marketplace add /path/to/vscode-ai-plugin
+codex plugin install wycats-ai-plugin@wycats-ai-plugin
+```
+
 ## Configuring `config.json`
 
 The file has a JSON Schema (`config.schema.json`) that provides validation and autocomplete in VS Code and other editors. The `$schema` line at the top enables this.
@@ -75,6 +101,7 @@ Which platform you're building for. This determines the output format and platfo
 
 - `"vscode"` — for VS Code with GitHub Copilot; builds to `out/wycats/`
 - `"claude-code"` — for Claude Code; builds to `out/claude-code/`
+- `"codex"` — for Codex; builds to `out/codex/`
 
 ### `models`
 

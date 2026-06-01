@@ -7,10 +7,12 @@
   "scripts": {
     "setup": "node scripts/setup.ts",
     "build": "node scripts/build.ts",
+    "build:codex": "node scripts/build.ts --config config.codex.example.json",
     "watch": "node scripts/watch.ts",
     "install-local": "node scripts/install-local.ts",
     "launch-claude": "node scripts/launch-claude.ts",
     "publish-cc": "node scripts/publish-cc.ts",
+    "publish-codex": "node scripts/publish-codex.ts",
     "publish-vscode": "node scripts/publish-vscode.ts",
     "test-cc": "node scripts/test-cc.ts",
     "validate": "node scripts/validate.ts",
