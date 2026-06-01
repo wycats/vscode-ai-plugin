@@ -1,10 +1,10 @@
 # vscode-ai-plugin
 
-An agent toolkit for VS Code Copilot and Claude Code, grounded in a theory of how language activates reasoning in language models.
+An agent toolkit for VS Code Copilot, Claude Code, and Codex, grounded in a theory of how language activates reasoning in language models.
 
 ## What this is
 
-This repo is a working VS Code plugin. Agents, skills, hooks, and instructions that run in every VS Code window. But it's also the testbed for a framework about *how to write good agent customizations*, and a vocabulary of reusable patterns that make those customizations work.
+This repo is a working agent plugin. Agents, skills, hooks, and instructions can be built for VS Code, Claude Code, and Codex. But it's also the testbed for a framework about *how to write good agent customizations*, and a vocabulary of reusable patterns that make those customizations work.
 
 The framework and the practice evolved together. Each skill we built refined the theory, and each theoretical insight improved the skills.
 
@@ -84,7 +84,7 @@ pnpm install
 pnpm run setup
 ```
 
-The interactive setup wizard asks which platform (VS Code or Claude Code) and model provider you use, writes a `config.json`, builds the plugin, and, for VS Code, asks whether to register Stable, Insiders, a custom settings path, or skip registration. Reload the selected VS Code channel and you're done.
+The interactive setup wizard asks which platform (VS Code, Claude Code, or Codex) and model provider you use, writes a `config.json`, builds the plugin, and, for VS Code, asks whether to register Stable, Insiders, a custom settings path, or skip registration. Reload the selected VS Code channel and you're done.
 
 Requires `chat.plugins.enabled: true` (agent plugins are preview).
 
@@ -107,9 +107,31 @@ pnpm install-local -- --dry-run --settings /tmp/vscode-settings.json
 
 `--settings` is the core form; `--vscode-channel stable|insiders` is a convenience alias for the standard settings path on your OS. You can also use `VSCODE_SETTINGS_PATH` or `VSCODE_CHANNEL`, but running `pnpm install-local` with no target now fails instead of guessing.
 
+### Codex local marketplace
+
+Build and package the Codex plugin artifact:
+
+```sh
+pnpm publish-codex
+```
+
+That writes `dist/codex/` and `.agents/plugins/marketplace.json`. Add this repo as a local Codex marketplace, then install the plugin:
+
+```sh
+codex plugin marketplace add /path/to/vscode-ai-plugin
+codex plugin add wycats-ai-plugin@wycats-ai-plugin
+```
+
+Once the Codex artifact is published on the default branch, the GitHub repo can also be added directly as a Codex marketplace:
+
+```sh
+codex plugin marketplace add wycats/vscode-ai-plugin
+codex plugin add wycats-ai-plugin@wycats-ai-plugin
+```
+
 ### How the build works
 
-Agent source files use abstract role names for models and tool groups instead of hardcoded provider-specific values. A local `config.json` (gitignored) maps those roles to concrete values for your environment. The build resolves the names and writes ready-to-use files to the platform output directory: `out/wycats/` for VS Code, or `out/claude-code/` for Claude Code.
+Agent source files use abstract role names for models and tool groups instead of hardcoded provider-specific values. A local `config.json` (gitignored) maps those roles to concrete values for your environment. The build resolves the names and writes ready-to-use files to the platform output directory: `out/wycats/` for VS Code, `out/claude-code/` for Claude Code, or `out/codex/` for Codex.
 
 See [docs/setup.md](docs/setup.md) for full configuration details, including model presets by provider and tool group reference.
 
@@ -118,6 +140,7 @@ See [docs/setup.md](docs/setup.md) for full configuration details, including mod
 ```sh
 pnpm watch     # Auto-rebuild on source or config changes
 pnpm build     # One-off build
+pnpm build:codex # Build the Codex target from the example config
 pnpm validate  # Check discovered resources and plugin metadata
 pnpm check     # TypeScript + ESLint strict type-checked
 ```
