@@ -1,28 +1,25 @@
 /**
- * Packages the Codex build output into dist/codex/ and writes a repo-local
- * Codex marketplace at .agents/plugins/marketplace.json.
+ * Publishes the Codex build output to the `codex-plugin` branch.
  *
- * After running, add this repo as a Codex marketplace:
- *   codex plugin marketplace add /path/to/vscode-ai-plugin
+ * 1. Builds with target: "codex" from the example config
+ * 2. Packages a Codex marketplace root under out/codex-marketplace/
+ * 3. Force-pushes that generated marketplace root to origin/codex-plugin
+ *
+ * After publishing, users can install persistently:
+ *   codex plugin marketplace add wycats/vscode-ai-plugin --ref codex-plugin
+ *   codex plugin add wycats-ai-plugin@wycats-ai-plugin
  */
 
-import { readFile, writeFile, mkdir, cp, rm, access } from "node:fs/promises";
+import { cp, mkdtemp, rm, access, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { execFileSync } from "node:child_process";
+import { tmpdir } from "node:os";
+import { execSync } from "node:child_process";
 import {
-  CODEX_TARGET,
-  displayDistDirectoryForTarget,
-  displayOutputDirectoryForTarget,
-  distPathForTarget,
-  outputPathForTarget,
-} from "./target-output.ts";
+  CODEX_MARKETPLACE_OUT,
+  packageCodexMarketplace,
+} from "./package-codex.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
-const CODEX_OUT = outputPathForTarget(ROOT, CODEX_TARGET);
-const DIST_DIR = distPathForTarget(ROOT, CODEX_TARGET);
-const DIST_DIR_REL = displayDistDirectoryForTarget(CODEX_TARGET);
-const CODEX_CONFIG = "config.codex.example.json";
-const MARKETPLACE_PATH = join(ROOT, ".agents", "plugins", "marketplace.json");
 
 async function fileExists(path: string): Promise<boolean> {
   try {
@@ -33,68 +30,73 @@ async function fileExists(path: string): Promise<boolean> {
   }
 }
 
-function ensureCodexBuild(): void {
-  execFileSync(process.execPath, ["scripts/build.ts", "--config", CODEX_CONFIG], {
-    cwd: ROOT,
-    stdio: "inherit",
-  });
-}
-
 async function publish() {
-  console.log("Building Codex plugin...\n");
-  ensureCodexBuild();
+  await packageCodexMarketplace();
 
-  const manifestPath = join(CODEX_OUT, ".codex-plugin", "plugin.json");
-  if (!(await fileExists(manifestPath))) {
-    console.error(
-      `Build output not found at ${displayOutputDirectoryForTarget(CODEX_TARGET)}/`,
-    );
+  const manifestPath = join(
+    CODEX_MARKETPLACE_OUT,
+    "plugin",
+    ".codex-plugin",
+    "plugin.json",
+  );
+  const marketplacePath = join(
+    CODEX_MARKETPLACE_OUT,
+    ".agents",
+    "plugins",
+    "marketplace.json",
+  );
+
+  if (!(await fileExists(manifestPath)) || !(await fileExists(marketplacePath))) {
+    console.error("Codex marketplace output is incomplete.");
     process.exit(1);
   }
 
   const pluginMeta = JSON.parse(await readFile(manifestPath, "utf-8")) as {
     name: string;
-    description: string;
+    version: string;
   };
 
-  await rm(DIST_DIR, { recursive: true, force: true });
-  await mkdir(join(ROOT, "dist"), { recursive: true });
-  await cp(CODEX_OUT, DIST_DIR, { recursive: true });
-  await cp(join(ROOT, "README.md"), join(DIST_DIR, "README.md"));
+  const tmp = await mkdtemp(join(tmpdir(), "codex-plugin-"));
+  const repoRoot = join(tmp, "repo");
 
-  const marketplace = {
-    name: pluginMeta.name,
-    interface: {
-      displayName: "Wycats AI Plugin",
-    },
-    plugins: [
-      {
-        name: pluginMeta.name,
-        source: {
-          source: "local",
-          path: `./${DIST_DIR_REL}`,
-        },
-        policy: {
-          installation: "AVAILABLE",
-          authentication: "ON_INSTALL",
-        },
-        category: "Developer Tools",
-      },
-    ],
-  };
+  try {
+    await cp(CODEX_MARKETPLACE_OUT, repoRoot, { recursive: true });
 
-  await mkdir(join(ROOT, ".agents", "plugins"), { recursive: true });
-  await writeFile(
-    MARKETPLACE_PATH,
-    JSON.stringify(marketplace, null, 2) + "\n",
-  );
+    const remoteUrl = execSync("git remote get-url origin", {
+      cwd: ROOT,
+      encoding: "utf-8",
+    }).trim();
 
-  console.log("\nPackaged Codex plugin.");
-  console.log(`  plugin:      ${DIST_DIR_REL}/`);
-  console.log("  marketplace: .agents/plugins/marketplace.json");
-  console.log("\nTo install in Codex:");
-  console.log(`  codex plugin marketplace add ${ROOT}`);
-  console.log(`  codex plugin add ${pluginMeta.name}@${pluginMeta.name}`);
+    execSync("git init", { cwd: repoRoot, stdio: "pipe" });
+    execSync('git config user.name "github-actions[bot]"', {
+      cwd: repoRoot,
+      stdio: "pipe",
+    });
+    execSync(
+      'git config user.email "github-actions[bot]@users.noreply.github.com"',
+      { cwd: repoRoot, stdio: "pipe" },
+    );
+    execSync("git add -A", { cwd: repoRoot, stdio: "pipe" });
+    execSync(
+      `git commit -m "Update Codex plugin (${pluginMeta.version})"`,
+      { cwd: repoRoot, stdio: "pipe" },
+    );
+    execSync(`git push ${remoteUrl} HEAD:refs/heads/codex-plugin --force`, {
+      cwd: repoRoot,
+      stdio: "inherit",
+    });
+
+    console.log("\nPublished to codex-plugin branch.");
+    console.log("\nFor first-time install:");
+    console.log(
+      "  codex plugin marketplace add wycats/vscode-ai-plugin --ref codex-plugin",
+    );
+    console.log(`  codex plugin add ${pluginMeta.name}@${pluginMeta.name}`);
+    console.log("\nTo update after publishing:");
+    console.log(`  codex plugin marketplace upgrade ${pluginMeta.name}`);
+  } finally {
+    await rm(tmp, { recursive: true, force: true });
+  }
 }
 
 publish().catch((err: unknown) => {

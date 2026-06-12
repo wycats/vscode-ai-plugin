@@ -489,7 +489,7 @@ async function setup() {
       [
         "Codex plugin built.",
         "To package a shareable local marketplace artifact, run:",
-        "  pnpm publish-codex",
+        "  pnpm package-codex",
       ].join("\n"),
     );
   }
@@ -507,7 +507,7 @@ async function setup() {
       ? (vscodeCompletion?.nextSteps ?? "Reload VS Code to pick up the plugin.")
       : target === CLAUDE_CODE_TARGET
         ? `To launch Claude Code with the plugin:\n  pnpm launch-claude\n\nUse /reload-plugins during a session to pick up rebuilds.`
-        : `To package for Codex:\n  pnpm publish-codex\n\nThen add this repo as a Codex marketplace:\n  codex plugin marketplace add ${ROOT}`;
+        : `To package for local Codex testing:\n  pnpm package-codex\n\nThen add the generated local marketplace:\n  codex plugin marketplace add ${ROOT}/out/codex-marketplace\n\nFor the published marketplace:\n  codex plugin marketplace add wycats/vscode-ai-plugin --ref codex-plugin`;
 
   p.note(
     [

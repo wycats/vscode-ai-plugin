@@ -1,0 +1,46 @@
+name: Publish Codex Plugin
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'dist/**'
+      - 'marketplace.json'
+
+concurrency:
+  group: publish-codex
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Validate plugin sources
+        run: pnpm validate
+
+      - name: Typecheck and lint scripts
+        run: pnpm check
+
+      - name: Build Codex plugin
+        run: pnpm build:codex
+
+      - name: Publish Codex marketplace branch
+        run: |
+          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+          pnpm publish-codex
