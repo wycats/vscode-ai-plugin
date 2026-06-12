@@ -1,6 +1,6 @@
 ---
 name: gh-resolve-review-threads
-description: "Use when Yehuda asks to address, fix, or clear actionable GitHub/Copilot pull request review comments. Do not use for read-only requests to inspect, summarize, explain, plan, or list comments. Treat resolving corresponding review threads as part of completing the work after verifying each fix landed."
+description: "Use when Yehuda asks to address, fix, handle, or clear actionable GitHub/Copilot pull request review feedback or comments. Do not use for read-only requests to inspect, summarize, explain, plan, or list comments. Treat resolving corresponding review threads as part of completing the work after verifying each fix landed."
 ---
 
 # GH Resolve Review Threads
