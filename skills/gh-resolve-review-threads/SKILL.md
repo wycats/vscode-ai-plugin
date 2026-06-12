@@ -1,21 +1,21 @@
 ---
 name: gh-resolve-review-threads
-description: "Use when Yehuda asks to address, fix, handle, or clear actionable GitHub/Copilot pull request review feedback or comments. Do not use for read-only requests to inspect, summarize, explain, plan, or list comments. Treat resolving corresponding review threads as part of completing the work after verifying each fix landed."
+description: "Use when PR review or diff comments are supplied as actionable feedback to implement, including UI flows that send comments without an explicit typed request. Completing this work includes verifying the fix and resolving matching GitHub/Copilot review threads; observation-only requests should leave threads open."
 ---
 
 # GH Resolve Review Threads
 
-Addressing PR review comments has a closing step: after verifying the fix landed, resolve the matching GitHub review thread so the PR surface reflects the current state. This skill is a policy layer over the normal GitHub tools, not a replacement for them.
+PR review feedback has two surfaces: the code and the review thread. When the user or UI asks you to act on review comments, the work is complete only when the code addresses the concern and the review surface reflects that state. Resolve the matching thread after verification; leave it open when the task is only to observe, explain, plan, or when the fix is ambiguous.
 
 ## Default stance
 
-When Yehuda asks to address PR review comments, treat thread resolution as part of finishing that work. Fix the concern, verify the fix landed, then resolve the matching review thread unless there is a concrete reason to leave it open.
+When the user or UI supplies PR review comments as work to perform, treat thread resolution as part of finishing that work. Fix the concern, verify the fix landed, then resolve the matching review thread unless there is a concrete reason to leave it open.
 
-The important boundary is not whether Yehuda said the word "resolve." The boundary is whether the user asked you to act on PR review feedback. Do not resolve threads when the user only asks to inspect, summarize, explain, or plan around comments.
+The important boundary is not whether the user said the word "resolve." The boundary is whether the user or UI asked you to act on PR review feedback. Observation-only requests leave the review surface unchanged.
 
 ## Workflow
 
-1. Identify the PR and review comments Yehuda means.
+1. Identify the PR and review comments the user or UI supplied.
    - Prefer thread-aware GitHub reads over flattened comment lists.
    - If the available GitHub connector does not expose review-thread IDs, use `gh api graphql` to read `pullRequest.reviewThreads`.
    - Collect enough context to distinguish sibling comments on the same file and line: thread ID, resolved state, file path, line or diff position, author, body, URL, and any replies.
