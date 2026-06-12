@@ -73,30 +73,52 @@ Codex consumes a `.codex-plugin/plugin.json` manifest and discovers skills from 
 pnpm build:codex
 ```
 
-To package the generated plugin into a local marketplace artifact:
+To package the generated plugin into an ignored local marketplace artifact:
 
 ```sh
-pnpm publish-codex
+pnpm package-codex
 ```
 
 That command writes:
 
-- `dist/codex/` — the Codex plugin package
-- `.agents/plugins/marketplace.json` — a repo-local Codex marketplace pointing at `dist/codex/`
+- `out/codex-marketplace/plugin/` — the Codex plugin package
+- `out/codex-marketplace/.agents/plugins/marketplace.json` — a local Codex marketplace pointing at `./plugin`
 
-Add the repo as a Codex marketplace and install:
+Add the local marketplace and install:
 
 ```sh
-codex plugin marketplace add /path/to/vscode-ai-plugin
+codex plugin marketplace add ./out/codex-marketplace
 codex plugin add wycats-ai-plugin@wycats-ai-plugin
 ```
 
-After `dist/codex/` and `.agents/plugins/marketplace.json` are published on the default branch, the GitHub repo can also be added directly as a Codex marketplace:
+Published Codex artifacts are generated from `main` and force-pushed to the
+`codex-plugin` branch. Install the remote marketplace from that branch:
 
 ```sh
-codex plugin marketplace add wycats/vscode-ai-plugin
+codex plugin marketplace add wycats/vscode-ai-plugin --ref codex-plugin
 codex plugin add wycats-ai-plugin@wycats-ai-plugin
 ```
+
+To refresh the configured Git marketplace after updates:
+
+```sh
+codex plugin marketplace upgrade wycats-ai-plugin
+```
+
+Then restart Codex. If the installed plugin cache appears stale, remove and
+re-add the plugin after upgrading the marketplace.
+
+If you installed the earlier main-branch Codex marketplace, migrate once:
+
+```sh
+codex plugin remove wycats-ai-plugin@wycats-ai-plugin
+codex plugin marketplace remove wycats-ai-plugin
+codex plugin marketplace add wycats/vscode-ai-plugin --ref codex-plugin
+codex plugin add wycats-ai-plugin@wycats-ai-plugin
+```
+
+No VS Code migration is needed. VS Code still uses root `marketplace.json` and
+`dist/wycats/` on `main`.
 
 ## Configuring `config.json`
 

@@ -109,25 +109,49 @@ pnpm install-local -- --dry-run --settings /tmp/vscode-settings.json
 
 ### Codex local marketplace
 
-Build and package the Codex plugin artifact:
+Build the Codex plugin artifact into an ignored local marketplace root:
 
 ```sh
-pnpm publish-codex
+pnpm package-codex
 ```
 
-That writes `dist/codex/` and `.agents/plugins/marketplace.json`. Add this repo as a local Codex marketplace, then install the plugin:
+That writes `out/codex-marketplace/`, with the marketplace at
+`out/codex-marketplace/.agents/plugins/marketplace.json` and the plugin package
+under `out/codex-marketplace/plugin/`. Add that local marketplace, then install
+the plugin:
 
 ```sh
-codex plugin marketplace add /path/to/vscode-ai-plugin
+codex plugin marketplace add ./out/codex-marketplace
 codex plugin add wycats-ai-plugin@wycats-ai-plugin
 ```
 
-Once the Codex artifact is published on the default branch, the GitHub repo can also be added directly as a Codex marketplace:
+The published Codex marketplace lives on the generated `codex-plugin` branch:
 
 ```sh
-codex plugin marketplace add wycats/vscode-ai-plugin
+codex plugin marketplace add wycats/vscode-ai-plugin --ref codex-plugin
 codex plugin add wycats-ai-plugin@wycats-ai-plugin
 ```
+
+To update an installed Codex marketplace snapshot:
+
+```sh
+codex plugin marketplace upgrade wycats-ai-plugin
+```
+
+Then restart Codex. If the installed plugin cache appears stale, remove and
+re-add the plugin after upgrading the marketplace.
+
+If you installed the earlier main-branch Codex marketplace, migrate once:
+
+```sh
+codex plugin remove wycats-ai-plugin@wycats-ai-plugin
+codex plugin marketplace remove wycats-ai-plugin
+codex plugin marketplace add wycats/vscode-ai-plugin --ref codex-plugin
+codex plugin add wycats-ai-plugin@wycats-ai-plugin
+```
+
+No VS Code migration is needed; VS Code continues to use `marketplace.json` and
+`dist/wycats/` on `main`.
 
 ### How the build works
 
@@ -141,6 +165,7 @@ See [docs/setup.md](docs/setup.md) for full configuration details, including mod
 pnpm watch     # Auto-rebuild on source or config changes
 pnpm build     # One-off build
 pnpm build:codex # Build the Codex target from the example config
+pnpm package-codex # Build an ignored local Codex marketplace
 pnpm validate  # Check discovered resources and plugin metadata
 pnpm check     # TypeScript + ESLint strict type-checked
 ```
