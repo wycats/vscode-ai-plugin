@@ -1,17 +1,17 @@
 ---
 name: gh-resolve-review-threads
-description: "Use when Yehuda explicitly asks to mark addressed GitHub or Copilot pull request review comments resolved. Resolve the corresponding PR review threads by default after verifying the fix landed, while leaving ambiguous, unaddressed, conflicting, or human-decision threads open."
+description: "Use when Yehuda asks to address, fix, handle, or clear actionable GitHub/Copilot pull request review feedback or comments. Do not use for read-only requests to inspect, summarize, explain, plan, or list comments. Treat resolving corresponding review threads as part of completing the work after verifying each fix landed."
 ---
 
 # GH Resolve Review Threads
 
-Coordinate resolution of addressed GitHub PR review threads. This skill is a policy layer over the normal GitHub tools, not a replacement for them.
+Addressing PR review comments has a closing step: after verifying the fix landed, resolve the matching GitHub review thread so the PR surface reflects the current state. This skill is a policy layer over the normal GitHub tools, not a replacement for them.
 
 ## Default stance
 
-When Yehuda explicitly asks to mark addressed PR review comments resolved, treat resolution as part of finishing the work. After verifying the requested fix landed, resolve the matching review thread unless there is a concrete reason to pause.
+When Yehuda asks to address PR review comments, treat thread resolution as part of finishing that work. Fix the concern, verify the fix landed, then resolve the matching review thread unless there is a concrete reason to leave it open.
 
-Do not infer this permission from a generic request to "address comments" or "fix feedback." The explicit request matters because resolving a thread changes the review surface for humans.
+The important boundary is not whether Yehuda said the word "resolve." The boundary is whether the user asked you to act on PR review feedback. Do not resolve threads when the user only asks to inspect, summarize, explain, or plan around comments.
 
 ## Workflow
 
