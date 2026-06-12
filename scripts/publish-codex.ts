@@ -57,23 +57,32 @@ async function publish() {
   };
 
   const tmp = await mkdtemp(join(tmpdir(), "codex-plugin-"));
+  const repoRoot = join(tmp, "repo");
 
   try {
-    await cp(CODEX_MARKETPLACE_OUT, tmp, { recursive: true });
+    await cp(CODEX_MARKETPLACE_OUT, repoRoot, { recursive: true });
 
     const remoteUrl = execSync("git remote get-url origin", {
       cwd: ROOT,
       encoding: "utf-8",
     }).trim();
 
-    execSync("git init", { cwd: tmp, stdio: "pipe" });
-    execSync("git add -A", { cwd: tmp, stdio: "pipe" });
+    execSync("git init", { cwd: repoRoot, stdio: "pipe" });
+    execSync('git config user.name "github-actions[bot]"', {
+      cwd: repoRoot,
+      stdio: "pipe",
+    });
+    execSync(
+      'git config user.email "github-actions[bot]@users.noreply.github.com"',
+      { cwd: repoRoot, stdio: "pipe" },
+    );
+    execSync("git add -A", { cwd: repoRoot, stdio: "pipe" });
     execSync(
       `git commit -m "Update Codex plugin (${pluginMeta.version})"`,
-      { cwd: tmp, stdio: "pipe" },
+      { cwd: repoRoot, stdio: "pipe" },
     );
     execSync(`git push ${remoteUrl} HEAD:refs/heads/codex-plugin --force`, {
-      cwd: tmp,
+      cwd: repoRoot,
       stdio: "inherit",
     });
 

@@ -12,4 +12,4 @@ When adding or editing repo artifacts:
 - Inspect nearby artifacts first and preserve the established source-of-truth flow.
 - Keep platform-specific packaging generated through the build system when possible.
 - Use `pnpm validate` for resource/frontmatter checks.
-- Use target builds such as `pnpm build:codex` or `pnpm publish-codex` when changing packaged output.
+- Use target builds such as `pnpm build:codex` or `pnpm package-codex` when changing packaged output.
