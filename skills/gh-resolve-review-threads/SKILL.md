@@ -1,11 +1,11 @@
 ---
 name: gh-resolve-review-threads
-description: "Use when Yehuda asks to address, fix, handle, or clear GitHub/Copilot pull request review comments. Treat resolving the corresponding review threads as part of completing the work after verifying each fix landed, while leaving ambiguous, unaddressed, conflicting, or human-decision threads open."
+description: "Use when Yehuda asks to address, fix, or clear actionable GitHub/Copilot pull request review comments. Do not use for read-only requests to inspect, summarize, explain, plan, or list comments. Treat resolving corresponding review threads as part of completing the work after verifying each fix landed."
 ---
 
 # GH Resolve Review Threads
 
-Addressing PR review comments has a closing step: after the fix is present, resolve the matching GitHub review thread so the PR surface reflects the current state. This skill is a policy layer over the normal GitHub tools, not a replacement for them.
+Addressing PR review comments has a closing step: after verifying the fix landed, resolve the matching GitHub review thread so the PR surface reflects the current state. This skill is a policy layer over the normal GitHub tools, not a replacement for them.
 
 ## Default stance
 
