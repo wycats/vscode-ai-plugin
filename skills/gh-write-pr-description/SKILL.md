@@ -37,7 +37,8 @@ Compose four stances:
 1. Find the template.
    - Check common locations such as `.github/pull_request_template.md`,
      `.github/PULL_REQUEST_TEMPLATE.md`, `.github/PULL_REQUEST_TEMPLATE/*.md`,
-     `docs/pull_request_template.md`, and `PULL_REQUEST_TEMPLATE.md`.
+     `docs/pull_request_template.md`, `pull_request_template.md`, and
+     `PULL_REQUEST_TEMPLATE.md`.
    - If a template exists, preserve its headings and omit optional sections
      that carry no signal.
    - If no template exists, use a small reviewer-facing structure: `Why`,
