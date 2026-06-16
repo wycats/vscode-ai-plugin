@@ -156,8 +156,9 @@ project invariant. Anchor it to the relevant code, explain the evidence and
 affected behavior, and give a fix direction.
 
 **Residual risk:** The patch may be fine, but an important path, assumption, or
-validation surface remains unexamined. Put this in the summary unless it points
-to a specific changed line.
+validation surface remains unexamined. Keep this in the summary. Include
+file/line references there when they help locate the unexamined path or
+assumption.
 
 **Question:** The code cannot answer something that would change review
 judgment: product intent, acceptable risk, migration expectations, or author
