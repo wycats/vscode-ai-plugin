@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: "Use when reviewing git diffs, local changes, or pull requests for merge-relevant risks: correctness regressions, security/privacy, data integrity, performance, reliability, tests, UX, maintainability, and deployability. Produce evidence-backed findings, inline comments when available, and a reviewer-facing summary without diff narration or style noise."
+description: "Use when reviewing git diffs, local changes, or pull requests for merge-relevant risks: correctness regressions, security/privacy, data integrity, performance, reliability, tests, UX, maintainability, and deployability. Produce evidence-backed findings, inline comments when available, and a reviewer-facing summary focused on findings, residual risk, questions, and readiness."
 ---
 
 # Code Review
@@ -29,8 +29,8 @@ to resolve or validate it. A noisy comment restates the diff, expresses taste,
 duplicates tooling, or turns weak suspicion into confident prose.
 
 Validation belongs in the review as confidence context, not as a command diary.
-Say what evidence changes trust in the patch. Do not list commands merely to
-prove the agent did work.
+Report the evidence that changes trust in the patch and route mechanical command
+history to chat closeout, CI, or follow-up discussion.
 
 ## Workflow
 
@@ -115,8 +115,8 @@ Use severity for impact and confidence for proof. Keep them separate.
 
 Confidence is **high** when directly supported by code, tests, traces, specs, or
 changed invariants; **medium** when strongly inferred but dependent on an
-assumption; **low** when plausible but unproven. Do not present low-confidence
-claims as facts.
+assumption; **low** when plausible but unproven. Low-confidence claims belong as
+questions or residual risk, not findings.
 
 ## Output
 
@@ -146,16 +146,31 @@ Reviewed: <scope>
 Residual risk: <untested paths, skipped validation, or assumptions>
 ```
 
-## Noise controls
+## Review signal
 
-- Do not restate the diff.
-- Do not block on taste.
-- Do not duplicate formatter, linter, typechecker, or CI output unless you add
-  cause, impact, and fix direction.
-- Do not repeat the same root cause across many lines; group it once.
-- Do not request broad rewrites unless the current code creates material risk.
-- Do not claim validation passed unless you observed it.
-- Do not hide uncertainty; route it to questions or residual risk.
+A review observation belongs in the output when it can become one of four
+signals.
+
+**Finding:** The change appears to diverge from its intended behavior or from a
+project invariant. Anchor it to the relevant code, explain the evidence and
+affected behavior, and give a fix direction.
+
+**Residual risk:** The patch may be fine, but an important path, assumption, or
+validation surface remains unexamined. Put this in the summary unless it points
+to a specific changed line.
+
+**Question:** The code cannot answer something that would change review
+judgment: product intent, acceptable risk, migration expectations, or author
+context. Ask the narrowest question that would resolve the uncertainty.
+
+**Readiness synthesis:** The local observations add up to a merge-readiness
+judgment. Use the final summary for that synthesis, especially when there are no
+blocking findings.
+
+If an observation cannot become one of these signals, keep it out of the review.
+Tool output, style preferences, repeated examples, and diff narration are useful
+only when they support a finding, residual risk, question, or readiness
+judgment.
 
 ## Boundaries
 
