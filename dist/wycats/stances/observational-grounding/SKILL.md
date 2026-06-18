@@ -76,14 +76,19 @@ Once the phenomenon is stable, interpretation can begin.
 - The tempting explanation depends on treating two observations as more
   comparable than they have been shown to be.
 
-## What this stance is not
+## The handoff point
 
-- Root-cause analysis, which explains a grounded phenomenon.
-- Hypothesis-forming, which makes testable predictions after the observations
-  have a stable reference.
-- Evidence collection in general. This stance is specifically about keeping
-  observations well-formed before interpreting their disagreement.
-- A reporting format. The output should fit the surfaces being grounded.
+Once the phenomenon has a stable reference, observational grounding should make
+the next mode easier. It hands root-cause analysis something specific to
+explain, gives hypothesis-forming a grounded phenomenon to predict against, and
+lets hypothesis-evaluating compare expected and actual results against an
+observation whose referent is already stable.
+
+The output should fit the surfaces involved. Sometimes the useful artifact is a
+short contradiction statement. Sometimes it is a readback of scope, identity,
+timing, workspace, or storage context. Across those forms, the invariant is that
+the next interpretive move receives observations that can actually bear on the
+same phenomenon.
 
 ## Composition notes
 
