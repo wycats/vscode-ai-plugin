@@ -80,7 +80,7 @@ Once the phenomenon is stable, interpretation can begin.
 
 - Root-cause analysis, which explains a grounded phenomenon.
 - Hypothesis-forming, which makes testable predictions after the observations
-  have stable reference.
+  have a stable reference.
 - Evidence collection in general. This stance is specifically about keeping
   observations well-formed before interpreting their disagreement.
 - A reporting format. The output should fit the surfaces being grounded.

@@ -101,12 +101,12 @@ unavailable when the Exo tool path is absent.
 The Exo repo is already carrying the concrete integration contracts. This note
 should point to them rather than duplicate them:
 
-- `~/Code/exo2/docs/rfcs/stage-0/10193-codex-integration-and-cockpit-adapter.md`
+- `wycats/exo2:docs/rfcs/stage-0/10193-codex-integration-and-cockpit-adapter.md`
   defines the Codex/plugin/cockpit relationship and the host capability matrix.
-- `~/Code/exo2/docs/rfcs/stage-0/10187-cli-shaped-exo-run-mcp-transport.md`
+- `wycats/exo2:docs/rfcs/stage-0/10187-cli-shaped-exo-run-mcp-transport.md`
   defines the CLI-shaped MCP transport and near-term `exo-help`, `exo-read`, and
   `exo-write` direction.
-- `~/Code/exo2/docs/rfcs/stage-0/10190-durable-mcp-proxy-and-hot-swappable-worker.md`
+- `wycats/exo2:docs/rfcs/stage-0/10190-durable-mcp-proxy-and-hot-swappable-worker.md`
   defines the durable MCP proxy and worker replacement architecture.
 
 Those RFCs own the MCP and product contract. This repo owns the agent framework

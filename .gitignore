@@ -1,6 +1,11 @@
 node_modules/
 .runtime/
 .logs/
+
+# Local agent runtime and handoff state
+.exo/
+CODEX_HANDOFF.md
+
 # Most dist output is generated scratch, but the VS Code marketplace source is
 # committed so normal git status/add catches newly generated published files.
 dist/*
