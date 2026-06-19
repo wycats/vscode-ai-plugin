@@ -27,6 +27,23 @@ Then explore adaptively. Start broad, follow leads. Each search result, file rea
 
 The investigation has a natural shape: broad orientation, then focused pursuit of the most promising leads, then synthesis. But the shape adapts to what you find. Sometimes you converge quickly. Sometimes sources conflict and you need to trace the conflict itself.
 
+## Stabilize the phenomenon
+
+When observations appear to disagree, preserve the contradiction before
+explaining it. Name what each surface actually shows, and ask what would make
+those observations bear on the same phenomenon.
+
+This is a pause inside recon, not a separate procedure. Inspect only enough to
+stabilize the observation. Sometimes that means checking scope, identity,
+timing, workspace, or storage context. Sometimes it means discovering that the
+two observations are not yet comparable.
+
+For example, if an event log shows recent requests but a database read shows no
+recent turns, the stable starting point is not "persistence failed" or "the
+cache missed." It is the observed contradiction: the log surface reports recent
+activity, while the storage surface does not show the corresponding persisted
+state. Once the surfaces are known to be comparable, causal recon can resume.
+
 ## Fan-out
 
 When a question is broad enough to benefit from parallel work, dispatch subagents. The choice depends on what the sub-task needs:
