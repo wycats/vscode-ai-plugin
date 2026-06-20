@@ -7,7 +7,7 @@ description: "Keeps SESSION-TRAJECTORY.md warm as work progresses and offers che
 
 Saving is not stopping. This skill keeps the trajectory warm so that if the session ends — planned or not — the next session can start with the right direction and momentum. Think of it as version control for context: commit early, commit often, keep working.
 
-**Stances used:** Load the **gap-reading** stance for thorough checkpoints and the **collaborative-grounding** stance for timing decisions.
+**Stances used:** Load the **gap-reading** stance for thorough checkpoints, the **collaborative-grounding** stance for timing decisions, and the **relational-continuity** stance when writing trajectory updates.
 
 ## What SESSION-TRAJECTORY.md is
 

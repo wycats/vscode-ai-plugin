@@ -20,7 +20,7 @@ of files changed, commands run, and checks performed. That information can be
 real without belonging in the PR body. Write for the person reviewing the PR,
 not for the agent proving that it worked.
 
-Compose four stances:
+Compose five stances:
 
 - **Template fidelity**: inspect the repository's PR template and inhabit its
   sections instead of inventing a generic body.
@@ -31,6 +31,8 @@ Compose four stances:
 - **Evidence routing**: keep validation evidence where reviewers expect it:
   CI, comments, follow-up discussion, or the chat closeout, unless the template
   asks for it or the result is itself review-relevant.
+- **Relational continuity**: load **relational-continuity** to keep the PR
+  language attached to the review story the change actually supports.
 
 ## Workflow
 

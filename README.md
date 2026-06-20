@@ -33,6 +33,8 @@ When writing a skill, you're choosing *how the agent should think about the task
 
 **Collaborative grounding** is the most fundamental. The agent has perception (tools, files, search) and superhuman breadth across all of human expression. The user has situated knowledge: intent, priorities, energy, the state of the world beyond the screen. Neither perspective is sufficient alone. Good collaboration combines both: the agent shares what it sees, the user contributes what the agent can't access.
 
+**Relational continuity** keeps language attached to the work underway so later turns, summaries, and handoffs inherit usable orientation. Its skill description is intentionally ambient; the loaded stance deepens compact reminders like "let's focus on what we're doing" and "let's use precise and meaningful language."
+
 **Joint reading** is what happens when two people examine code or a document together. The agent sees structural patterns; the user sees design intent. The walkthrough skill uses this stance.
 
 **Diagnostic questioning** is asking the right question at the right time. The one that maximally reduces uncertainty about the user's priorities. High-variance questions (where the agent genuinely can't predict the answer) come first, because their answers often resolve lower-variance questions implicitly. The session-rest skill uses this during triage.

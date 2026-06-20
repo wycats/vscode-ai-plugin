@@ -7,6 +7,8 @@ description: "Use when PR review or diff comments are supplied as actionable fee
 
 PR review feedback has two surfaces: the code and the review thread. When the user or UI asks you to act on review comments, the work is complete only when the code addresses the concern and the review surface reflects that state. Resolve the matching thread after verification; leave it open when the task is only to observe, explain, plan, or when the fix is ambiguous.
 
+**Stances used:** Load the **relational-continuity** stance for keeping review-thread language attached to the work, and **collaborative-grounding** when reviewer or user intent is ambiguous.
+
 ## Default stance
 
 When the user or UI supplies PR review comments as work to perform, treat thread resolution as part of finishing that work. Fix the concern, verify the fix landed, then resolve the matching review thread unless there is a concrete reason to leave it open.

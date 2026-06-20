@@ -11,7 +11,7 @@ The user is still around and serves as a light bridge to the next session. They 
 
 This skill has four phases: **interpret**, **triage**, **draft**, **validate**. The first two are collaborative — the agent and user work together to understand the session and decide what carries forward. The last two produce and verify the trajectory document.
 
-**Stances used:** Load the **interpretive-synthesis** stance (Phase 1), **gap-reading** stance (Phase 1c), **diagnostic-questioning** + **socratic-elicitation** stances (Phase 2), and **collaborative-grounding** stance (throughout).
+**Stances used:** Load the **interpretive-synthesis** stance (Phase 1), **gap-reading** stance (Phase 1c), **diagnostic-questioning** + **socratic-elicitation** stances (Phase 2), **collaborative-grounding** stance (throughout), and **relational-continuity** stance when drafting durable handoff language.
 
 ## Phase 1: Interpret
 

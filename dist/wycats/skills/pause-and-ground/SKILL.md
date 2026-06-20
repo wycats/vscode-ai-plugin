@@ -8,8 +8,9 @@ description: "Use when debugging, recon, review, or incident work has conflictin
 Pause the investigation and ground what we actually know before explaining it.
 
 This is a user-facing workflow move that composes the hidden
-**observational-grounding** stance. Use it when the conversation is starting to
-generate causes faster than the observations can support them.
+**observational-grounding** and **relational-continuity** stances. Use it when
+the conversation is starting to generate causes faster than the observations can
+support them.
 
 ## Core tension
 

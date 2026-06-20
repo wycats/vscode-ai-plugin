@@ -9,6 +9,8 @@ Start a new day. Load the save, restore context, and start moving.
 
 The user may be returning from a `session-rest` (still warm — they remember the context and serve as a bridge) or a `session-close` (cold — they slept, context has faded). The load process adapts: lighter orientation when the user is warm, fuller orientation when they're cold.
 
+**Stances used:** Load the **interpretive-synthesis** stance to rebuild the working account, **collaborative-grounding** to confirm the user's current priorities, and **relational-continuity** to keep the restored context attached to the work underway.
+
 ## Process
 
 ### 1. Read the trajectory
