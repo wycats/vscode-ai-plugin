@@ -7,6 +7,8 @@ description: "Use when investigating unfamiliar code, tracing data flows, mappin
 
 Adaptive investigation where each result changes what you look for next. Unlike search (which executes a known plan), recon follows leads, makes judgment calls about what's worth pursuing, and synthesizes findings into a grounded account.
 
+**Stances used:** Load the **diagnostic-questioning** and **interpretive-synthesis** stances for investigation, **observational-grounding** when surfaces conflict, and **relational-continuity** for keeping findings attached to the work underway.
+
 ## When to use
 
 Use recon when understanding the answer requires following a trail — tracing data flows, reading git history for intent, exploring how modules connect across layers. The question can't be reduced to a single search query, and what you find at each step determines where to look next.

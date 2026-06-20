@@ -9,6 +9,8 @@ A hypothesis → experiment → evaluation cycle for non-trivial work. Prepare f
 
 The value of the cycle isn't in the gates between phases. It's in the cognitive separation: each phase thinks differently, and the handoff between them is where the interesting findings emerge. Prepare's predictions tell execute where to look. Execute's encounters with reality tell review what to evaluate. Review's calibration tells you whether to proceed, iterate, or revise the approach.
 
+**Stances used:** Load the **hypothesis-forming** stance for prepare, **hypothesis-evaluating** stance for review, **collaborative-grounding** when user intent changes the cycle, and **relational-continuity** for phase handoffs.
+
 ## When to use
 
 The overhead of three phases is justified when the task has enough complexity or risk that you'd benefit from separating prediction from action from evaluation. Tasks that change behavior across multiple files, have ambiguity about the right approach, or benefit from independent verification of the result.

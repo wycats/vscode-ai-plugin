@@ -7,7 +7,7 @@ description: "Review the conversation for threads that were started but not foll
 
 Read back through the conversation and surface the threads that were started but not followed.
 
-**Stances used:** Load the **gap-reading**, **interpretive-synthesis**, **diagnostic-questioning**, and **collaborative-grounding** stances.
+**Stances used:** Load the **gap-reading**, **interpretive-synthesis**, **diagnostic-questioning**, **collaborative-grounding**, and **relational-continuity** stances.
 
 ## What to do
 

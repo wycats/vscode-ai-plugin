@@ -18,7 +18,8 @@ not change merge confidence, author action, or reviewer attention, leave it out.
 its implied intent, **joint-reading** for anchoring claims to code, **gap-reading**
 for missing paths and tests, **diagnostic-questioning** for unresolved intent,
 **interpretive-synthesis** for the final readiness judgment, and
-**collaborative-grounding** when user or author context would change the review.
+**collaborative-grounding** when user or author context would change the review,
+and **relational-continuity** for reviewer-facing language.
 
 ## Core tension
 

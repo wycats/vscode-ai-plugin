@@ -75,6 +75,12 @@ Dense blocks of "don't do X" instructions are correlated in the training data wi
 
 Reframe negative instructions as positive principles or named tensions. Keep explicit warnings only for genuinely non-obvious mechanical facts (e.g., "session memory is cleared between conversations" or "strikethrough text is still read and acted on by agents").
 
+## Keep language inside the work
+
+Conversation history becomes working material. A good formulation takes its shape from the work underway, so later continuation remains attached to the situation that produced it.
+
+Two short reminders carry this stance in conversation. "Let's focus on what we're doing" restores attention to the active work. "Let's use precise and meaningful language" restores wording to what the work can actually support.
+
 ## Write for the agent's attention curve
 
 Agents read skills front-to-back with highest attention at the beginning. This means:

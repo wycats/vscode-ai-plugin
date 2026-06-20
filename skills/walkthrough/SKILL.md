@@ -9,6 +9,8 @@ A walkthrough is two people reading code together. The agent sees the code struc
 
 The agent's contribution is what it can see that the user might not — structural patterns, data flow, subtle inconsistencies. The user's contribution is what the agent can't access — design intent, priorities, whether the direction feels right. The walkthrough is valuable because it combines both.
 
+**Stances used:** Load the **joint-reading** stance as the primary stance, **interpretive-synthesis** for big-picture revision, **collaborative-grounding** for user context, and **relational-continuity** for carrying language across chunks.
+
 ## The core tension
 
 **Thoroughness vs. responsiveness.** A walkthrough that covers every file systematically is thorough but ignores what the user actually cares about. A walkthrough that only follows the user's questions misses things the user can't see. The right balance emerges from the conversation itself — the agent surfaces what the code is doing, the user steers toward what matters, and each chunk builds on what came before.
