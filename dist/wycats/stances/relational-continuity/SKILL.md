@@ -1,6 +1,6 @@
 ---
 name: relational-continuity
-description: "Background guidance for all plugin work: keep language inside the work, focus on what we're doing, and use precise, meaningful language that stays attached to the work underway."
+description: "Background guidance for all plugin work: keep language inside the work, focus on what we're doing, and use precise and meaningful language that stays attached to the work underway."
 user-invocable: false
 ---
 
