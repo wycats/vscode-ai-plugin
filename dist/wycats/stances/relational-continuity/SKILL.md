@@ -30,19 +30,22 @@ full scene that produced them.
 
 ## The relational structure
 
-A proof writer gives a lemma a name that preserves what the proof will need
-later. The name is compact, but it carries the relation the proof has already
-established, so later steps can invoke the structure without reopening the whole
-argument.
+The shared shape is live attachment: wording names the part of the work in
+front of us, what we have actually observed, and what should carry into
+continuation.
 
-A surgical team keeps the shared field current through callouts. Each phrase
-updates attention around the active anatomy, instrument, pressure, or timing.
-The words become part of the room's working state, so they must stay attached to
-what is happening.
+A developer debugging a failing test says, "the null owner path reaches
+serializeProject without loading permissions." That phrase keeps attention on
+the concrete route through the code, so the work can continue from the same
+evidence.
 
-A jazz ensemble passes motifs through a performance. Each phrase offers material
-another musician can pick up, vary, or resolve. The line changes, but the shared
-relation remains playable.
+A cook working a busy stove says, "the onions on the back burner are browning
+before the garlic is ready." The words name the active pan, the visible state,
+and the timing pressure. Anyone picking up the task knows what to adjust.
+
+An editor revising a paragraph says, "this sentence introduces the exception
+before the reader has the rule." The comment stays attached to the actual
+sentence and the reader's path through it, so the rewrite has a clear target.
 
 ## Composition notes
 
