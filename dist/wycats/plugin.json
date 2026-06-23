@@ -48,6 +48,9 @@
       "path": "./skills/recon/SKILL.md"
     },
     {
+      "path": "./skills/rfc-writing/SKILL.md"
+    },
+    {
       "path": "./skills/session-close/SKILL.md"
     },
     {
@@ -85,6 +88,9 @@
     },
     {
       "path": "./stances/observational-grounding/SKILL.md"
+    },
+    {
+      "path": "./stances/public-design-reasoning/SKILL.md"
     },
     {
       "path": "./stances/relational-continuity/SKILL.md"
