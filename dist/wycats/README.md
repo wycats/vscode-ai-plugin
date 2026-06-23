@@ -35,6 +35,8 @@ When writing a skill, you're choosing *how the agent should think about the task
 
 **Relational continuity** keeps language attached to the work underway so later turns, summaries, and handoffs inherit usable orientation. Its skill description is intentionally ambient; the loaded stance deepens compact reminders like "let's focus on what we're doing" and "let's use precise and meaningful language."
 
+**Public design reasoning** shapes durable proposal prose for RFCs, architecture notes, and canonization summaries. It treats sections as reader contracts: each heading matters because of the work it does for users, implementers, maintainers, educators, and future readers.
+
 **Joint reading** is what happens when two people examine code or a document together. The agent sees structural patterns; the user sees design intent. The walkthrough skill uses this stance.
 
 **Diagnostic questioning** is asking the right question at the right time. The one that maximally reduces uncertainty about the user's priorities. High-variance questions (where the agent genuinely can't predict the answer) come first, because their answers often resolve lower-variance questions implicitly. The session-rest skill uses this during triage.
@@ -64,6 +66,10 @@ The session skills form a gradient based on how much the user serves as a bridge
 
 - **`/per-cycle`**: prepare-execute-review workflow using specialized subagents. Currently being redesigned to use FOUNDATIONS principles.
 - **`/recon`**: adaptive codebase investigation that follows leads and synthesizes findings.
+
+### Design and proposal writing
+
+- **`/rfc-writing`**: stage-aware RFC drafting, revision, review, promotion, and canonization in the Rust/Ember tradition. It uses Exo's RFC lifecycle when present and treats Stage 5-style recommendation as corpus-level canonization work for related RFCs.
 
 ### Agents
 

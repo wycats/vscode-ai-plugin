@@ -15,6 +15,12 @@ The document's visual structure should mirror the workflow's actual shape. If th
 
 An agent should be able to understand the workflow shape by reading only the section headers.
 
+## Template sections are reader contracts
+
+A template section earns its place by the work it does for the reader. Motivation makes the change worth considering. Detailed design makes it buildable. Drawbacks make the tradeoff honest. Alternatives make the choice legible. Unresolved questions mark where learning remains.
+
+When writing into a template, inhabit the section's communicative job before filling it. Empty or perfunctory sections weaken the stance because they teach the agent that the heading matters more than the public reasoning the heading promised.
+
 ## Front-load the mental model
 
 The first few lines of a skill should describe the _shape_ of the work, not the first step. The agent needs to know what kind of process this is before it starts executing. A sentence like "this skill has three phases — the second is the core" reframes everything that follows.
