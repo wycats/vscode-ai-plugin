@@ -41,13 +41,13 @@ Use the active plan for:
 - concrete next action;
 - Human Action Queue;
 
-The Human Action Queue is bounded current state, not a journal. Keep it near the top of `ACTIVE_PLAN.md`, before detailed thread status, as a compact table:
+The Human Action Queue is bounded to the current coordination state, not a journal. Keep it near the top of `ACTIVE_PLAN.md`, before detailed thread status, as a compact table:
 
 | Priority | Your action | Why ready | What it blocks | State |
 | --- | --- | --- | --- | --- |
-| 1 | Review PR `#24`; I can summarize the diff or open specific files | Checks and agent reviews are complete | Merge and release pickup | Review in progress |
+| 1 | Review PR `#NNN`; I can summarize the diff or open specific files | Checks and agent reviews are complete | Merge and release pickup | Review in progress |
 
-The queue contains user-owned decisions and actions. Each row names the current action, readiness evidence, blocking effect, assistance available, and interaction state. Priority expresses critical-path order. Keep rows aligned with the current boundary; retain a satisfied row while its verification matters to the current update.
+The queue contains user-owned decisions and actions. Each row names the current action, readiness evidence, blocking effect, and interaction state; include assistance inline with `Your action`. Priority expresses critical-path order. Keep rows aligned with the current boundary; retain a satisfied row while its verification matters to the current update.
 
 When the coordination contract changes, update the brief. When the tactical boundary changes, update the active plan.
 
@@ -73,7 +73,7 @@ Treat thread roles as live. Infer ownership from the latest thread state, active
 
 ## Human Action Protocol
 
-Every coordination check audits all current human gates. A ready human gate belongs in one of three visible states: surfaced to the user, explicitly deferred with the reason and revisit condition, or already satisfied with the verification evidence.
+Every coordination check audits all current human gates. Each ready human gate has a visible disposition: surfaced to the user, explicitly deferred with the reason and revisit condition, or satisfied with verification evidence.
 
 Use queue states to preserve the live interaction boundary. `Review in progress` means the user's decision is still forming; the approval boundary begins after that review. `Awaiting approval` means the readiness evidence and exact scope have been presented and one direct approval question is active. Use `Ready for you`, `Deferred`, and `Satisfied` where those states describe the current interaction. Update the state from observed conversation and verification.
 
