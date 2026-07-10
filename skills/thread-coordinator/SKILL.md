@@ -5,13 +5,15 @@ description: "Use when coordinating multiple live Codex threads, maintaining a c
 
 # Thread Coordinator
 
-Coordinate live Codex threads by rebuilding status from the files named by the heartbeat, then inspecting live thread and PR state before routing work. The heartbeat carries pointers. The coordination brief says how this effort works. The active plan says what is true now.
+Coordinate live Codex threads by rebuilding status from the files named by the heartbeat, then inspecting live thread and PR state before routing work. The heartbeat carries pointers. The coordination brief says how this effort works. The active plan says what is true now. Direct user involvement is an assisted coordination boundary: when the work is ready for a human decision or action, the coordinator brings that boundary into the conversation with the evidence, scope, and help needed to resolve it.
 
-The core tension is **contract vs. scratchpad**. Coordination needs durable rules that every check can reuse, and it also needs a fast-changing surface for current owner, gate, PR state, evidence, and next action. Keep those surfaces distinct so the heartbeat can stay small while the live state remains easy to revise.
+The core tension is **contract vs. scratchpad vs. consent**. Coordination needs durable rules that every check can reuse, a fast-changing surface for current owner, gate, PR state, evidence, and next action, and a reliable way to turn ready human gates into explicit interaction. Keep those surfaces distinct so the heartbeat stays small, the live state remains easy to revise, and approval debt becomes visible when it is ready to move.
 
 ## Critical Path
 
 Start every check from the heartbeat-named `COORDINATION_BRIEF.md` and `ACTIVE_PLAN.md`. Use prior heartbeat text, previous delegations, and remembered PR state as context only. Current status comes from the named coordination files plus live thread and PR surfaces.
+
+On setup and after compaction, audit the active plan for existing human gates before routing technical work. Earlier approval debt should become part of the current coordination surface instead of being inherited as quiet scratchpad text.
 
 ## Coordination Surfaces
 
@@ -37,7 +39,16 @@ Use the active plan for:
 - current gate;
 - latest PR, review, check, or evidence state;
 - concrete next action;
-- user-action items.
+- Human Action Queue;
+
+The Human Action Queue is bounded current state, not a journal. Each item should make visible:
+
+- current action;
+- why it is ready now;
+- owner;
+- blocking effect;
+- assistance offered;
+- surfaced, deferred, or satisfied state.
 
 When the coordination contract changes, update the brief. When the tactical boundary changes, update the active plan.
 
@@ -45,25 +56,43 @@ When the coordination contract changes, update the brief. When the tactical boun
 
 Run the same loop on each heartbeat or manual coordination check:
 
-```
+```text
 repeat:
   1. Read the coordination brief.
   2. Read the active plan.
   3. Inspect watched threads and live PR/check/review state.
-  4. Identify owner, boundary, readiness, next gate, and user-action items.
-  5. Route one concrete next step if the gate is technical or unassigned.
-  6. Notify the coordination thread only when user attention is useful.
-  7. Update the brief or active plan when the corresponding state changed.
-  8. Return the coordination status for this check.
+  4. Audit the Human Action Queue and any gate text in the active plan.
+  5. Classify owner, boundary, readiness, next gate, and ready human actions.
+  6. Surface, defer, or mark satisfied each ready human action.
+  7. Route one concrete next step if the active gate is technical or unassigned.
+  8. Notify the coordination thread only when user attention is useful.
+  9. Update the brief or active plan when the corresponding state changed.
+  10. Return the coordination status for this check.
 ```
 
 Treat thread roles as live. Infer ownership from the latest thread state, active work, delegations, blocked/completed state, open pull requests, and the coordination files. The active plan expresses current priority intent; live threads and PR surfaces supply current operational facts.
+
+## Human Action Protocol
+
+Every coordination check audits all current human gates. A ready human gate belongs in one of three visible states: surfaced to the user, explicitly deferred with the reason and revisit condition, or already satisfied with the verification evidence.
+
+An approval gate is ready when the underlying technical work has reached the agreed bar and the next useful movement requires consent. Examples include merging a reviewed PR, installing a shared Exo binary, recording an Exo outcome, promoting or merging an RFC, or creating and pushing an annotated release tag. Present the readiness evidence, exact action, and scope, then ask one direct approval question. After approval, perform or route the action and verify the result.
+
+A user-performed gate is ready when the coordinator can name the external action but cannot do it directly. Examples include credentials, account state, org settings, UI-only approvals, and private access changes. Give exact commands, links, or steps; remain active in the conversation while the user performs them; state the non-sensitive result the user should return; ask them to redact tokens, secret values, and sensitive identifiers; then verify the changed state before moving the gate.
+
+Keep technical review and CI in the owning thread until they become readiness evidence for a user decision. When several human actions are ready, lead with the critical path action and keep the others visible in the queue. Help the user resolve one action at a time.
+
+Heartbeat behavior:
+
+- `NOTIFY` when a new or materially changed human gate is ready and has not been surfaced. Lead with the useful action.
+- Repeat a surfaced gate only when its readiness, scope, or blocking effect has materially changed.
+- `DONT_NOTIFY` is the right result when watched threads are moving correctly or no new user attention is useful.
 
 ## Gates
 
 Classify the coordination boundary before deciding whether to route work:
 
-- **Human gate**: useful next steps require merge, approval, review decision, credential refresh, deployment permission, org/account state, or another external action. Park the other threads and state the waiting condition.
+- **Human gate**: useful next steps require merge, approval, review decision, credential refresh, deployment permission, org/account state, or another external action. Use the Human Action Protocol and keep other threads parked unless they own useful support work.
 - **Technical gate**: one thread can keep reducing uncertainty, implementing, validating, or recording evidence. Route one concrete next step to that owner.
 - **Unassigned gate**: the active plan has a next step that no watched thread currently owns. Assign it to the thread whose routing boundary matches the work.
 
@@ -75,7 +104,7 @@ For each open PR owned by a watched thread, inspect current checks, mergeability
 
 Route PR states that need owner action to the owning thread with the PR link, concrete status, and next action.
 
-Notify the coordination thread when a PR appears merge-ready, when post-merge release or install pickup is ready, or when a PR decision changes the active evidence gate.
+Surface a merge approval when required reviews are complete, all required checks have passed, GitHub reports the PR as mergeable, and its merge state permits the merge. Notify the coordination thread when post-merge release or install pickup is ready or when a PR decision changes the active evidence gate.
 
 ## Output Shape
 
@@ -87,7 +116,7 @@ Coordination status:
 - Boundary: ...
 - Readiness: ...
 - Next gate: ...
-- User action: ...
+- Human Action Queue: ...
 
 Routed:
 - ...
@@ -96,3 +125,17 @@ Routed:
 For a quiet heartbeat, one status sentence is enough if the watched threads are active on the right next step and no user attention is useful.
 
 When sending a delegation to another thread, include the owner, boundary, evidence or PR link, and the next requested action. Keep the delegation scoped to what that thread owns.
+
+## Examples
+
+Approval gates:
+
+- "PR #24 is fully green, reviewed, and mergeable. Approve merging exact head `X`?"
+- "Approve installing merged Exo commit `Y`?"
+- "Approve running one bounded VBL health sequence with the installed binary?"
+- "Approve recording the already-reviewed Exo outcome?"
+- "Approve creating and pushing annotated tag `v0.4.6` at commit `Z`?"
+
+User-performed gate:
+
+- "The SSO refresh is ready for you. Open `<link>`, approve access for org `<org>`, then return a non-sensitive confirmation here. Redact tokens, secret values, and sensitive identifiers. I will re-check the repo permission and move the gate after it verifies."
