@@ -41,14 +41,13 @@ Use the active plan for:
 - concrete next action;
 - Human Action Queue;
 
-The Human Action Queue is bounded current state, not a journal. Each item should make visible:
+The Human Action Queue is bounded to the current coordination state, not a journal. Keep it near the top of `ACTIVE_PLAN.md`, before detailed thread status, as a compact table:
 
-- current action;
-- why it is ready now;
-- owner;
-- blocking effect;
-- assistance offered;
-- surfaced, deferred, or satisfied state.
+| Priority | Your action | Why ready | What it blocks | State |
+| --- | --- | --- | --- | --- |
+| 1 | Review PR `#NNN`; I can summarize the diff or open specific files | Checks and agent reviews are complete | Merge and release pickup | Review in progress |
+
+The queue contains user-owned decisions and actions. Each row names the current action, readiness evidence, blocking effect, and interaction state; include assistance inline with `Your action`. Priority expresses critical-path order. Keep rows aligned with the current boundary; retain a satisfied row while its verification matters to the current update.
 
 When the coordination contract changes, update the brief. When the tactical boundary changes, update the active plan.
 
@@ -74,7 +73,9 @@ Treat thread roles as live. Infer ownership from the latest thread state, active
 
 ## Human Action Protocol
 
-Every coordination check audits all current human gates. A ready human gate belongs in one of three visible states: surfaced to the user, explicitly deferred with the reason and revisit condition, or already satisfied with the verification evidence.
+Every coordination check audits all current human gates. Each ready human gate has a visible disposition: surfaced to the user, explicitly deferred with the reason and revisit condition, or satisfied with verification evidence.
+
+Use queue states to preserve the live interaction boundary. `Review in progress` means the user's decision is still forming; the approval boundary begins after that review. `Awaiting approval` means the readiness evidence and exact scope have been presented and one direct approval question is active. Use `Ready for you`, `Deferred`, and `Satisfied` where those states describe the current interaction. Update the state from observed conversation and verification.
 
 An approval gate is ready when the underlying technical work has reached the agreed bar and the next useful movement requires consent. Examples include merging a reviewed PR, installing a shared Exo binary, recording an Exo outcome, promoting or merging an RFC, or creating and pushing an annotated release tag. Present the readiness evidence, exact action, and scope, then ask one direct approval question. After approval, perform or route the action and verify the result.
 
@@ -108,21 +109,20 @@ Surface a merge approval when required reviews are complete, all required checks
 
 ## Output Shape
 
-Keep coordination status compact unless the state changed substantially:
+When user attention is useful, place the Human Action Queue before coordination prose. When asked whether the user needs to do something, lead with a direct answer and this table. Human gates should remain visible even when several are ready; priority identifies the one to resolve first.
 
 ```text
-Coordination status:
-- Owner: ...
-- Boundary: ...
-- Readiness: ...
-- Next gate: ...
-- Human Action Queue: ...
+Human Action Queue
+| Priority | Your action | Why ready | What it blocks | State |
+| --- | --- | --- | --- | --- |
+| 1 | ... | ... | ... | Awaiting approval |
+| 2 | ... | ... | ... | Review in progress |
 
-Routed:
-- ...
+Coordination status: <owner, boundary, readiness, and next gate in one or two sentences>
+Routed: <concrete delegation, when one was sent>
 ```
 
-For a quiet heartbeat, one status sentence is enough if the watched threads are active on the right next step and no user attention is useful.
+For a quiet heartbeat, one status sentence is enough if the watched threads are active on the right next step and no user attention is useful. When the user asks and the queue is empty, answer directly in one sentence.
 
 When sending a delegation to another thread, include the owner, boundary, evidence or PR link, and the next requested action. Keep the delegation scoped to what that thread owns.
 
