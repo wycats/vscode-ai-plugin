@@ -87,7 +87,7 @@ Keep technical review and CI in the owning thread until they become readiness ev
 Heartbeat behavior:
 
 - `NOTIFY` when a new or materially changed human gate is ready and has not been surfaced. Render the compact **Needs Your Input** table before the heartbeat XML; the XML message summarizes the same action.
-- A surfaced gate cannot disappear indefinitely. When the same ready gate remains the only critical-path blocker without a user response, re-surface it after three consecutive quiet checks or 30 minutes, whichever comes first. Render the table, ask the direct question again, and state that the user can answer in the coordination task. Reset the reminder count after a user reply, scope change, or reminder.
+- A surfaced gate cannot disappear indefinitely. When the same ready gate remains the only critical-path blocker without a user response, re-surface it after three consecutive quiet checks or 30 minutes, whichever comes first. Render the table, ask the direct question again, and echo the row's `Respond in` target; say the user can answer in the coordination task only when that is the row's target. Reset the reminder count after a user reply, scope change, or reminder.
 - Between those bounded reminders, repeat a surfaced gate only when its readiness, scope, or blocking effect has materially changed.
 - `DONT_NOTIFY` is the right result when watched threads are moving correctly or no new user attention is useful.
 
