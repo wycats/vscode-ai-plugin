@@ -13,7 +13,7 @@ The core tension is **contract vs. scratchpad vs. consent**. Coordination needs 
 
 Start every check from the heartbeat-named `COORDINATION_BRIEF.md` and `ACTIVE_PLAN.md`. Use prior heartbeat text, previous delegations, and remembered PR state as context only. Current status comes from the named coordination files plus live thread and PR surfaces.
 
-On setup and after compaction, audit the active plan for existing human gates before routing technical work. Earlier approval debt should become part of the current coordination surface instead of being inherited as quiet scratchpad text. Before reporting that a gate still waits on the user, inspect the owning and coordination threads for a newer user reply. Consent given in either place satisfies the gate only when it clearly matches the currently presented action, scope, and exact head or other identifying evidence; leave ambiguous or stale replies pending.
+On setup and after compaction, audit the active plan for existing human gates before routing technical work. Earlier approval debt should become part of the current coordination surface instead of being inherited as quiet scratchpad text. Before reporting that a gate still waits on the user, inspect the owning and coordination threads for a newer user reply. Consent given in either place satisfies the gate only when it clearly matches the currently presented action, scope, and exact head or other identifying evidence; leave ambiguous or stale replies pending. Human gates also have a liveness boundary: surfacing a gate once is not enough when it remains the only critical-path blocker and the user has not responded.
 
 ## Coordination Surfaces
 
@@ -47,7 +47,7 @@ The Human Action Queue is bounded to the current coordination state, not a journ
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Approve merging PR `#NNN` at exact head `abc123` | This coordination task | `approved` | Checks and reviews are complete | Merge and release pickup | Awaiting approval |
 
-The queue contains user-owned decisions and actions. Each row names the decision or action, the exact Codex task where the user should respond, the literal reply or observable completion signal, readiness evidence, blocking effect, and interaction state. Use the task title plus thread ID when the response belongs in another task; use `This coordination task` when a reply here is sufficient. Priority expresses critical-path order. Keep rows aligned with the current boundary; retain a satisfied row while its verification matters to the current update.
+The queue contains user-owned decisions and actions. Each row names the decision or action, the exact Codex task where the user should respond, the literal reply or observable completion signal, readiness evidence, blocking effect, and interaction state. Default approval replies to `This coordination task`: the coordinator should relay the decision to the owning task and verify movement. Name another task only when the user must inspect or act in that task directly. Priority expresses critical-path order. Keep rows aligned with the current boundary; retain a satisfied row while its verification matters to the current update. Record the last-surfaced time or check and next reminder condition in adjacent queue prose when a gate remains pending.
 
 When the coordination contract changes, update the brief. When the tactical boundary changes, update the active plan.
 
@@ -87,10 +87,11 @@ Keep technical review and CI in the owning thread until they become readiness ev
 Heartbeat behavior:
 
 - `NOTIFY` when a new or materially changed human gate is ready and has not been surfaced. Render the compact **Needs Your Input** table before the heartbeat XML; the XML message summarizes the same action.
-- Repeat a surfaced gate only when its readiness, scope, or blocking effect has materially changed.
+- A surfaced gate cannot disappear indefinitely. When the same ready gate remains the only critical-path blocker without a user response, re-surface it after three consecutive quiet checks or 30 minutes, whichever comes first. Render the table, ask the direct question again, and state that the user can answer in the coordination task. Reset the reminder count after a user reply, scope change, or reminder.
+- Between those bounded reminders, repeat a surfaced gate only when its readiness, scope, or blocking effect has materially changed.
 - `DONT_NOTIFY` is the right result when watched threads are moving correctly or no new user attention is useful.
 
-The no-repeat rule applies to unsolicited heartbeats. When the user asks for status, next steps, what they need to do, or which task needs a response, always render the current table again; answering those questions is the requested interaction, not a duplicate notification.
+The bounded-reminder rule applies to unsolicited heartbeats. When the user asks for status, next steps, what they need to do, which task needs a response, or asks the coordinator to keep work moving with their help, always render the current table again; answering those questions is the requested interaction, not a duplicate notification.
 
 ## Gates
 
