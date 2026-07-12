@@ -47,7 +47,7 @@ The Human Action Queue is bounded to the current coordination state, not a journ
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Approve merging PR `#NNN` at exact head `abc123` | This coordination task | `approved` | Checks and reviews are complete | Merge and release pickup | Awaiting approval |
 
-The queue contains user-owned decisions and actions. Each row names the decision or action, the exact Codex task where the user should respond, the literal reply or observable completion signal, readiness evidence, blocking effect, and interaction state. Default approval replies to `This coordination task`: the coordinator should relay the decision to the owning task and verify movement. Name another task only when the user must inspect or act in that task directly. Priority expresses critical-path order. Keep rows aligned with the current boundary; retain a satisfied row while its verification matters to the current update. Record the last-surfaced time or check and next reminder condition in adjacent queue prose when a gate remains pending.
+The queue contains user-owned decisions and actions. Each row names the decision or action, the primary Codex task where the user should respond, the literal reply or observable completion signal, readiness evidence, blocking effect, and interaction state. Default approval replies to `This coordination task`: the coordinator should relay the decision to the owning task and verify movement. Name another task only when the user must inspect or act in that task directly. Priority expresses critical-path order. Keep rows aligned with the current boundary; retain a satisfied row while its verification matters to the current update. Record the last-surfaced time or check and next reminder condition in adjacent queue prose when a gate remains pending.
 
 When the coordination contract changes, update the brief. When the tactical boundary changes, update the active plan.
 
@@ -87,7 +87,7 @@ Keep technical review and CI in the owning thread until they become readiness ev
 Heartbeat behavior:
 
 - `NOTIFY` when a new or materially changed human gate is ready and has not been surfaced. Render the compact **Needs Your Input** table before the heartbeat XML; the XML message summarizes the same action.
-- A surfaced gate cannot disappear indefinitely. When the same ready gate remains the only critical-path blocker without a user response, re-surface it after three consecutive quiet checks or 30 minutes, whichever comes first. Render the table, ask the direct question again, and echo the row's `Respond in` target; say the user can answer in the coordination task only when that is the row's target. Reset the reminder count after a user reply, scope change, or reminder.
+- A surfaced gate cannot disappear indefinitely. When the same ready gate remains the only critical-path blocker without a user response, re-surface it after three consecutive quiet checks or 30 minutes, whichever comes first. Render the table, ask the direct question again, and echo the row's `Respond in` target; an unambiguous matching reply in either the coordination or owning thread also satisfies the gate. Reset the reminder count after a user reply, scope change, or reminder.
 - Between those bounded reminders, repeat a surfaced gate only when its readiness, scope, or blocking effect has materially changed.
 - `DONT_NOTIFY` is the right result when watched threads are moving correctly or no new user attention is useful.
 
