@@ -119,7 +119,7 @@ When user attention is useful, place a **Needs Your Input** table before coordin
 Needs Your Input
 | Priority | Your action | Respond in | Reply with / done when | Ready because | What waits | State |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | ... | Fix update dispatch (`thread-id`) | `approved` | ... | ... | Awaiting approval |
+| 1 | ... | Fix ordinary update dispatch (`thread-id`) | `approved` | ... | ... | Awaiting approval |
 | 2 | ... | This coordination task | Confirm the UI step succeeded | ... | ... | Ready for you |
 
 Coordination status: <owner, boundary, readiness, and next gate in one or two sentences>
