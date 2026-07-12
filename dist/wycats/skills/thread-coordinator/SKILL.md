@@ -13,7 +13,7 @@ The core tension is **contract vs. scratchpad vs. consent**. Coordination needs 
 
 Start every check from the heartbeat-named `COORDINATION_BRIEF.md` and `ACTIVE_PLAN.md`. Use prior heartbeat text, previous delegations, and remembered PR state as context only. Current status comes from the named coordination files plus live thread and PR surfaces.
 
-On setup and after compaction, audit the active plan for existing human gates before routing technical work. Earlier approval debt should become part of the current coordination surface instead of being inherited as quiet scratchpad text. Before reporting that a gate still waits on the user, inspect the owning and coordination threads for a newer user reply; consent given in either place satisfies the same coordinated gate.
+On setup and after compaction, audit the active plan for existing human gates before routing technical work. Earlier approval debt should become part of the current coordination surface instead of being inherited as quiet scratchpad text. Before reporting that a gate still waits on the user, inspect the owning and coordination threads for a newer user reply. Consent given in either place satisfies the gate only when it clearly matches the currently presented action, scope, and exact head or other identifying evidence; leave ambiguous or stale replies pending.
 
 ## Coordination Surfaces
 
@@ -41,7 +41,7 @@ Use the active plan for:
 - concrete next action;
 - Human Action Queue;
 
-The Human Action Queue is bounded to the current coordination state, not a journal. Keep it near the top of `ACTIVE_PLAN.md`, before detailed thread status. Its shape should make the interaction executable without reading surrounding prose:
+The Human Action Queue is bounded to the current coordination state, not a journal. Keep it near the top of `ACTIVE_PLAN.md`, before detailed thread status. **Needs Your Input** is the user-facing rendering of this queue, not a separate artifact. Its shape should make the interaction executable without reading surrounding prose:
 
 | Priority | Your action | Respond in | Reply with / done when | Ready because | What waits | State |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -78,7 +78,7 @@ Every coordination check audits all current human gates. Each ready human gate h
 
 Use queue states to preserve the live interaction boundary. `Review in progress` means the user's decision is still forming; the approval boundary begins after that review. `Awaiting approval` means the readiness evidence and exact scope have been presented and one direct approval question is active. Use `Ready for you`, `Deferred`, and `Satisfied` where those states describe the current interaction. Update the state from observed conversation and verification.
 
-An approval gate is ready when the underlying technical work has reached the agreed bar and the next useful movement requires consent. Examples include merging a reviewed PR, installing a shared Exo binary, recording an Exo outcome, promoting or merging an RFC, or creating and pushing an annotated release tag. Put the exact scope and literal approval reply in the table, then ask one direct approval question. After approval in either the coordination or owning task, perform or route the action and verify the result.
+An approval gate is ready when the underlying technical work has reached the agreed bar and the next useful movement requires consent. Examples include merging a reviewed PR, installing a shared Exo binary, recording an Exo outcome, promoting or merging an RFC, or creating and pushing an annotated release tag. Put the exact scope and literal approval reply in the table, then ask one direct approval question. After approval in either the coordination or owning task, perform or route the action only when the reply clearly corresponds to the current table row and its scope or exact head. A short reply such as `approved` is sufficient when it answers that task's latest unambiguous, unchanged gate; otherwise ask one clarifying question and keep the gate pending.
 
 A user-performed gate is ready when the coordinator can name the external action but cannot do it directly. Examples include credentials, account state, org settings, UI-only approvals, and private access changes. Give exact commands, links, or steps; remain active in the conversation while the user performs them; state the non-sensitive result the user should return; ask them to redact tokens, secret values, and sensitive identifiers; then verify the changed state before moving the gate.
 
