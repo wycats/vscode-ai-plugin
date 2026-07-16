@@ -69,10 +69,11 @@ Before proceeding: check whether the high-consequence predictions are grounded i
 Dispatch the `execute` subagent with the same steering context and prepare's
 hypothesis. Execute advances the immediate gate through the codebase, making
 bounded changes and reading how reality responds. Local discoveries can revise
-the route inside the current bet. When a named steering signal arrives, local
-evidence calls the bet's relationship to its experienced outcome into question,
-or the user revises project purpose or experienced outcome, execute surfaces it
-and returns control; **steer-by-vision** owns subsequent project selection.
+the route inside the current bet. When any of the following happens, execute
+surfaces it and returns control: a named steering signal arrives; local
+evidence calls the bet's relationship to its experienced outcome into question;
+or the user revises project purpose or experienced outcome. Then
+**steer-by-vision** owns subsequent project selection.
 
 What comes back is changed files, executed commands, and an honest account of what happened — including where prepare's predictions were wrong and where reality surprised.
 
