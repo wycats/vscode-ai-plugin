@@ -78,7 +78,8 @@ Vision steering composes with **interpretive-synthesis** to recover a project
 thesis from live work and prior decisions, and with **gap-reading** to keep
 valuable arcs visible outside the current bet.
 
-It hands a selected bet to **hypothesis-forming** and receives evidence back
-from **hypothesis-evaluating**. **Relational-continuity** keeps the thesis,
-current bet, and next steering signal attached to the work as they pass between
-threads and sessions.
+It hands a selected bet to **per-cycle**, which composes
+**hypothesis-forming** and **hypothesis-evaluating** around the bounded work and
+returns evidence for the next steering decision. **Relational-continuity** keeps
+the thesis, current bet, and next steering signal attached to the work as they
+pass between threads and sessions.

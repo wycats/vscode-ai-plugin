@@ -82,10 +82,15 @@ clear project-sized bet.
 
 Use the live coordination evidence to recommend the smallest meaningful
 end-to-end bet, then ground only the high-variance purpose or outcome judgment
-with the user. Record the selected bet, its organic proof, and next steering
-signal in `ACTIVE_PLAN.md`, then resume ordinary gate routing. Technical,
-execute, and review work stays attached to that bet until the steering signal
-arrives.
+with the user. Record the selected bet, its organic proof, the valuable arcs
+kept warm and their return signals, and the next steering signal in
+`ACTIVE_PLAN.md`, then resume ordinary gate routing. Technical, execute, and
+review work stays attached to that bet until the steering signal arrives.
+
+When the selection depends on high-variance judgment and the user is not
+present, put the recommendation and one exact grounding question in the Human
+Action Queue, then defer bet routing until the user responds. When the project
+thesis already resolves the selection, route the recommended bet directly.
 
 ## Human Action Protocol
 

@@ -31,6 +31,9 @@ recent milestones, user-visible behavior, and the evidence that changed the
 last route. Reconstruct a compact thesis for what the project is for and name
 the experienced outcome that would make that thesis real.
 
+On the first steering pass, begin from the user's stated goal and visible
+project state. Prior-route evidence becomes part of later steering passes.
+
 Make the interpretation visible. When the user's prior steering already makes
 the purpose clear, proceed from it. When two materially different purposes or
 outcomes remain plausible, present the evidence and your best reading, then ask
@@ -67,7 +70,7 @@ a project-sized loop. Preserve valuable longer arcs as **kept warm**, each with
 the reason it matters and the evidence or milestone that would bring it back
 into selection.
 
-### 4. Give the bet momentum
+### 4. Route the bet into execution
 
 Align active work to the selected bet. Existing tasks, PRs, and infrastructure
 either become part of its route, stay warm for a later steering point, or stop
