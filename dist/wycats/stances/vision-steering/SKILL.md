@@ -13,7 +13,7 @@ change the route.
 
 Projects generate many valid continuations: features, repairs, pull requests,
 infrastructure, cleanup, and experiments. Vision decides which valid
-continuation deserves momentum: the experienced change the project exists to
+continuation deserves momentum: the experienced outcome the project exists to
 create makes those continuations comparable.
 
 The core tension is **continuity of purpose vs. responsiveness to evidence**.
@@ -51,8 +51,9 @@ Read each candidate continuation through one chain:
 
 The chain restores the relationship between work and purpose. A slice is the
 bounded thing that can move now. Capability is what becomes possible.
-Experienced change is what becomes different for a person using or maintaining
-the project. Proof is the evidence ordinary use can produce.
+Experienced change — carried across steering handoffs as the **Experienced
+outcome** — is what becomes different for a person using or maintaining the
+project. Proof is the evidence ordinary use can produce.
 
 Select the smallest meaningful end-to-end bet, then give it momentum. Keep
 valuable longer arcs warm with a reason they matter and a signal for returning

@@ -51,7 +51,8 @@ continuations. Read each one as:
 
 - **Slice:** the bounded work that could move now.
 - **Capability:** what becomes possible when it lands.
-- **Experienced change:** what becomes meaningfully different for a user or
+- **Experienced change:** the change carried into the steering context as the
+  **Experienced outcome** — what becomes meaningfully different for a user or
   maintainer.
 - **Proof:** evidence that appears through ordinary use of that change.
 

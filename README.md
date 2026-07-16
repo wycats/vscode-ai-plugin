@@ -35,7 +35,7 @@ When writing a skill, you're choosing *how the agent should think about the task
 
 **Relational continuity** keeps language attached to the work underway so later turns, summaries, and handoffs inherit usable orientation. Its skill description is intentionally ambient; the loaded stance deepens compact reminders like "let's focus on what we're doing" and "let's use precise and meaningful language."
 
-**Vision steering** holds a durable project thesis while evidence changes the route. It treats plans, tasks, pull requests, and infrastructure as hypotheses about how to produce an experienced change, then selects the smallest meaningful bet that can generate organic proof.
+**Vision steering** holds a durable project thesis while evidence changes the route. It treats plans, tasks, pull requests, and infrastructure as hypotheses about how to produce an experienced outcome, then selects the smallest meaningful bet that can generate organic proof.
 
 **Public design reasoning** shapes durable proposal prose for RFCs, architecture notes, and canonization summaries. It treats sections as reader contracts: each heading matters because of the work it does for users, implementers, maintainers, educators, and future readers.
 

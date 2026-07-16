@@ -22,7 +22,7 @@ The overhead is not justified for trivial fixes, purely exploratory research, or
 
 ## Vision boundary
 
-Enter the cycle with a selected bet and the experienced change it is meant to
+Enter the cycle with a selected bet and the experienced outcome it is meant to
 produce. If several locally valid bets still compete, use **steer-by-vision**
 before dispatching prepare.
 
@@ -71,7 +71,7 @@ hypothesis. Execute advances the immediate gate through the codebase, making
 bounded changes and reading how reality responds. Local discoveries can revise
 the route inside the current bet. When any of the following happens, execute
 surfaces it and returns control: a named steering signal arrives; local
-evidence shows the current route no longer plausibly advances the experienced
+evidence shows the current bet no longer plausibly advances the experienced
 outcome; or the user revises project purpose or experienced outcome. Then
 **steer-by-vision** owns subsequent project selection.
 
