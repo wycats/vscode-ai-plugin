@@ -63,14 +63,40 @@ repeat:
   4. Audit the Human Action Queue and any gate text in the active plan.
   5. Reconcile newer user replies across the coordination and owning threads.
   6. Classify owner, boundary, readiness, next gate, and ready human actions.
-  7. Surface, defer, or mark satisfied each ready human action.
-  8. Route one concrete next step if the active gate is technical or unassigned.
-  9. Notify the coordination thread only when user attention is useful.
-  10. Update the brief or active plan when the corresponding state changed.
-  11. Return the coordination status for this check.
+  7. If project-sized gates compete without an active bet, the active bet's steering signal has arrived, evidence calls the bet's relationship to its experienced outcome into question, or the user revises project purpose or outcome, run the Vision Steering Boundary.
+  8. Surface, defer, or mark satisfied each ready human action.
+  9. Route one concrete next step if the active gate is technical or unassigned.
+  10. Notify the coordination thread only when user attention is useful.
+  11. Update the brief or active plan when the corresponding state changed.
+  12. Return the coordination status for this check.
 ```
 
 Treat thread roles as live. Infer ownership from the latest thread state, active work, delegations, blocked/completed state, open pull requests, and the coordination files. The active plan expresses current priority intent; live threads and PR surfaces supply current operational facts.
+
+## Vision Steering Boundary
+
+Most coordination checks route work inside an already selected bet. Invoke
+**steer-by-vision** when no bet is active and several technically valid,
+project-sized gates compete for momentum, or when the active bet's named
+steering signal has arrived, when evidence calls the bet's relationship to its
+experienced outcome into question, or when the user revises project purpose or
+experienced outcome. A closed milestone triggers selection when it is that
+signal or when it leaves the active plan without a current bet. Competing
+technical gates inside the current bet remain ordinary gate-routing work.
+
+Use the live coordination evidence to recommend the smallest meaningful
+end-to-end bet, then ground only the high-variance purpose or outcome judgment
+with the user. Record the Vision, Experienced outcome, Current bet, Organic
+proof, Immediate gate, valuable arcs kept warm and their return signals, and
+Next steering signal in `ACTIVE_PLAN.md`, then resume ordinary gate routing.
+Technical, execute, and review work stays attached to that bet until the
+steering signal arrives, relationship-breaking evidence appears, or the user
+revises project purpose or outcome.
+
+When the selection depends on high-variance judgment and the user is not
+present, put the recommendation and one exact grounding question in the Human
+Action Queue, then defer bet routing until the user responds. When the project
+thesis already resolves the selection, route the recommended bet directly.
 
 ## Human Action Protocol
 
