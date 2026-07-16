@@ -11,21 +11,26 @@ Saving is not stopping. This skill keeps the trajectory warm so that if the sess
 
 ## What SESSION-TRAJECTORY.md is
 
-`/memories/repo/SESSION-TRAJECTORY.md` (accessed via the memory tool) captures the trajectory of the current work — where things are going, what has momentum, live tensions, decisions, and gotchas.
+`/memories/repo/SESSION-TRAJECTORY.md` (accessed via the memory tool) carries two related layers:
 
-It is not a conversation log or a snapshot. It captures trajectory — where we are, where we were heading, and what forces are still in play.
+- **Project Orientation** mirrors the durable selection currently governing the work: its source, Vision, Experienced outcome, Current bet, Organic proof, Immediate gate, Kept-warm arcs with return signals, and Next steering signal.
+- **Session evidence** records what happened inside that bet: implementation results, route changes, live tensions, decisions, and gotchas.
+
+Project Orientation is a projection, not a new authority. Reconcile its fields in this order: explicit current project-level user steering; a repo-designated canonical project-state or vision surface; `COORDINATION_BRIEF.md` together with `ACTIVE_PLAN.md`; then the latest user-confirmed trajectory as fallback. Apply precedence field by field, let compatible lower sources fill fields a higher source does not address, and record all contributing sources. Within the coordination tier, the brief supplies the slow target and the active plan supplies a compatible Current bet and operational gate; surface a disagreement rather than resolving it by recency. Live workspace evidence can revise proof, route, or gate; it cannot silently replace Vision or Experienced outcome.
 
 ## Keeping the trajectory warm
 
 As significant work happens during a session, keep SESSION-TRAJECTORY.md loosely updated. This doesn't mean rewriting it after every edit — it means noticing when something meaningful has changed:
 
-- A major piece of work was completed
-- An important decision was made
-- A gotcha was discovered
-- The plan changed direction
-- Files were committed
+- The authoritative orientation source changed or disagreed with the projection
+- The Current bet, Organic proof status, Immediate gate, Kept-warm arcs, or Next steering signal changed
+- A PER review returned evidence about the bet
+- A discovery revised the route inside the bet
+- A meaningful decision, gotcha, validation result, or commit should survive the session
 
-When these happen, update the relevant section of SESSION-TRAJECTORY.md using the memory tool. This is lightweight — a line or two, not a full transition protocol. Then keep working.
+When these happen, reconcile Project Orientation first, then update the relevant session-evidence section using the memory tool. This is lightweight — a line or two, not a full transition protocol. Then keep working. Checks and tests are implementation validation; they become Organic proof only when that maintenance or release experience is itself the Experienced outcome.
+
+When the named steering signal arrives, no bet remains, evidence breaks the bet's relationship to the Experienced outcome, or the user explicitly revises project purpose or outcome, the first lifecycle or coordination surface to observe the boundary invokes `/steer-by-vision` once. Record the transition as `steering-in-progress` and, when a named signal triggered it, mark that signal `reached` before handing it off. If the projection already says `steering-in-progress`, preserve and resume that boundary without another invocation. A completed milestone alone does not reopen selection unless it is the named signal or leaves no active bet.
 
 ## Checkpoints
 
@@ -33,9 +38,9 @@ A checkpoint is a more thorough trajectory capture at a natural boundary. After 
 
 A checkpoint has two parts:
 
-1. **Update the trajectory.** Capture what's done, what's next, any new decisions or gotchas.
+1. **Reconcile and update.** Refresh Project Orientation from its named sources, then capture evidence, route changes, decisions, and gotchas around the recorded Immediate gate.
 
-2. **Gather dangling threads.** Use the **gap-reading** stance: read back through the conversation since the last checkpoint and look for what the trajectory update didn't capture. Ideas mentioned in passing. Decisions deferred implicitly. Tensions named but not resolved. Fragments that emerged from the work itself. Add what you find to the trajectory's live tensions or what's-next sections.
+2. **Gather dangling threads.** Use the **gap-reading** stance: read back through the conversation since the last checkpoint and look for what the trajectory update didn't capture. Keep route tensions with the Current bet, preserve already-selected alternatives as Kept-warm arcs with return signals, and reserve project-sized alternatives for the next genuine vision-steering boundary.
 
 The second part is what distinguishes a checkpoint from a quick trajectory update. The trajectory captures the main narrative. Dangling thread review catches what the narrative left out.
 

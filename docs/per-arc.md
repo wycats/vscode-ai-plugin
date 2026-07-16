@@ -1,10 +1,21 @@
 # PER Arc
 
-A PER arc is the continuity layer around repeated PER cycles. The cycle separates prediction, action, and evaluation for a bounded piece of work. The arc preserves enough of the larger project motion that each new cycle can start situated instead of reconstructing the whole idea from scratch.
+A PER arc is the continuity layer around repeated PER cycles inside an already
+selected current bet. The cycle separates prediction, action, and evaluation
+for a bounded piece of work. The arc preserves the bet's relationship to
+project vision so each new cycle can start situated without reopening project
+selection.
 
-The dashboard is the instrument panel for that arc. It is not a gate. It tells the agent and the user what the instruments currently show: where the project is, what evidence has accumulated, where reality diverged from the working model, what tensions are still live, and what move looks good next.
+The dashboard is the instrument panel for that arc. It tells the agent and the
+user which experienced outcome the bet serves, what evidence has accumulated,
+where reality diverged from the working model, which immediate gate has
+momentum, and what signal will return the project to vision steering.
 
-The tension to navigate: continuity vs. ceremony. If the dashboard becomes a task tracker or ritual checklist, it steals momentum from the work. If nothing carries forward, every cycle rebuilds the project concept from memory and the user has to supply context the repo could have preserved.
+The tension to navigate is **purpose-attached continuity vs. ceremony**. The
+dashboard earns its keep when it carries the smallest accurate project
+orientation through real work. A dashboard that expands into a task tracker
+steals momentum; a dashboard that omits the current bet leaves later cycles to
+reconstruct or silently replace project purpose.
 
 ## Related context
 
@@ -12,40 +23,55 @@ This note sits between the repo's foundational theory and its executable workflo
 
 - [FOUNDATIONS.md](../FOUNDATIONS.md) explains the underlying mechanics: stances, generation vs. evaluation, and the boundary between observable state and situated judgment.
 - [QUALITY.md](../QUALITY.md) turns those mechanics into principles for writing skills and agents without drifting into checklist ceremony.
+- [skills/steer-by-vision/SKILL.md](../skills/steer-by-vision/SKILL.md) selects the current bet and names the evidence that will reopen project selection.
 - [skills/per-cycle/SKILL.md](../skills/per-cycle/SKILL.md) defines the local `prepare → execute → review` loop that a PER arc surrounds.
 - [skills/session-save/SKILL.md](../skills/session-save/SKILL.md), [skills/session-rest/SKILL.md](../skills/session-rest/SKILL.md), [skills/session-close/SKILL.md](../skills/session-close/SKILL.md), and [skills/session-load/SKILL.md](../skills/session-load/SKILL.md) preserve continuity across session boundaries; the PER arc preserves continuity across project cycles.
 
 ## What a PER arc is
 
-A PER arc is the project-level trajectory that emerges across one or more `prepare → execute → review` cycles.
+A PER arc is the bet-level trajectory that emerges across one or more
+`prepare → execute → review` cycles.
 
 It holds the material that is too large for a single cycle handoff but too active to become permanent documentation:
 
-- the current shape of the work
+- the source of the current project orientation
+- the vision, experienced outcome, and current bet
+- the organic proof, immediate gate, and next steering signal
 - the hypotheses that are guiding the next move
 - the evidence that has accumulated from execution and review
 - the divergences that changed the model
-- the tensions that still need user judgment
-- the threads that are parked but not dead
+- the tensions that still shape the route inside the bet
+- valuable arcs kept warm with the signals that would return them to selection
 
-The arc is not another phase after review. It is the memory of what review taught the project. A single PER cycle asks, "Did this experiment match the hypothesis?" The arc asks, "Given what the recent experiments taught us, where is this project now?"
+The arc is the memory of what review taught the current bet, not another phase
+after review. A single PER cycle asks, "Did this experiment match the
+hypothesis?" The arc asks, "What did recent experiments teach us about this
+bet, and has its next steering signal arrived?"
 
 ## What the dashboard preserves
 
-The dashboard preserves situated continuity, not session reconstruction.
+The dashboard preserves purpose-attached continuity, not session reconstruction.
 
 It should be enough for a future agent to feel the project's current motion without replaying the whole conversation. That means preserving the forces still acting on the work rather than every detail that produced them.
 
 What belongs there:
 
+- the recorded source of project orientation
+- Vision and Experienced outcome
+- Current bet, Organic proof, Immediate gate, and Next steering signal
 - observable repo state when it matters: files changed, tests run, build status, known tool output
 - the working hypothesis for the current move
 - evidence gathered by execution or review
 - divergences between expectation and reality
-- live tensions where the next move depends on judgment
-- user-shaped priorities, taste, and momentum that cannot be inferred from files
+- live tensions where the route inside the bet depends on judgment
+- kept-warm arcs and the return signal for each one
 
-The information boundary matters. Repo and tool state should be observed. Priorities, momentum, taste, and timing are situated in the user and need collaborative grounding. The dashboard should make that boundary visible instead of pretending everything can be read from the workspace.
+The information boundary matters. Repo and tool state should be observed and
+used as evidence about the route. Project purpose comes from explicit user
+steering or the recorded canonical source. Priorities, momentum, taste, and
+timing remain situated in the user and need collaborative grounding when they
+would change the experienced outcome. The dashboard makes that boundary
+visible instead of letting live artifacts become an implicit purpose change.
 
 ## Relationship to `/per-cycle`
 
@@ -55,27 +81,50 @@ The information boundary matters. Repo and tool state should be observed. Priori
 2. execute tests it against reality
 3. review evaluates the distance between prediction and result
 
-The PER arc is the continuity layer around that loop. It carries forward what the loop learned so the next cycle begins with a calibrated project model.
+The PER arc is the continuity layer around that loop. It carries forward the
+same steering context and what the loop learned so the next cycle begins with a
+calibrated model of the current bet.
 
 This preserves the generation/evaluation separation that makes PER useful:
 
-- hypotheses and the next good move stay on the generative side
+- hypotheses and the next good move inside the current bet stay on the
+  generative side
 - evidence, test results, and divergences stay on the evaluative side
 - live tensions mark places where neither side is enough without the user's situated judgment
 
-The dashboard should not blur these categories. A hypothesis is not evidence. A divergence is not automatically a problem. A next move is not proof that the previous move worked. Keeping those distinctions visible is the dashboard's main value.
+The dashboard keeps these categories distinct. A hypothesis is not evidence. A
+divergence is not automatically a problem. Implementation validation is not
+organic proof unless that validation experience is itself the experienced
+outcome. Review records whether proof arrived and whether the next steering
+signal was reached.
+
+While the bet remains active, a local divergence changes its implementation
+route or immediate gate. When the named signal arrives, relationship-breaking
+evidence appears, or the user revises project purpose, the arc returns its
+evidence to `/steer-by-vision` rather than choosing the next project move.
 
 ## Relationship to session lifecycle skills
 
-The session lifecycle skills preserve context across time. The PER arc preserves project motion across cycles. They overlap, but they answer different questions.
+The session lifecycle skills preserve context across time. The PER arc preserves
+current-bet motion across cycles. They overlap, but they answer different
+questions.
 
-`/session-save` keeps trajectory warm during ongoing work. A PER dashboard can give it a compact source of truth: current arc, live tensions, next good move, and parked threads.
+`/session-save` keeps trajectory warm during ongoing work. A PER dashboard gives
+it a compact projection of the current bet, proof, gate, signal, and kept-warm
+arcs while the recorded orientation source remains authoritative for purpose.
 
-`/session-rest` prepares a next session while the user is still a light bridge. The dashboard can reduce reconstruction cost by making the current project arc visible before triage, leaving the user to correct situated judgments rather than rebuild observable state.
+`/session-rest` prepares a next session while the user is still a light bridge.
+The dashboard reduces reconstruction cost by making the active bet and its
+evidence visible. Rest interprets the session inside that bet unless its signal
+arrived or the user reorients the project.
 
-`/session-close` prepares for a colder restart. The dashboard is not enough by itself, but it can anchor the close: what was the project arc, what evidence had accumulated, what divergences mattered, and what should not be forgotten tomorrow.
+`/session-close` prepares for a colder restart. The dashboard anchors the close:
+which bet was active, what evidence accumulated, which divergences mattered,
+and which immediate gate should survive the gap.
 
-`/session-load` restores momentum. The dashboard can give the loader a concise instrument reading before it asks the user to confirm priorities. That keeps the first collaboration focused on situated questions instead of facts the repo could have preserved.
+`/session-load` restores momentum by resuming the immediate gate when the bet
+remains active. It invokes `/steer-by-vision` when no bet exists, the named
+signal has arrived, or project purpose has been explicitly revised.
 
 This also explains why full save/restore can feel less central with stronger models. Heavyweight reconstruction is less necessary when the model can recover more from repo context and conversation. But situated continuity still matters: what has momentum, what feels tasteful, what the user considers live, and what kind of next move would preserve flow.
 
@@ -83,9 +132,15 @@ This also explains why full save/restore can feel less central with stronger mod
 
 The shape should be small enough to maintain during real work. A candidate dashboard could be one markdown file with these sections. Use only the sections that are carrying signal; empty sections should be omitted rather than maintained ceremonially.
 
-### Arc
+### Project orientation
 
-The current project trajectory in a few sentences. Not the whole history — the direction the work is moving now.
+The recorded source, Vision, and Experienced outcome. This is the durable
+purpose boundary the dashboard projects rather than recreates.
+
+### Current bet
+
+The selected evidence-bearing route, its Organic proof, and its Immediate gate.
+Name how this bet is expected to produce the experienced outcome.
 
 ### Current phase / position
 
@@ -97,7 +152,9 @@ The active prediction or intended move. This is generative material: what the ag
 
 ### Evidence
 
-Observable facts gathered so far: files inspected, commands run, test results, review findings, or concrete behavior seen in the workspace.
+Observable facts gathered so far: files inspected, commands run, test results,
+review findings, or concrete behavior seen in ordinary use. Record
+implementation validation separately from organic proof.
 
 ### Divergences
 
@@ -105,15 +162,23 @@ Where reality did not match the working model. These are calibration signals, no
 
 ### Live tensions
 
-Judgment-bearing questions still shaping the work. These should be written as tensions, not tasks, especially when they depend on user priorities, taste, timing, or momentum.
+Judgment-bearing questions still shaping the route inside the current bet.
+Purpose-level tensions belong at the vision-steering boundary.
 
 ### Next good move
 
-The next bounded action that preserves momentum. This is not a backlog. It is the move that looks good from the current instrument reading.
+The next bounded action through the Immediate gate. It preserves momentum inside
+the current bet rather than selecting among project-sized alternatives.
 
-### Parked threads
+### Next steering signal
 
-Threads intentionally kept visible but not active. These are neither forgotten nor scheduled; they are material that may matter when the arc shifts.
+The evidence, divergence, stall, or milestone that returns selection to
+`/steer-by-vision`.
+
+### Kept-warm arcs
+
+Valuable project continuations that remain visible without competing with the
+current bet. Each one carries the signal that would return it to selection.
 
 ### Cycle log
 
@@ -123,9 +188,23 @@ A compact record of completed cycles: date or rough sequence, prepare hypothesis
 
 The dashboard is a rolling calibration artifact, not an accumulating narrative. Its live sections should read like current instruments, not a transcript of prior flights.
 
-Update **Current phase / position** and **Next good move** at natural boundaries: after review, after merge, before starting a new cycle, or when a divergence changes the working model. Completed cycles should be compressed once they stop shaping the next move. Keep the cycle log as evidence of calibration, not as a place to preserve every detail.
+Update **Current phase / position**, **Evidence**, and **Next good move** at
+natural boundaries: after review, after merge, before starting a new cycle, or
+when a divergence changes the route. Refresh **Project orientation** and
+**Current bet** when `/steer-by-vision` produces a new selection.
 
-The useful question when editing the dashboard is: what does the next agent need to know to move with the current project motion? If a detail no longer changes the next move, it can be summarized or dropped.
+When the Next steering signal arrives, record the evidence and hand it to
+`/steer-by-vision`. The dashboard waits for that selection instead of promoting
+one of its own alternatives. Once the new bet is selected, refresh the live
+sections and keep only the evidence that still shapes its route.
+
+Completed cycles should be compressed once they stop shaping the next move.
+Keep the cycle log as evidence of calibration, not as a place to preserve every
+detail.
+
+The useful question when editing the dashboard is: what does the next agent need
+to know to move with the current bet? If a detail no longer changes the next
+move, it can be summarized or dropped.
 
 ## Non-goals
 
@@ -135,25 +214,15 @@ It is not full session reconstruction. It should not preserve every conversation
 
 It is not a mandatory ritual. Some work does not need it. Some cycles are too small to justify updating it. The dashboard earns its keep only when it reduces reconstruction cost or improves calibration across cycles.
 
-It is not a gatekeeping protocol. Nothing should wait for the dashboard because the dashboard demands completion. The dashboard is useful when it helps the agent read the instruments before moving.
+It is not a project-selection surface. Vision steering supplies the current bet;
+the dashboard keeps execution and evidence attached to it.
 
-## Criteria for promotion into a `/per-arc` skill
+It is not a gatekeeping protocol. Work does not wait for dashboard ceremony. The
+dashboard is useful when it helps the agent read the instruments before moving.
 
-Promote this concept into a skill only if repeated use shows that agents need an explicit workflow, not just a concept. Until then, this is a reference note, not an invoked workflow.
+## Reference-note boundary
 
-Good promotion signals:
-
-- multiple projects independently recreate the same dashboard shape
-- agents repeatedly lose arc continuity even when `/per-cycle` is used correctly
-- session lifecycle handoffs would become simpler if they could read a stable PER dashboard
-- users want to preserve project motion without invoking a heavier transition protocol
-- the distinction between hypothesis, evidence, divergence, and situated judgment proves valuable in practice
-
-Bad promotion signals:
-
-- the skill would mainly enforce ritual
-- the dashboard becomes a backlog in disguise
-- the concept works better as a short reference note than as an executable workflow
-- maintaining it costs more momentum than it preserves
-
-If promoted, `/per-arc` should stay light. Its job would be to help an agent update and read the project instrument panel at natural boundaries, not to add another approval gate around PER.
+PER arc remains a lightweight reference note. `/steer-by-vision`, `/per-cycle`,
+and the session lifecycle skills own the executable transitions; this note gives
+their shared continuity surface a coherent shape without introducing a new
+`/per-arc` workflow.
