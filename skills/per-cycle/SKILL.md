@@ -29,8 +29,8 @@ before dispatching prepare.
 Within a cycle, prepare, execute, and review stay attached to that bet. A local
 divergence revises the implementation route or loops a bounded correction.
 Project selection resumes when the bet's named steering signal arrives,
-evidence calls the bet's relationship to its experienced outcome into question,
-or the user revises what the project is for.
+relationship-breaking evidence shows the bet no longer plausibly leads to its
+experienced outcome, or the user revises what the project is for.
 
 ## Steering context
 
@@ -71,8 +71,8 @@ hypothesis. Execute advances the immediate gate through the codebase, making
 bounded changes and reading how reality responds. Local discoveries can revise
 the route inside the current bet. When any of the following happens, execute
 surfaces it and returns control: a named steering signal arrives; local
-evidence calls the bet's relationship to its experienced outcome into question;
-or the user revises project purpose or experienced outcome. Then
+evidence shows the current route no longer plausibly advances the experienced
+outcome; or the user revises project purpose or experienced outcome. Then
 **steer-by-vision** owns subsequent project selection.
 
 What comes back is changed files, executed commands, and an honest account of what happened — including where prepare's predictions were wrong and where reality surprised.
@@ -97,9 +97,10 @@ organic proof. Tests, checks, and PR readiness do not establish organic proof
 unless that release or maintenance experience is itself the experienced outcome
 being tested. When ordinary use was not observed, report **Implementation
 validated; organic proof pending**. Review surfaces a reached steering signal;
-it also surfaces relationship-breaking evidence or an explicit user revision of
-project purpose or experienced outcome. Selection at that boundary belongs to
-**steer-by-vision**.
+it also surfaces relationship-breaking evidence — signs that the result no
+longer plausibly advances the experienced outcome — or an explicit user
+revision of project purpose or experienced outcome. Selection at that boundary
+belongs to **steer-by-vision**.
 
 When the user wants a collaborative review rather than a one-shot report, use the `walkthrough` skill to conduct the review phase interactively — examining the changes together, one chunk at a time.
 
