@@ -63,14 +63,29 @@ repeat:
   4. Audit the Human Action Queue and any gate text in the active plan.
   5. Reconcile newer user replies across the coordination and owning threads.
   6. Classify owner, boundary, readiness, next gate, and ready human actions.
-  7. Surface, defer, or mark satisfied each ready human action.
-  8. Route one concrete next step if the active gate is technical or unassigned.
-  9. Notify the coordination thread only when user attention is useful.
-  10. Update the brief or active plan when the corresponding state changed.
-  11. Return the coordination status for this check.
+  7. If valid gates compete or a milestone just closed, run the vision steering boundary.
+  8. Surface, defer, or mark satisfied each ready human action.
+  9. Route one concrete next step if the active gate is technical or unassigned.
+  10. Notify the coordination thread only when user attention is useful.
+  11. Update the brief or active plan when the corresponding state changed.
+  12. Return the coordination status for this check.
 ```
 
 Treat thread roles as live. Infer ownership from the latest thread state, active work, delegations, blocked/completed state, open pull requests, and the coordination files. The active plan expresses current priority intent; live threads and PR surfaces supply current operational facts.
+
+## Vision Steering Boundary
+
+Most coordination checks route work inside an already selected bet. Invoke
+**steer-by-vision** when several technically valid gates compete for momentum,
+or when a milestone has just closed and the active plan no longer identifies a
+clear project-sized bet.
+
+Use the live coordination evidence to recommend the smallest meaningful
+end-to-end bet, then ground only the high-variance purpose or outcome judgment
+with the user. Record the selected bet, its organic proof, and next steering
+signal in `ACTIVE_PLAN.md`, then resume ordinary gate routing. Technical,
+execute, and review work stays attached to that bet until the steering signal
+arrives.
 
 ## Human Action Protocol
 

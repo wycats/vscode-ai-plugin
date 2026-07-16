@@ -106,6 +106,35 @@ The model's ability to resolve tensions depends on what information it can acces
 
 As tools improve, unshared environmental information moves to perception. This isn't just a capability improvement — it preserves the collaboration budget for inherently situated decisions where human judgment is genuinely irreplaceable.
 
+## Selection across timescales
+
+Stances shape which continuation is likely at the scale of a token, turn, or
+task. Projects have the same selection problem over a longer span. Several
+plans, tasks, pull requests, and infrastructure moves can all be locally valid,
+while only some of them advance the change the project exists to create. When
+the visible artifacts supply the only selection pressure, competent local work
+can accumulate as project drift.
+
+Project vision is the durable selection function at this timescale. It is a
+compact thesis about the experienced change the project should create. Reading
+a candidate move as **slice → capability → experienced change → proof** makes
+locally valid work comparable by its relationship to that thesis. The smallest
+meaningful bet is the smallest slice that crosses this chain far enough for
+ordinary use to produce evidence.
+
+This makes the approach **vision-first** when selecting work and
+**vision-steered** as evidence arrives. Plans, tasks, PRs, and substrate are
+hypotheses about how to advance the project. Execution and review test those
+hypotheses, so evidence can revise the route, order, or size of the current bet.
+The user's situated judgment revises what the project is for.
+
+The information boundary remains the same. Tools can show what was built,
+whether people encountered the intended capability, and where reality diverged
+from the working model. Choosing which experienced change should matter remains
+the user's situated judgment. The agent makes the evidence and its recommended
+selection visible; the user contributes judgment where different project
+purposes or outcomes are genuinely in play.
+
 ## Implications for skill design
 
 These mechanics lead to practical principles:

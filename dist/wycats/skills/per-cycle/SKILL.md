@@ -9,6 +9,9 @@ A hypothesis → experiment → evaluation cycle for non-trivial work. Prepare f
 
 The value of the cycle isn't in the gates between phases. It's in the cognitive separation: each phase thinks differently, and the handoff between them is where the interesting findings emerge. Prepare's predictions tell execute where to look. Execute's encounters with reality tell review what to evaluate. Review's calibration tells you whether to proceed, iterate, or revise the approach.
 
+PER begins after project selection. It tests how a bounded move advances the
+selected bet and returns evidence to the next steering decision.
+
 **Stances used:** Load the **hypothesis-forming** stance for prepare, **hypothesis-evaluating** stance for review, **collaborative-grounding** when user intent changes the cycle, and **relational-continuity** for phase handoffs.
 
 ## When to use
@@ -16,6 +19,18 @@ The value of the cycle isn't in the gates between phases. It's in the cognitive 
 The overhead of three phases is justified when the task has enough complexity or risk that you'd benefit from separating prediction from action from evaluation. Tasks that change behavior across multiple files, have ambiguity about the right approach, or benefit from independent verification of the result.
 
 The overhead is not justified for trivial fixes, purely exploratory research, or tasks where the three phases would be slower than just doing the work. Use judgment.
+
+## Vision boundary
+
+Enter the cycle with a selected bet and the experienced change it is meant to
+produce. If several locally valid bets still compete, use **steer-by-vision**
+before dispatching prepare.
+
+Within a cycle, prepare, execute, and review stay attached to that bet. A local
+divergence revises the implementation route or loops a bounded correction.
+Project selection resumes when the bet's named steering signal arrives,
+evidence calls the bet's relationship to its experienced outcome into question,
+or the user revises what the project is for.
 
 ## The arc
 
@@ -40,6 +55,10 @@ Before proceeding: spot-check the account against the workspace. Did the reporte
 Dispatch the `review` subagent with prepare's predictions and execute's account. Review will compare prediction against outcome and judge what the divergences mean.
 
 What comes back is a calibration report: what matched, what diverged, what the divergences mean, and whether the result warrants confidence to proceed.
+
+The report also names the evidence the cycle produced for the selected bet:
+whether organic proof arrived, which assumption changed, and whether the next
+steering signal has been reached.
 
 When the user wants a collaborative review rather than a one-shot report, use the `walkthrough` skill to conduct the review phase interactively — examining the changes together, one chunk at a time.
 
