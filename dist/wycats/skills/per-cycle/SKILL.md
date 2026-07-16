@@ -69,9 +69,10 @@ Before proceeding: check whether the high-consequence predictions are grounded i
 Dispatch the `execute` subagent with the same steering context and prepare's
 hypothesis. Execute advances the immediate gate through the codebase, making
 bounded changes and reading how reality responds. Local discoveries can revise
-the route inside the current bet. When a named steering signal arrives, execute
-surfaces it and returns control; **steer-by-vision** owns subsequent project
-selection.
+the route inside the current bet. When a named steering signal arrives, local
+evidence calls the bet's relationship to its experienced outcome into question,
+or the user revises project purpose or experienced outcome, execute surfaces it
+and returns control; **steer-by-vision** owns subsequent project selection.
 
 What comes back is changed files, executed commands, and an honest account of what happened — including where prepare's predictions were wrong and where reality surprised.
 
@@ -95,7 +96,9 @@ organic proof. Tests, checks, and PR readiness do not establish organic proof
 unless that release or maintenance experience is itself the experienced outcome
 being tested. When ordinary use was not observed, report **Implementation
 validated; organic proof pending**. Review surfaces a reached steering signal;
-selection at that boundary belongs to **steer-by-vision**.
+it also surfaces relationship-breaking evidence or an explicit user revision of
+project purpose or experienced outcome. Selection at that boundary belongs to
+**steer-by-vision**.
 
 When the user wants a collaborative review rather than a one-shot report, use the `walkthrough` skill to conduct the review phase interactively — examining the changes together, one chunk at a time.
 
