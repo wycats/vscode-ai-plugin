@@ -63,7 +63,7 @@ repeat:
   4. Audit the Human Action Queue and any gate text in the active plan.
   5. Reconcile newer user replies across the coordination and owning threads.
   6. Classify owner, boundary, readiness, next gate, and ready human actions.
-  7. If valid gates compete or a milestone just closed, run the vision steering boundary.
+  7. If project-sized gates compete without an active bet, or the active bet's steering signal arrived, run the vision steering boundary.
   8. Surface, defer, or mark satisfied each ready human action.
   9. Route one concrete next step if the active gate is technical or unassigned.
   10. Notify the coordination thread only when user attention is useful.
@@ -76,9 +76,11 @@ Treat thread roles as live. Infer ownership from the latest thread state, active
 ## Vision Steering Boundary
 
 Most coordination checks route work inside an already selected bet. Invoke
-**steer-by-vision** when several technically valid gates compete for momentum,
-or when a milestone has just closed and the active plan no longer identifies a
-clear project-sized bet.
+**steer-by-vision** when no bet is active and several technically valid,
+project-sized gates compete for momentum, or when the active bet's named
+steering signal has arrived. A closed milestone triggers selection when it is
+that signal or when it leaves the active plan without a current bet. Competing
+technical gates inside the current bet remain ordinary gate-routing work.
 
 Use the live coordination evidence to recommend the smallest meaningful
 end-to-end bet, then ground only the high-variance purpose or outcome judgment

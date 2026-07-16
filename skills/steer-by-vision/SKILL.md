@@ -37,8 +37,10 @@ project state. Prior-route evidence becomes part of later steering passes.
 Make the interpretation visible. When the user's prior steering already makes
 the purpose clear, proceed from it. When two materially different purposes or
 outcomes remain plausible, present the evidence and your best reading, then ask
-one high-variance question. Product purpose is situated judgment; workspace
-inventory becomes evidence within that judgment.
+one high-variance question and stop at the selection boundary. Resume with the
+user's answer before translating live work into candidate bets. Product purpose
+is situated judgment; workspace inventory becomes evidence within that
+judgment.
 
 ### 2. Translate live work into candidate bets
 
