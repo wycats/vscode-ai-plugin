@@ -63,7 +63,7 @@ repeat:
   4. Audit the Human Action Queue and any gate text in the active plan.
   5. Reconcile newer user replies across the coordination and owning threads.
   6. Classify owner, boundary, readiness, next gate, and ready human actions.
-  7. If project-sized gates compete without an active bet, or the active bet's steering signal arrived, run the vision steering boundary.
+  7. If project-sized gates compete without an active bet, or the active bet's steering signal has arrived, run the Vision Steering Boundary.
   8. Surface, defer, or mark satisfied each ready human action.
   9. Route one concrete next step if the active gate is technical or unassigned.
   10. Notify the coordination thread only when user attention is useful.
