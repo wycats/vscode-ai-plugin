@@ -1,6 +1,6 @@
 ---
 name: steer-by-vision
-description: "Reorient a project by recovering its durable thesis and experienced outcome, reading live plans/tasks/PRs/substrate as candidate bets, and selecting one smallest meaningful end-to-end move with organic proof. Use when the user asks to steer or prioritize by vision, several technically valid gates compete, a milestone has just closed, or useful local work has lost its relationship to the project experience."
+description: "Reorient a project by recovering its durable thesis and experienced outcome, reading live plans/tasks/PRs/substrate as candidate bets, and selecting one smallest meaningful end-to-end move with organic proof. Use when the user asks to steer or prioritize by vision, several technically valid gates compete without an active bet, an active bet's named steering signal has arrived, a closed milestone leaves no current bet, the user revises project purpose or outcome, or useful local work has lost its relationship to the project experience."
 ---
 
 # Steer by Vision
@@ -72,7 +72,17 @@ a project-sized loop. Preserve valuable longer arcs as **kept warm**, each with
 the reason it matters and the evidence or milestone that would bring it back
 into selection.
 
-### 4. Route the bet into execution
+### 4. Name the immediate gate and next steering signal
+
+Name the immediate gate that gives the bet forward motion and identify one
+bounded next move with its owner. State the organic proof the bet is seeking and
+the next signal that should reopen steering: proof arriving, a consequential
+divergence, the bet stalling, the milestone closing, or the user revising
+project purpose or outcome.
+
+The full steering context is now ready for execution.
+
+### 5. Route the bet into execution
 
 Align active work to the selected bet. Existing tasks, PRs, and infrastructure
 either become part of its route, stay warm for a later steering point, or stop
@@ -88,13 +98,6 @@ named steering signal.
 Keep longer arcs and their return signals on the steering or coordination
 surface. They remain legible without competing for attention inside bounded
 execution.
-
-### 5. Route one gate and name the next steering signal
-
-Name the immediate gate that gives the bet forward motion and route one bounded
-next move to its owner. State the organic proof the bet is seeking and the next
-signal that should reopen steering: proof arriving, a consequential divergence,
-the bet stalling, or the milestone closing.
 
 The maneuver ends with an active bet, one routed move, and a visible return
 condition.

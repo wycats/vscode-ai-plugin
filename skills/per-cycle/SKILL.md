@@ -43,7 +43,7 @@ Carry one compact purpose boundary through every phase:
 - **Organic proof:** what ordinary use should reveal if the bet works.
 - **Immediate gate:** the bounded move this cycle advances.
 - **Next steering signal:** the evidence or milestone that returns project
-  selection to vision steering.
+  selection to **steer-by-vision**.
 
 Keep valuable longer arcs and their return signals on the steering or
 coordination surface. They should remain visible without entering phase prompts
@@ -70,7 +70,7 @@ Dispatch the `execute` subagent with the same steering context and prepare's
 hypothesis. Execute advances the immediate gate through the codebase, making
 bounded changes and reading how reality responds. Local discoveries can revise
 the route inside the current bet. When a named steering signal arrives, execute
-surfaces it and returns control; vision steering owns subsequent project
+surfaces it and returns control; **steer-by-vision** owns subsequent project
 selection.
 
 What comes back is changed files, executed commands, and an honest account of what happened — including where prepare's predictions were wrong and where reality surprised.
@@ -95,7 +95,7 @@ organic proof. Tests, checks, and PR readiness do not establish organic proof
 unless that release or maintenance experience is itself the experienced outcome
 being tested. When ordinary use was not observed, report **Implementation
 validated; organic proof pending**. Review surfaces a reached steering signal;
-selection at that boundary belongs to vision steering.
+selection at that boundary belongs to **steer-by-vision**.
 
 When the user wants a collaborative review rather than a one-shot report, use the `walkthrough` skill to conduct the review phase interactively — examining the changes together, one chunk at a time.
 
@@ -110,7 +110,7 @@ The cycle is not always linear. Reality creates branches.
 **Review finds a consequential problem.** When the problem remains inside the
 current bet, it becomes a new bounded task. Re-enter execute with the specific
 fix, then review the fix. When it reaches the named steering signal, return the
-evidence to vision steering.
+evidence to **steer-by-vision**.
 
 **Review finds the hypothesis was wrong in an interesting way.** Prepare's model of the codebase was incorrect, and the incorrectness reveals something about the system that nobody anticipated. This is the most valuable outcome of the cycle — not a failure but a discovery. Surface it to the user.
 
@@ -119,11 +119,13 @@ evidence to vision steering.
 You — the agent using this skill — are not one of the three subagents. You're the scientist running the experiment. You design the dispatch prompts, verify the outputs, manage the transitions, and decide when to loop vs. proceed.
 
 You are also the single owner of the steering transition. Phase agents surface
-evidence and reached signals to you. A reached steering signal takes precedence:
-invoke vision steering once with the cycle's evidence. While organic proof
-remains pending and no steering signal has arrived, route the next bounded
-evidence move inside the current bet. Phase agents do not invoke vision steering
-independently.
+evidence and reached signals to you. A reached steering signal, evidence that
+calls the bet's relationship to its experienced outcome into question, or an
+explicit user revision of project purpose or experienced outcome takes
+precedence. Invoke **steer-by-vision** once with the cycle's evidence. While
+organic proof remains pending and none of those conditions applies, route the
+next bounded evidence move inside the current bet. Phase agents do not invoke
+**steer-by-vision** independently.
 
 The tension to navigate: trust vs. verification. The subagents are generally reliable, but they operate in isolation. Each one can only see what you give it. Verify consequential claims against the workspace, but don't re-do each subagent's work. The verification is about catching the occasional fabrication or gap, not about distrust.
 
