@@ -78,10 +78,16 @@ Align active work to the selected bet. Existing tasks, PRs, and infrastructure
 either become part of its route, stay warm for a later steering point, or stop
 carrying current priority.
 
-Pass the selected bet into PER or another bounded execution workflow. Prepare,
-execute, and review stay attached to the bet: they test how to advance it and
-return evidence about what happened. Local discoveries revise the route;
-project selection resumes at the named steering signal.
+Pass a compact steering context into PER or another bounded execution workflow:
+**Vision, Experienced outcome, Current bet, Organic proof, Immediate gate, and
+Next steering signal**. Prepare, execute, and review stay attached to that
+context: they test how to advance the bet and return evidence about what
+happened. Local discoveries revise the route; project selection resumes at the
+named steering signal.
+
+Keep longer arcs and their return signals on the steering or coordination
+surface. They remain legible without competing for attention inside bounded
+execution.
 
 ### 5. Route one gate and name the next steering signal
 
