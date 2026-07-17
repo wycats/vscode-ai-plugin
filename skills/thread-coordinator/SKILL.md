@@ -5,13 +5,13 @@ description: "Use when coordinating multiple live Codex threads, maintaining a c
 
 # Thread Coordinator
 
-Coordinate live Codex threads by rebuilding status from the files named by the heartbeat, then inspecting live thread and PR state before routing work. The heartbeat carries pointers. The coordination brief says how this effort works. The active plan says what is true now. Direct user involvement is an assisted coordination boundary: when the work is ready for a human decision or action, the coordinator brings that boundary into the conversation with the evidence, scope, and help needed to resolve it.
+Coordinate live Codex threads by rebuilding status from the files named by the heartbeat, then inspecting live thread and PR state before routing work. The heartbeat carries pointers. The coordination brief carries the slow-moving target and contract. The active plan mirrors the Current bet and says what is operationally true now. Direct user involvement is an assisted coordination boundary: when the work is ready for a human decision or action, the coordinator brings that boundary into the conversation with the evidence, scope, and help needed to resolve it.
 
 The core tension is **contract vs. scratchpad vs. consent**. Coordination needs durable rules that every check can reuse, a fast-changing surface for current owner, gate, PR state, evidence, and next action, and a reliable way to turn ready human gates into explicit interaction. Keep those surfaces distinct so the heartbeat stays small, the live state remains easy to revise, and approval debt becomes visible when it is ready to move.
 
 ## Critical Path
 
-Start every check from the heartbeat-named `COORDINATION_BRIEF.md` and `ACTIVE_PLAN.md`. Use prior heartbeat text, previous delegations, and remembered PR state as context only. Current status comes from the named coordination files plus live thread and PR surfaces.
+Start every check from the heartbeat-named `COORDINATION_BRIEF.md` and `ACTIVE_PLAN.md`, then read any repo-designated canonical project-state or vision surface named by the brief or plan. Use prior heartbeat text, previous delegations, remembered PR state, and session trajectory as context only. Project purpose follows the orientation precedence below; current operational status comes from the named coordination files plus live thread and PR surfaces.
 
 On setup and after compaction, audit the active plan for existing human gates before routing technical work. Earlier approval debt should become part of the current coordination surface instead of being inherited as quiet scratchpad text. Before reporting that a gate still waits on the user, inspect the owning and coordination threads for a newer user reply. Consent given in either place satisfies the gate only when it clearly matches the currently presented action, scope, and exact head or other identifying evidence; leave ambiguous or stale replies pending. Human gates also have a liveness boundary: surfacing a gate once is not enough when it remains the only critical-path blocker and the user has not responded.
 
@@ -19,8 +19,8 @@ On setup and after compaction, audit the active plan for existing human gates be
 
 Each coordination effort should name these files explicitly in the heartbeat or user request:
 
-- `COORDINATION_BRIEF.md`: slow-moving coordination contract for this effort.
-- `ACTIVE_PLAN.md`: active tactical scratchpad for this effort.
+- `COORDINATION_BRIEF.md`: slow-moving target and coordination contract for this effort.
+- `ACTIVE_PLAN.md`: mirrored Current-bet projection and active tactical scratchpad for this effort.
 
 Read the named files before forming status. If the request is manual and names only a coordination folder, use `COORDINATION_BRIEF.md` and `ACTIVE_PLAN.md` at that folder's root. If neither the files nor the folder are named, ask for the coordination folder before coordinating.
 
@@ -35,6 +35,7 @@ Use the brief for:
 
 Use the active plan for:
 
+- the Project Orientation projection and its sources;
 - current owner and boundary;
 - current gate;
 - latest PR, review, check, or evidence state;
@@ -49,7 +50,31 @@ The Human Action Queue is bounded to the current coordination state, not a journ
 
 The queue contains user-owned decisions and actions. Each row names the decision or action, the primary Codex task where the user should respond, the literal reply or observable completion signal, readiness evidence, blocking effect, and interaction state. Default approval replies to `This coordination task`: the coordinator should relay the decision to the owning task and verify movement. Name another task only when the user must inspect or act in that task directly. Priority expresses critical-path order. Keep rows aligned with the current boundary; retain a satisfied row while its verification matters to the current update. Record the last-surfaced time or check and next reminder condition in adjacent queue prose when a gate remains pending.
 
-When the coordination contract changes, update the brief. When the tactical boundary changes, update the active plan.
+When the slow target or coordination contract changes, update the brief. When the Current-bet projection or tactical boundary changes, update the active plan. Neither file becomes a competing source of project purpose when the repo designates another canonical surface; reconcile and mirror that surface instead.
+
+## Project Orientation
+
+Resolve the orientation field by field in this order:
+
+1. explicit current project-level user steering;
+2. a repo-designated canonical project-state or vision surface;
+3. `COORDINATION_BRIEF.md` together with `ACTIVE_PLAN.md`;
+4. the latest user-confirmed `SESSION-TRAJECTORY.md` as fallback.
+
+A higher source overrides the fields it addresses; compatible lower sources may fill missing operational fields. Record all contributing provenance. Within the coordination tier, the brief supplies the slow target and the active plan supplies a compatible Current bet and operational gate; surface disagreement rather than resolving it by recency. Only a surface the repo or user designates as canonical receives canonical precedence. Recency alone does not make a plan, thread, PR, or trajectory authoritative about purpose.
+
+The brief owns the slow target. The active plan carries this projection for the current effort:
+
+- Orientation source
+- Vision
+- Experienced outcome
+- Current bet
+- Organic proof, expected and observed
+- Immediate gate
+- Kept-warm arcs with return signals
+- Next steering signal, encoded with signal status (`pending` or `reached`) and transition status (`idle` or `steering-in-progress`)
+
+Live threads, PRs, checks, and workspace observations are evidence about route, proof, and gate. They never silently replace Vision or Experienced outcome. When a canonical surface disagrees with the trajectory or active plan, name the differing fields, let the canonical surface win, and refresh the projection before routing work.
 
 ## Coordination Loop
 
@@ -59,19 +84,20 @@ Run the same loop on each heartbeat or manual coordination check:
 repeat:
   1. Read the coordination brief.
   2. Read the active plan.
-  3. Inspect watched threads and live PR/check/review state.
-  4. Audit the Human Action Queue and any gate text in the active plan.
-  5. Reconcile newer user replies across the coordination and owning threads.
-  6. Classify owner, boundary, readiness, next gate, and ready human actions.
-  7. If project-sized gates compete without an active bet, the active bet's steering signal has arrived, evidence calls the bet's relationship to its experienced outcome into question, or the user revises project purpose or outcome, run the Vision Steering Boundary.
-  8. Surface, defer, or mark satisfied each ready human action.
-  9. Route one concrete next step if the active gate is technical or unassigned.
-  10. Notify the coordination thread only when user attention is useful.
-  11. Update the brief or active plan when the corresponding state changed.
-  12. Return the coordination status for this check.
+  3. Read named canonical orientation sources and reconcile the projection.
+  4. Inspect watched threads and live PR/check/review state.
+  5. Audit the Human Action Queue and any gate text in the active plan.
+  6. Reconcile newer user replies across the coordination and owning threads.
+  7. Classify owner, boundary, readiness, next gate, and ready human actions.
+  8. If the projection says `steering-in-progress`, resume that transition without invoking selection again. Otherwise, if project-sized gates compete without an active bet, the active bet's steering signal has arrived, evidence calls the bet's relationship to its experienced outcome into question, or the user revises project purpose or outcome, run the Vision Steering Boundary once.
+  9. Surface, defer, or mark satisfied each ready human action.
+  10. Route one concrete Immediate gate if the active boundary is technical or unassigned.
+  11. Notify the coordination thread only when user attention is useful.
+  12. Update the brief or active plan when the corresponding state changed.
+  13. Return the coordination status for this check.
 ```
 
-Treat thread roles as live. Infer ownership from the latest thread state, active work, delegations, blocked/completed state, open pull requests, and the coordination files. The active plan expresses current priority intent; live threads and PR surfaces supply current operational facts.
+Treat thread roles as live. Infer ownership from the latest thread state, active work, delegations, blocked/completed state, open pull requests, and the coordination files. The active plan expresses the mirrored Current-bet projection and current operational intent; live threads and PR surfaces supply current operational facts.
 
 ## Vision Steering Boundary
 
@@ -84,14 +110,21 @@ experienced outcome. A closed milestone triggers selection when it is that
 signal or when it leaves the active plan without a current bet. Competing
 technical gates inside the current bet remain ordinary gate-routing work.
 
-Use the live coordination evidence to recommend the smallest meaningful
-end-to-end bet, then ground only the high-variance purpose or outcome judgment
+Before invoking, record the boundary and mark the transition
+`steering-in-progress`; when a named signal triggered it, mark that signal
+`reached`. A later heartbeat resumes the transition instead of opening the same
+selection again. Use the live coordination evidence to recommend the smallest
+meaningful end-to-end bet, then ground only the high-variance purpose or outcome judgment
 with the user. Record the Vision, Experienced outcome, Current bet, Organic
 proof, Immediate gate, valuable arcs kept warm and their return signals, and
 Next steering signal in `ACTIVE_PLAN.md`, then resume ordinary gate routing.
 Technical, execute, and review work stays attached to that bet until the
 steering signal arrives, relationship-breaking evidence appears, or the user
 revises project purpose or outcome.
+
+One Current bet may span several lanes and PER-sized goals. Give momentum to
+one Immediate gate and keep the other valuable project arcs warm with explicit
+return signals. Their existence does not turn the lanes into competing bets.
 
 When the selection depends on high-variance judgment and the user is not
 present, put the recommendation and one exact grounding question in the Human

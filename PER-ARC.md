@@ -1,14 +1,20 @@
-# PER Arc — Plugin pipeline hardening
+# Archived PER Arc — Plugin pipeline hardening
+
+> Historical dashboard snapshot, last updated 2026-05-24. It is not the
+> project's current orientation or a source of project selection. Current work
+> should resolve Project Orientation from the precedence described in
+> [docs/per-arc.md](docs/per-arc.md) and the session lifecycle skills. This file
+> remains as evidence of the earlier pipeline-hardening arc.
 
 ## Arc
 
-The current arc is hardening the plugin pipeline by making source truths explicit and reducing drift between build, validation, publish, and resource discovery. Recent work stabilized the namespace (`wycats:*`), local install targeting, hidden stance resources, and the PER arc concept itself. The next phase is to make the machinery that ships those concepts less duplicative and less dependent on implicit state.
+At the time of this snapshot, the arc was hardening the plugin pipeline by making source truths explicit and reducing drift between build, validation, publish, and resource discovery. Recent work had stabilized the namespace (`wycats:*`), local install targeting, hidden stance resources, and the PER arc concept itself. The contemplated next phase was to make the machinery that ships those concepts less duplicative and less dependent on implicit state.
 
-The project is moving from "local toolkit that works" toward "self-consistent plugin system whose build, validation, publish, and documentation paths reinforce each other."
+The arc framed the project as moving from "local toolkit that works" toward "self-consistent plugin system whose build, validation, publish, and documentation paths reinforce each other."
 
 ## Current phase / position
 
-Four hardening cycles have landed: publish/build source-truth cleanup, validation/resource-discovery hardening, setup registration outcome UX, and YAML/frontmatter serialization hardening. The arc is now at a decision point: pause and let the pipeline changes settle under real use, or choose one more small follow-up from the remaining parked threads.
+Four hardening cycles had landed: publish/build source-truth cleanup, validation/resource-discovery hardening, setup registration outcome UX, and YAML/frontmatter serialization hardening. The snapshot recorded a decision point: pause and let the pipeline changes settle under real use, or return the evidence to project-level selection.
 
 ## Hypothesis / current move
 
@@ -22,7 +28,7 @@ Resulting calibration:
 - Parser-backed plain-scalar round-trip checking was useful for YAML's less obvious ambiguous scalars, including dates and alternate numeric forms.
 - This stayed separate from broader generated-artifact, publish, or config-schema work.
 
-Current calibration:
+Calibration at the snapshot:
 
 - The pipeline hardening arc has handled the obvious sharp edges that were producing drift or misleading success states.
 - Remaining work is more architectural than corrective.
@@ -54,10 +60,10 @@ Completed hardening cycles found:
 - `scripts/build.ts` now quotes/escapes generated YAML frontmatter strings through a shared formatter for scalar strings and array items.
 - `docs/per-arc.md` now records the arc maintenance lesson: the dashboard is a rolling calibration artifact, not an accumulating narrative.
 
-Current slice state:
+Snapshot slice state:
 
 - Active slice: none; PR #31 has landed.
-- Current decision: pause the hardening arc or choose a small follow-up.
+- Recorded decision: pause the hardening arc or return its evidence to project-level selection.
 - Generated build output may exist under ignored `out/` from validation runs; published artifacts under `dist/wycats/` are not part of this slice.
 
 ## Divergences
@@ -74,19 +80,18 @@ Another divergence: stances have moved from plain copied markdown into hidden sk
 - **Hidden resources vs. accidental user surface:** stances are useful to agents as hidden resources, but a missing `user-invocable: false` could leak cognitive scaffolding into user-facing skills.
 - **Arc dashboard vs. backlog:** this file should preserve calibrated project motion, not become an inventory of every possible cleanup.
 
-## Next good move
+## Historical next move
 
-Decide whether to continue the hardening arc or pause it. If continuing, the next likely bounded move is one of:
+At the time of the snapshot, the next decision was whether to continue the hardening arc or pause it. The candidate bounded moves were:
 
 1. Resolve whether TypeScript output and published plugin artifacts should both live under top-level `dist/`.
 2. Extract safer non-publishing package-artifact helpers from the inline workflow logic.
 3. Pause the hardening arc and let the current improvements settle under real use.
 
-## Parked threads
+## Kept-warm arcs at the time of the snapshot
 
-- Consider whether TypeScript `dist` output and published plugin `dist/wycats` should remain under the same top-level directory long term.
-- Consider extracting shared package-artifact helpers so workflows and local publish scripts can share more logic without sharing credential/branch semantics.
-- Decide whether `PER-ARC.md` should remain a repo artifact, become a memory artifact, or eventually be managed by a `/per-arc` skill.
+- **Generated-output layout:** consider whether TypeScript `dist` output and published plugin `dist/wycats` should remain under the same top-level directory. Return signal: repeated confusion or release defects caused by the shared location.
+- **Package-artifact helpers:** consider extracting shared helpers so workflows and local publish scripts can share more logic without sharing credential or branch semantics. Return signal: the next concrete drift between local and workflow packaging.
 
 ## Cycle log
 

@@ -9,15 +9,28 @@ Like sleeping in Stardew Valley — the day ends naturally because resources are
 
 The user is still around and serves as a light bridge to the next session. They carry context in their head — not perfectly, but enough that the next session doesn't start completely cold. The trajectory document supplements the user's memory rather than replacing it.
 
-This skill has four phases: **interpret**, **triage**, **draft**, **validate**. The first two are collaborative — the agent and user work together to understand the session and decide what carries forward. The last two produce and verify the trajectory document.
+This skill has five phases: **reconcile orientation**, **interpret inside the current bet**, **triage evidence and tensions**, **draft**, and **validate**. The middle phases are collaborative; the orientation boundary keeps that collaboration attached to the project selection already in force.
 
-**Stances used:** Load the **interpretive-synthesis** stance (Phase 1), **gap-reading** stance (Phase 1c), **diagnostic-questioning** + **socratic-elicitation** stances (Phase 2), **collaborative-grounding** stance (throughout), and **relational-continuity** stance when drafting durable handoff language.
+**Stances used:** Load the **interpretive-synthesis** stance (Phase 2), **gap-reading** stance (Phase 2c), **diagnostic-questioning** + **socratic-elicitation** stances (Phase 3), **collaborative-grounding** stance (throughout), and **relational-continuity** stance when drafting durable handoff language.
 
-## Phase 1: Interpret
+## Phase 1: Reconcile Project Orientation
 
-Form a coherent account of the session by moving between the whole and the parts.
+Resolve the trajectory's Project Orientation before interpreting the session. It is a projection of project selection, not an independent source of purpose. Read the sources it names and reconcile each field in this order:
 
-### 1a. Capture observable state
+1. explicit current project-level user steering;
+2. a repo-designated canonical project-state or vision surface;
+3. `COORDINATION_BRIEF.md` together with `ACTIVE_PLAN.md`;
+4. the latest user-confirmed trajectory as fallback.
+
+A higher source overrides the fields it addresses; compatible lower sources may fill missing operational fields. Record every contributing source. Within the coordination tier, the brief supplies the slow target and the active plan supplies a compatible Current bet and operational gate; surface disagreement rather than resolving it by recency. When a canonical surface disagrees with the trajectory, name the differing fields, let the canonical surface win, and refresh the projection. Git, code, tests, PRs, and other live workspace evidence can update Organic proof status, route assumptions, or the Immediate gate; they do not silently rewrite Vision or Experienced outcome.
+
+Continue inside the current bet when a bet exists, its named signal remains pending, evidence still supports its relationship to the Experienced outcome, and the user has not explicitly revised purpose or outcome. Otherwise, the first lifecycle or coordination surface to see the boundary records `steering-in-progress`, marks a triggering named signal `reached`, and invokes `/steer-by-vision` once. When the projection already says `steering-in-progress`, carry that same boundary into the handoff without invoking it again. A closed milestone opens selection only when it is the named signal or leaves no active bet. A local implementation divergence remains route work inside the bet.
+
+## Phase 2: Interpret Inside the Current Bet
+
+Form a coherent account of the session by moving between the whole and the parts, while keeping the reconciled orientation fixed.
+
+### 2a. Capture observable state
 
 Run these commands — do not guess:
 
@@ -27,92 +40,54 @@ git log --oneline -5
 git branch --show-current
 ```
 
-### 1b. Form the account
+### 2b. Form the account
 
-Review the conversation history and form an interpretation of the session as a whole:
+Review the conversation history through the Current bet and Immediate gate:
 
-- What was the session trying to accomplish?
-- How did the work actually unfold — did it follow the initial intent, or did it evolve?
-- Where did the session's direction shift, and why?
-- What threads were opened but not closed?
+- How did the gate advance, constrain, or redirect the bet?
+- What implementation validation arrived?
+- What Organic proof appeared through ordinary use, and what proof remains pending?
+- Which route assumptions changed without changing project purpose?
+- What tensions remain inside the bet?
 
-This is interpretive synthesis: the initial understanding of the session's intent gets revised as you examine the specific threads, and the threads look different in light of the revised understanding. A decision that seemed settled early on may look different after what happened later. A thread that seemed like a tangent may turn out to have been the most important work.
+Tests, checks, and PR readiness are implementation validation. They count as Organic proof only when that maintenance or release experience is itself the Experienced outcome.
 
-### 1c. Identify dangling threads
+### 2c. Identify dangling threads
 
-Use the **gap-reading** stance: read back through the conversation for threads that were started but not followed. This is a thorough pass, not a skim — the threads you're looking for are the ones that are easy to miss.
+Use the **gap-reading** stance for threads that were started but not followed. Classify each one before deciding whether it belongs in the handoff:
 
-- Threads the user explicitly deferred
-- Threads overtaken by momentum (the conversation moved on)
-- Ideas that surfaced without anyone recognizing their significance
-- Material the work itself produced incidentally (fragments, asides, half-formed connections)
-- Decisions that seemed settled but may need revisiting in light of later work
+- a route tension inside the Current bet;
+- an already Kept-warm arc, paired with its return signal;
+- a project-sized alternative to surface only when vision steering is open.
 
-For each thread, estimate how predictable the user's intent is. The ambiguous ones — where the agent genuinely can't tell whether the user wants to carry them forward — are the high-variance threads and the focus of Phase 2.
+This classification keeps unfinished details visible without making every attractive alternative compete with the active bet.
 
-## Phase 2: Triage
+## Phase 3: Triage Evidence and Tensions
 
-The collaborative core. The agent has formed an interpretation and identified threads. Now the user's situated knowledge shapes what gets carried forward.
+The user's situated knowledge sharpens ambiguous meaning inside the bet. Because the user remains a bridge, focus on genuinely high-variance questions: whether observed behavior is the intended experience, whether evidence breaks the bet-to-outcome relationship, or whether the user is explicitly revising purpose or outcome.
 
-Because the user is still around and will serve as a bridge, the triage can be lighter than a full `session-close`. Focus on the highest-variance threads — the ones where the user's intent is genuinely ambiguous. The user's fresh memory fills in the rest.
+Use diagnostic questioning and Socratic elicitation together. Reflect the current interpretation and ask one question at a time when the answer is hard to predict. Do not ask the user to reprioritize ordinary route tensions or choose among Kept-warm arcs during an active bet.
 
-### The approach
+If an answer revises Vision or Experienced outcome, stop ordinary triage and enter the already-recorded `/steer-by-vision` boundary. Otherwise, keep the answer attached to the Current bet as proof, route evidence, a gate refinement, or a return signal.
 
-Use diagnostic questioning and Socratic elicitation together. Diagnostic questioning identifies _what_ to ask (the highest-variance threads, especially pregnant tensions). Socratic elicitation shapes _how_ to ask (reflecting the agent's understanding, probing where it might be wrong, making the user's job easy).
+The triage is complete when the evidence, route, and immediate gate form a coherent account inside the reconciled orientation and remaining high-variance questions are either answered or explicitly deferred.
 
-### The sequence
+## Phase 4: Draft
 
-Work through the threads one at a time, using `vscode_askQuestions` for each. Start with the thread where the user's intent is hardest to predict. Each answer informs the next question.
+Write `/memories/repo/SESSION-TRAJECTORY.md` (using the memory tool) from the reconciled orientation and the account formed in Phases 2 and 3. The document should carry the bet's momentum without recreating project selection: the next agent can see what the project is for, what bet is active, what the session taught, and which exact gate resumes the work.
 
-The questions should:
+If a SESSION-TRAJECTORY.md already exists in repo memory, replace its stale projection and evidence with the current account.
 
-- Be easy to answer but hard to predict. "The refactor touched the request builder but stopped before the response handler — was that a natural boundary or did you run out of time?" is better than "Do you want to continue the refactor?"
-- Reflect the agent's interpretation and invite correction. "My read is that the session shifted from planning to implementation around the middleware discussion. Does that match how it felt to you?"
-- Name tensions when they exist. "There's a tension between finishing the type migration and addressing the test gaps it revealed. Which feels more urgent for the next session?"
+## Phase 5: Validate
 
-If the user's response reveals a thread or priority the diagnostic sequence didn't anticipate, follow it before returning to the sequence. Load the **diagnostic-questioning** and **socratic-elicitation** stances for the deeper treatment of this tension.
+The next agent will act from this document. A read-only subagent reads the trajectory, every named orientation source, and the repo with fresh eyes. It checks:
 
-### Building the picture
+- field-level agreement between Project Orientation and higher-precedence sources;
+- whether the Immediate gate is grounded in current workspace state;
+- whether implementation validation is clearly distinguished from Organic proof;
+- whether Live tensions remain inside the bet and Kept-warm arcs retain return signals.
 
-Each answer adds to a shared picture of what the user wants to carry forward. Continue until the picture is coherent enough to draft from — when the answers have built up a consistent account of the user's priorities, and remaining threads fit naturally into that account without needing to be asked about.
-
-The signal is coherence: when new threads stop surprising either party and instead confirm the picture that's already forming, the triage has done its work.
-
-## Phase 3: Draft
-
-Write `/memories/repo/SESSION-TRAJECTORY.md` (using the memory tool) from the shared picture that emerged in Phases 1 and 2. The template in the reference section provides structure, but the content comes from the triage conversation.
-
-The document should convey momentum, not just state. The next agent doesn't just need to know where things are — it needs to feel where things were _going_. Dangling threads are live tensions the next session should feel the pull of.
-
-The draft should reflect:
-
-- The trajectory of the session — not just what happened, but where it was heading (from Phase 1)
-- The user's priorities and the momentum they want preserved (from Phase 2)
-- Observable state (git, build, files changed)
-
-If a SESSION-TRAJECTORY.md already exists in repo memory, replace it with current trajectory.
-
-## Phase 4: Validate
-
-The next agent will read this document and start working from it. Every gap becomes a wrong assumption. Validation is cheap now — discovering problems after the next agent has been working is expensive.
-
-A subagent reads the document and the repo with fresh eyes. Because the user is serving as a bridge, the validation can focus on repo gaps and stale data rather than priority gaps — the user will fill in priority nuances when the next session starts.
-
-Validation also surfaces collaborative divergences — places where the agent and user thought they agreed during triage but actually had different understandings. These need another round of triage, not just a document fix.
-
-### The loop
-
-```
-repeat:
-  1. Spawn a read-only subagent (recon or Explore)
-  2. Give it SESSION-TRAJECTORY.md
-  3. Triage every question it raises
-  4. Fix SESSION-TRAJECTORY.md based on what you learn
-  5. If meaningful changes were needed → go to 1
-  6. If remaining questions are resolved or user-deferred → exit loop
-```
-
-The cost of each pass is small compared to the cost of the next agent starting from a flawed document.
+When a canonical source and trajectory disagree, report both observations, refresh the projection from the canonical source, and validate again. When the workspace disagrees with a route assumption, update the route evidence rather than project purpose. Return to collaborative triage only for genuine high-variance purpose or outcome judgment.
 
 ## Finalize
 
@@ -121,7 +96,7 @@ Update `/memories/active-handoffs.md` (user memory) with the current repo/branch
 Write a short prompt (≤5 lines) for the next session:
 
 - What to read (SESSION-TRAJECTORY.md, SESSION-BRIEFING.md if it exists)
-- What to pick up (the immediate next action)
+- What to pick up (the recorded Immediate gate, verbatim, or the already-open steering boundary)
 - A request to restate and surface questions before proceeding
 
 This prompt is the input to the `session-load` skill.
@@ -148,9 +123,17 @@ This prompt is the input to the `session-load` skill.
 ```markdown
 # Session Trajectory — [Date]
 
-## Where We're Going
+## Project Orientation
 
-[The trajectory — not just the goal, but the direction and momentum]
+Source: [Primary source; compatible supplements when fields are mixed]
+
+- Vision: [What the project is for]
+- Experienced outcome: [What should become true in ordinary use]
+- Current bet: [The selected smallest meaningful end-to-end bet]
+- Organic proof: [Expected ordinary-use proof; pending or observed with evidence]
+- Immediate gate: [The one bounded gate that currently has momentum]
+- Kept warm: [Arc — return signal]
+- Next steering signal: [Condition — signal: pending or reached; transition: idle or steering-in-progress]
 
 ## Status: [In Progress | Blocked | Ready for Review]
 
@@ -158,14 +141,15 @@ This prompt is the input to the `session-load` skill.
 
 - [Completed item with file references]
 
-## What's Next
+## Evidence and Route Changes
 
-1. [Specific immediate action — convey direction, not just steps]
-2. [Following step]
+- Implementation validation: [Checks, tests, review, or release readiness]
+- Organic proof observed: [Ordinary-use evidence, or "pending"]
+- Route changes: [Discoveries that changed how the bet advances]
 
 ## Live Tensions
 
-[Dangling threads as tensions to engage with, not tasks to check off]
+[Unresolved meaning or route tensions inside the Current bet]
 
 ## Key Decisions
 
@@ -202,11 +186,11 @@ what it saw but didn't follow up on.]
 
 ### Tensions
 
-**Source truth vs. session memory.** The trajectory must reflect the repo at the moment of writing, not your recollection of it.
+**Purpose vs. route evidence.** Project Orientation follows its named sources and precedence. Workspace truth corrects the route and proof account without silently replacing purpose.
 
 **Completeness vs. actionability.** The user is a bridge — they'll fill in nuances. Focus on trajectory and momentum over exhaustive detail.
 
-**Interpretation vs. assumption.** Phase 1 forms an account, but it's the agent's interpretation. Phase 2 exists to correct it.
+**Interpretation vs. assumption.** The account forms inside the reconciled bet. Collaborative triage corrects high-variance meaning without routinely reopening selection.
 
 ### Things that silently break transitions
 

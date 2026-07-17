@@ -18,13 +18,22 @@ The practical question for skill design is always: **does each instruction deepe
 
 This idea has consequences for how skills should be written: described honestly rather than prescriptively, using tensions rather than rules, separating generation from evaluation. [FOUNDATIONS.md](FOUNDATIONS.md) develops the full framework. [QUALITY.md](QUALITY.md) translates it into practical principles.
 
+The same selection problem appears at project scale. **Vision steering** selects
+the current bet by relating candidate work to a durable project thesis and an
+experienced outcome. **Operational steering** is narrower checkpoint guidance:
+it keeps lanes and PER-sized goals moving inside that bet. The current bet is a
+project-scoped steering projection that can connect several work surfaces; it
+is not a separate workflow entity.
+
 ## Concept map
 
 The repo has two kinds of documentation: foundational theory that explains why the plugin is written this way, and design notes that explore emerging workflow concepts before they become skills.
 
-- [FOUNDATIONS.md](FOUNDATIONS.md) — distributional mechanics: probability landscapes, stances, information boundaries, generation vs. evaluation.
+- [FOUNDATIONS.md](FOUNDATIONS.md) — distributional mechanics: probability landscapes, stances, information boundaries, generation vs. evaluation, and selection across timescales.
 - [QUALITY.md](QUALITY.md) — practical principles for writing skills, agents, instructions, and hooks from those mechanics.
-- [docs/per-arc.md](docs/per-arc.md) — design note for a lightweight PER arc/dashboard that preserves project motion across repeated PER cycles without turning into ceremony.
+- [docs/per-arc.md](docs/per-arc.md) — lightweight reference note for preserving current-bet orientation and evidence across repeated PER cycles.
+- [docs/exo-composition.md](docs/exo-composition.md) — exploratory brief for how stance-shaped cognition composes with durable project state and operational steering surfaces.
+- [docs/lane-centered-ai-workbench.md](docs/lane-centered-ai-workbench.md) — thought experiment for a workbench where project vision, a current bet, visible lanes, and PER-sized goals share one project reality.
 - [docs/setup.md](docs/setup.md) — configuration, local registration, and build setup details.
 
 ## Stances
@@ -55,10 +64,10 @@ Sessions deplete context the way a day in Stardew Valley depletes energy. The re
 
 The session skills form a gradient based on how much the user serves as a bridge to the next session:
 
-- **`/session-save`**: ongoing tidiness, like mise en place in a kitchen. Keeps the trajectory document warm as significant work happens.
-- **`/session-rest`**: the natural end of a work cycle. The user is still around and carries context in their head. Collaborative triage identifies what to carry forward.
-- **`/session-close`**: end of day. The user is stepping away and won't bridge the gap. Full triage, working-style reflection, anticipatory framing for tomorrow.
-- **`/session-load`**: start a new cycle. Restores context, adapts to whether the user is warm (after rest) or cold (after close).
+- **`/session-save`**: ongoing tidiness, like mise en place in a kitchen. Keeps a sourced Project Orientation and the evidence around its current bet warm as significant work happens.
+- **`/session-rest`**: the natural end of a work cycle. Interprets the session inside the active bet and carries its Immediate gate forward without routinely reopening selection.
+- **`/session-close`**: end of day. Adds full triage, working-style reflection, and cold-start framing while preserving the same bet boundary.
+- **`/session-load`**: start a new cycle. Reconciles orientation sources, resumes the Immediate gate when the bet remains active, and invokes vision steering only when selection is genuinely open.
 
 ### Collaborative review
 
@@ -68,6 +77,7 @@ The session skills form a gradient based on how much the user serves as a bridge
 
 - **`/steer-by-vision`**: explicit project reorientation that recovers the experienced outcome, selects one smallest meaningful end-to-end bet, keeps longer arcs warm, and names the evidence that will reopen steering.
 - **`/per-cycle`**: prepare-execute-review workflow for testing a selected bet and returning calibrated evidence.
+- **`/thread-coordinator`**: cross-thread coordination that preserves the current bet, routes one immediate gate, and returns to vision steering when its named signal arrives.
 - **`/recon`**: adaptive codebase investigation that follows leads and synthesizes findings.
 
 ### Design and proposal writing
@@ -76,7 +86,7 @@ The session skills form a gradient based on how much the user serves as a bridge
 
 ### Agents
 
-Most agents are subagents, invoked by skills rather than by the user directly. The PER agents (`prepare`, `execute`, `review`) are implementation details of the PER workflow. `pre-read` supports session transitions. `recon-worker` supports the recon skill.
+Most agents are subagents, invoked by skills rather than by the user directly. The PER agents (`prepare`, `execute`, `review`) are implementation details of the PER workflow. `pre-read` maps codebase terrain for the active bet's Immediate gate and flags orientation-source disagreements during session transitions. `recon-worker` supports the recon skill.
 
 Two agents are user-facing: `recon` (codebase investigation) and `slop-linter` (identifies and removes slop from documents).
 

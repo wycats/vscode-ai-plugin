@@ -8,9 +8,10 @@ framework in this repo and Exo were designed together from scratch for a more
 general audience.
 
 The design starts from one premise: agentic work is not a single linear stream.
-It branches into changes, experiments, reviews, fixes, and parked threads. A
-general product should make those branches visible and manageable instead of
-forcing them through one active phase.
+It branches into changes, experiments, reviews, fixes, operationally parked
+lanes, and project arcs kept warm for later selection. A general product should
+make those branches visible and manageable instead of forcing them through one
+active phase.
 
 ## North Star
 
@@ -19,12 +20,16 @@ inside the same project reality you see.
 
 The user should be able to open a project and immediately understand:
 
+- what experienced change the project is trying to create
+- which current bet has momentum and what proof it seeks
 - what changes are active
 - which lane they are currently in
+- which lane and goal own the Immediate gate
 - what the agent is working on
 - what needs review
 - what is blocked
 - what is ready to merge
+- which valuable arcs are kept warm and what would bring them back
 - what decisions and lessons will survive after the lane closes
 
 The agent should be able to answer the same questions from tools rather than
@@ -39,8 +44,10 @@ A project is the durable identity and state boundary. It owns the long-lived
 story of the work:
 
 - mission and product intent
+- project orientation and its recorded source
+- current-bet projection and kept-warm arcs
 - durable decisions and RFCs
-- project axioms and steering rules
+- project axioms and vision-selection rules
 - global inbox and deferred ideas
 - persistence policy: repo, shadow, or sidecar
 - cross-lane history and lessons
@@ -50,12 +57,37 @@ Implementation direction:
 
 - Derive project identity from the git common directory, preserving Exo's
   existing project/workspace split.
-- Store structured steering state in canonical project state, not in ad hoc
-  files.
+- Resolve project purpose first from explicit current user steering, then from
+  the designated canonical project state. Coordination state and the latest
+  user-confirmed trajectory are fallback projections, while live lane evidence
+  calibrates the route rather than replacing purpose.
+- Expose the current bet as a structured projection of that purpose rather than
+  an independent source of it.
 - Keep documents as documents: RFCs, research notes, design notes, and specs
   live on disk because their value is prose.
 - Treat sidecar and shadow state as persistence policies for the same project
   identity, not as different product concepts.
+
+### Current bet
+
+The current bet is project-scoped structured steering state. It relates the
+project's durable purpose to the execution surfaces that currently deserve
+momentum:
+
+- orientation source, Vision, and Experienced outcome
+- Current bet and Organic proof
+- one Immediate gate
+- the lanes and PER-sized goals that advance that gate
+- kept-warm arcs and the signal that would return each one to selection
+- the Next steering signal
+
+One bet may cross several lanes or goals, but one Immediate gate gives the work
+a visible critical path. The other valuable continuations stay warm without
+competing with bounded execution.
+
+The current bet is a projection over existing project, lane, goal, and document
+surfaces, not a new product entity. This relationship adds no `Bet` table, Exo
+schema, or runtime contract.
 
 ### Lane
 
@@ -81,6 +113,10 @@ A lane owns:
 - merge readiness
 - parked or abandoned reason
 
+A lane mirrors how it serves the current bet and Immediate gate. Project
+selection remains at project scope; a lane owns the operational work that
+advances the selected route.
+
 Implementation direction:
 
 - Lane identity should derive from project identity plus stable lane metadata:
@@ -88,12 +124,14 @@ Implementation direction:
 - A linked worktree should resolve to the same project and a distinct lane
   focus.
 - A project may have many open lanes at once.
+- A current bet may link several lanes while routing one Immediate gate.
 - One lane is usually focused in the current session, but the cockpit should
   show cross-lane pressure.
 
 ### Goal
 
-A goal is a PER-sized unit inside a lane.
+A goal is a PER-sized unit inside a lane. It advances the current bet's
+Immediate gate rather than selecting project purpose.
 
 The goal is large enough that Prepare matters, small enough that Execute
 produces one reviewable result, and meaningful enough that completion is visible
@@ -102,6 +140,7 @@ progress. Goals are where the agent framework and Exo's workflow model meet.
 A goal owns:
 
 - hypothesis and expected outcome
+- relationship to the current bet and Immediate gate
 - tasks for execution
 - validation criteria
 - user-facing completion evidence
@@ -114,9 +153,12 @@ Implementation direction:
 - A goal may produce commits, docs, or research. It does not always produce
   code.
 - Goal completion should require evidence: validation, review, or an explicit
-  user-accepted outcome.
-- Review findings should either complete the goal, reopen it, or spawn a new
-  bounded goal in the same lane.
+  user-accepted outcome. That completion evidence remains distinct from
+  bet-level Organic proof unless ordinary use of the completed goal is the
+  experienced outcome being tested.
+- Review findings complete the goal, reopen it, or spawn a new bounded goal in
+  the same lane while the bet remains active. A reached steering signal returns
+  the accumulated evidence to vision steering before another goal is selected.
 
 ### Session
 
@@ -132,7 +174,8 @@ It owns the short-lived conversational and operational context:
 
 Implementation direction:
 
-- Agents orient in this order: project, lane, goal, session.
+- Agents orient in this order: project purpose and source, current bet, lane,
+  goal, session.
 - Session memory should never be the source of truth for project or lane state.
 - Session lifecycle tools should preserve what the next session needs to resume
   the lane without reconstructing the whole project.
@@ -205,9 +248,9 @@ and RFCs explain why it exists.
 ## Reframing Exo's Current Model
 
 Exo already has many of the necessary pieces: project identity, workspace roots,
-worktree sharing, canonical SQLite state, sidecar policy, steering, daemon
-surfaces, and goals as PER cycles. The missing product move is to make lanes the
-core active-work object.
+worktree sharing, canonical SQLite state, sidecar policy, operational steering,
+daemon surfaces, and goals as PER cycles. The missing product move is to make
+lanes the core active-work object.
 
 ### Worktrees become lanes
 
@@ -303,6 +346,11 @@ Core entities:
 - Review comment
 - Artifact link
 - Session checkpoint
+
+The current bet is intentionally absent from this entity list. It is
+project-scoped steering state that projects relationships among existing
+entities and documents; the workbench can render and route from that projection
+without introducing a new persistence identity.
 
 Minimum lane fields:
 
@@ -401,25 +449,39 @@ The agent framework contributes how the work is done:
 
 Lane-aware agent orientation:
 
-1. Read project state.
-2. Read lane state.
-3. Read active goal state.
-4. Inspect current workspace changes.
-5. Ask the user only for situated judgment.
+1. Read project purpose and its recorded source.
+2. Read the current-bet projection.
+3. Read lane state.
+4. Read active goal state.
+5. Inspect current workspace changes.
+6. Ask the user only for situated judgment.
 
-Agent rules:
+Agent grounding principles:
 
-- Do not infer lane truth from branch names alone when lane state exists.
-- Do not treat a raw shell `gh` command as equivalent to lane-aware PR state.
-- Do not close a lane without recording what happened and what should carry
-  back to the project.
-- When Exo tools are unavailable, mark lane/project claims as unverified rather
-  than fabricating from chat history.
+- Lane state is authoritative when it exists; branch names remain useful clues.
+- Lane-aware PR state preserves the artifact relationship that a raw shell
+  `gh` result cannot express by itself.
+- Closing a lane records what happened and what should carry back to the project.
+- When Exo tools are unavailable, lane and project claims remain explicitly
+  unverified until an observable state surface is available.
 
-### Steering layer
+### Vision steering
 
-Steering is the join between state and cognition. Every meaningful checkpoint
-returns scoped guidance.
+Vision steering is project-level selection. It reads candidate lanes, goals,
+PRs, RFCs, and substrate through the relationship between project purpose and
+experienced change, then selects the smallest meaningful current bet that can
+produce Organic proof. It runs when no bet exists, the Next steering signal
+arrives, evidence breaks the bet's relationship to its Experienced outcome, or
+the user revises project purpose.
+
+The selected bet gives several operational surfaces one shared direction. A
+lane or goal can return evidence to this boundary, but it does not choose the
+next project move on its own.
+
+### Operational steering
+
+Operational steering is the join between state and cognition inside the
+selected bet. Every meaningful checkpoint returns scoped guidance.
 
 Useful checkpoint commands:
 
@@ -440,10 +502,12 @@ Each response should include:
 - what user feedback is pending
 - what the next safe action is
 - whether the action needs human judgment
+- whether the Next steering signal was reached
 
-Steering must be scoped. A task progress update should surface relevant goal and
-lane concerns without dumping the whole project. A lane review should surface PR
-comments, CI state, validation, and project-level conflicts.
+Operational steering stays scoped to the current bet. A task progress update
+should surface relevant goal and lane concerns without dumping the whole
+project. A lane review should surface PR comments, CI state, validation, and
+evidence that may have reached the vision-steering boundary.
 
 ### Cockpit
 
@@ -453,6 +517,10 @@ workflow feel lightweight.
 
 Project cockpit should show:
 
+- project orientation source, Vision, and Experienced outcome
+- Current bet and Organic proof
+- Immediate gate and Next steering signal
+- kept-warm arcs and their return signals
 - active lanes
 - stale lanes
 - blocked lanes
@@ -467,6 +535,7 @@ Project cockpit should show:
 Lane cockpit should show:
 
 - current lane status
+- relationship to the Current bet and Immediate gate
 - branch/worktree/PR handles
 - attached RFCs and PRs
 - active goal
@@ -475,7 +544,7 @@ Lane cockpit should show:
 - review comments
 - CI state
 - recent progress messages
-- next recommended action
+- next operational action inside the Current bet
 
 PR view should show:
 
@@ -517,27 +586,35 @@ Adapters must not own project truth. They render and invoke the state kernel.
 ### Start a lane from an issue, RFC, or idea
 
 1. User says: "Work on preview readiness."
-2. System proposes a lane:
+2. System relates the request to the Current bet. If no bet is active or its
+   steering signal has arrived, vision steering selects the bet before lane
+   work begins.
+3. System proposes a lane:
    - title
    - source reference
    - branch/worktree name
    - initial goal
    - validation expectations
-3. User accepts or edits.
-4. System creates or attaches the workspace.
-5. Agent runs recon or prepare before implementation begins.
+4. User accepts or edits.
+5. System creates or attaches the workspace.
+6. Agent runs recon or prepare before implementation begins.
 
 Success condition: the user sees a new lane in the cockpit, and the agent can
 read the same lane through tools.
 
 ### Run PER goals inside the lane
 
-1. Prepare reads the lane, source material, and workspace.
-2. Prepare sizes the next goal and names failure conditions.
+1. Prepare reads the steering context, lane, source material, and workspace.
+2. Prepare sizes the next goal inside the Immediate gate and names failure
+   conditions.
 3. Execute works in bounded steps, logging progress to the lane.
-4. Steering returns validation and user-feedback signals at each checkpoint.
-5. Review compares expected and actual results.
-6. The goal is completed, reopened, or split.
+4. Operational steering returns validation and user-feedback signals at each
+   checkpoint.
+5. Review compares expected and actual results, distinguishes implementation
+   validation from Organic proof, and reports whether the Next steering signal
+   arrived.
+6. The goal is completed, reopened, or split while the bet remains active. A
+   reached signal returns once to vision steering.
 
 Success condition: goal progress is visible without reading the chat transcript.
 
@@ -567,7 +644,7 @@ does not force the whole project to idle.
 ### Respond to review and CI
 
 1. `lane sync` pulls review comments and CI state.
-2. Steering summarizes what requires action.
+2. Operational steering summarizes what requires action inside the Current bet.
 3. The agent creates repair goals for bounded fixes.
 4. Execute addresses one repair goal at a time.
 5. Review verifies the repair and updates the lane.
@@ -578,8 +655,9 @@ ambient chat obligations.
 ### Advance an RFC through lane work
 
 1. An RFC changes stage or decision status.
-2. The system shows whether it needs a new lane, affects an active lane, or
-   only updates project planning.
+2. The system reads that change as evidence about the Current bet and shows
+   whether it affects an active lane, reaches the Next steering signal, or only
+   updates project planning.
 3. If implementation or proof is needed, the system creates or links lanes.
 4. Active lanes record which RFC questions they are answering.
 5. Closed lanes roll decisions, evidence, and surprises back into the RFC or
@@ -598,6 +676,9 @@ Merge path:
 4. Project memory receives the durable outcome, decisions, and follow-ups.
 5. Linked RFCs receive implementation evidence or follow-up questions when
    relevant.
+6. Review records whether Organic proof arrived and whether the Next steering
+   signal was reached. A reached signal returns once to vision steering;
+   otherwise operational routing resumes inside the Current bet.
 
 Abandon path:
 
@@ -638,6 +719,8 @@ Missing product concepts:
 - artifact views that show PR and RFC status across lanes
 - lane lifecycle operations
 - agent orientation that explicitly reads project, then lane, then goal
+- a shared current-bet projection that links lanes and goals without becoming a
+  separate entity
 - state promotion from closed lane back into project memory
 
 ## How the Existing Repos Inform This
@@ -650,6 +733,7 @@ This repo contributes the agent operating model:
 - PER as hypothesis, experiment, and evaluation
 - recon as grounded investigation
 - session lifecycle as continuity management
+- vision steering as project-level selection
 - evidence discipline for agent reports
 - quality rules for avoiding incoherent instruction stacks
 
@@ -664,14 +748,16 @@ Exo contributes the project operating system:
 - canonical SQLite state
 - state policy: repo, shadow, sidecar
 - daemon and machine-channel surfaces
-- steering and perception touchpoints
+- operational steering and perception touchpoints
 - cockpit/sidebar concepts
 - RFC and decision records
 - goals as PER cycles
 - PR-as-review-artifact design pressure
 
-In the combined system, this layer should remain responsible for what is true
-about the project and its lanes.
+In the combined system, this layer should remain responsible for durable
+operational truth about the project and its lanes. Explicit user steering and
+the designated canonical purpose surface remain authoritative for what the
+project is for.
 
 ## Appendix: Source Strata
 
@@ -746,5 +832,9 @@ capabilities.
 - Do not make sidecar mechanics user-facing unless the user is configuring
   persistence.
 - Do not treat chat memory as authoritative lane state.
+- Keep Current bet as project-scoped steering state rather than introducing a
+  `Bet` entity or requiring an Exo schema/runtime change.
+- Keep operational steering inside the selected bet and reserve vision steering
+  for project-level selection.
 - Do not promote this document into foundational doctrine until real use proves
   which parts hold up.
