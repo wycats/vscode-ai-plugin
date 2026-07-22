@@ -11,7 +11,7 @@ product or maintainer level, and what deserves attention. The repo template
 supplies form. The user and project supply voice. Local execution details
 belong only when they change how the reviewer should read the PR.
 
-## Core stance
+## Core tension
 
 The tension is reviewer story vs. local execution log.
 
@@ -20,7 +20,7 @@ of files changed, commands run, and checks performed. That information can be
 real without belonging in the PR body. Write for the person reviewing the PR,
 not for the agent proving that it worked.
 
-Compose five stances:
+Hold five concerns together:
 
 - **Template fidelity**: inspect the repository's PR template and inhabit its
   sections instead of inventing a generic body.

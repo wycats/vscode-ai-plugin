@@ -75,6 +75,31 @@ Use language to describe constraints in a way that captures the tensions between
 
 An agent file establishes a cognitive mode: a small number of stances fused so deeply that the seams disappear. The agent doesn't alternate between stances. It *is* the fused mode. A skill composes stances with visible seams and managed transitions, orchestrating when each one is active.
 
+This is also a semantic ownership boundary:
+
+- A **stance** owns the domain-general invariant, its central tension, and the
+  examples that make the relationship precise.
+- A **skill** owns the situated maneuver: its entry conditions, execution
+  shape, transitions, collaboration points, output, and handoff.
+- An **agent** owns the fused operational behavior that makes its stances
+  present throughout a delegated role.
+
+The description and visibility of a resource are part of its canonical
+activation intent. A runtime projection may translate that intent into a
+manifest, directory layout, or discovery index, but should not silently change
+when the resource applies or whether it is user-facing.
+
+Runtime projections may also resolve abstract model and tool roles, translate
+hook envelopes, or omit capabilities the host does not support. Keep those
+adaptations mechanical and visible. If a target needs different semantics,
+make that difference an explicit variant rather than letting generated output
+become a second authority.
+
+Some restatement is useful. A short stance handle inside a skill can keep the
+right well active, and an agent may embody the same relational structure in
+its own voice. The test is whether the restatement reinforces the canonical
+invariant or establishes a definition that could drift independently.
+
 ## Negative instructions cluster with poor work
 
 Dense blocks of "don't do X" instructions are correlated in the training data with corrective feedback, low-trust delegation, and defensive documentation. The model has learned that this pattern surrounds contexts where expected output quality is low.

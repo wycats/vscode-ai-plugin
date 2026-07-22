@@ -4,7 +4,11 @@ An agent toolkit for VS Code Copilot, Claude Code, and Codex, grounded in a theo
 
 ## What this is
 
-This repo is a working agent plugin. Agents, skills, hooks, and instructions can be built for VS Code, Claude Code, and Codex. But it's also the testbed for a framework about *how to write good agent customizations*, and a vocabulary of reusable patterns that make those customizations work.
+This repo is a working agent plugin for VS Code, Claude Code, and Codex. Its
+canonical resources are projected into the capabilities each host provides;
+not every host activates every resource type. The repo is also the testbed for
+a framework about *how to write good agent customizations*, and a vocabulary
+of reusable patterns that make those customizations work.
 
 The framework and the practice evolved together. Each skill we built refined the theory, and each theoretical insight improved the skills.
 
@@ -16,7 +20,13 @@ A **stance** is a consistent set of relationships between the writer, the conten
 
 The practical question for skill design is always: **does each instruction deepen the same well, or does it create a competing well?** Instructions that reinforce each other produce precise, coherent output. Instructions that compete produce confused or stilted output.
 
-This idea has consequences for how skills should be written: described honestly rather than prescriptively, using tensions rather than rules, separating generation from evaluation. [FOUNDATIONS.md](FOUNDATIONS.md) develops the full framework. [QUALITY.md](QUALITY.md) translates it into practical principles.
+This idea has consequences for how skills should be written: described honestly rather than prescriptively, using tensions rather than rules, separating generation from evaluation. [FOUNDATIONS.md](https://github.com/wycats/vscode-ai-plugin/blob/main/FOUNDATIONS.md) develops the full framework. [QUALITY.md](https://github.com/wycats/vscode-ai-plugin/blob/main/QUALITY.md) translates it into practical principles.
+
+The framework preserves stable relational invariants across situated
+projections. A stance owns the canonical articulation of an invariant; skills
+compose stances into workflows, agents crystallize them into cognitive modes,
+and runtime builds adapt their envelopes and activation surfaces without
+becoming new sources of meaning.
 
 The same selection problem appears at project scale. **Vision steering** selects
 the current bet by relating candidate work to a durable project thesis and an
@@ -29,12 +39,13 @@ is not a separate workflow entity.
 
 The repo has two kinds of documentation: foundational theory that explains why the plugin is written this way, and design notes that explore emerging workflow concepts before they become skills.
 
-- [FOUNDATIONS.md](FOUNDATIONS.md) — distributional mechanics: probability landscapes, stances, information boundaries, generation vs. evaluation, and selection across timescales.
-- [QUALITY.md](QUALITY.md) — practical principles for writing skills, agents, instructions, and hooks from those mechanics.
-- [docs/per-arc.md](docs/per-arc.md) — lightweight reference note for preserving current-bet orientation and evidence across repeated PER cycles.
-- [docs/exo-composition.md](docs/exo-composition.md) — exploratory brief for how stance-shaped cognition composes with durable project state and operational steering surfaces.
-- [docs/lane-centered-ai-workbench.md](docs/lane-centered-ai-workbench.md) — thought experiment for a workbench where project vision, a current bet, visible lanes, and PER-sized goals share one project reality.
-- [docs/setup.md](docs/setup.md) — configuration, local registration, and build setup details.
+- [FOUNDATIONS.md](https://github.com/wycats/vscode-ai-plugin/blob/main/FOUNDATIONS.md) — distributional mechanics: probability landscapes, stances, information boundaries, generation vs. evaluation, and selection across timescales.
+- [QUALITY.md](https://github.com/wycats/vscode-ai-plugin/blob/main/QUALITY.md) — practical principles for writing skills, agents, instructions, and hooks from those mechanics.
+- [docs/canonical-resources-and-runtime-projections.md](https://github.com/wycats/vscode-ai-plugin/blob/main/docs/canonical-resources-and-runtime-projections.md) — semantic authority across stance, workflow, project-state, and runtime projections.
+- [docs/per-arc.md](https://github.com/wycats/vscode-ai-plugin/blob/main/docs/per-arc.md) — lightweight reference note for preserving current-bet orientation and evidence across repeated PER cycles.
+- [docs/exo-composition.md](https://github.com/wycats/vscode-ai-plugin/blob/main/docs/exo-composition.md) — exploratory brief for how stance-shaped cognition composes with durable project state and operational steering surfaces.
+- [docs/lane-centered-ai-workbench.md](https://github.com/wycats/vscode-ai-plugin/blob/main/docs/lane-centered-ai-workbench.md) — thought experiment for a workbench where project vision, a current bet, visible lanes, and PER-sized goals share one project reality.
+- [docs/setup.md](https://github.com/wycats/vscode-ai-plugin/blob/main/docs/setup.md) — configuration, local registration, and build setup details.
 
 ## Stances
 
@@ -176,9 +187,25 @@ No VS Code migration is needed; VS Code continues to use `marketplace.json` and
 
 ### How the build works
 
-Agent source files use abstract role names for models and tool groups instead of hardcoded provider-specific values. A local `config.json` (gitignored) maps those roles to concrete values for your environment. The build resolves the names and writes ready-to-use files to the platform output directory: `out/wycats/` for VS Code, `out/claude-code/` for Claude Code, or `out/codex/` for Codex.
+The root resource tree is the canonical authoring surface. Agent source files
+use abstract role names for models and tool groups instead of hardcoded
+provider-specific values. A local `config.json` (gitignored) maps those roles
+to concrete values for your environment. The build resolves the names and
+writes runtime projections to `out/wycats/` for VS Code,
+`out/claude-code/` for Claude Code, or `out/codex/` for Codex.
 
-See [docs/setup.md](docs/setup.md) for full configuration details, including model presets by provider and tool group reference.
+| Target      | Active resource projections |
+| ----------- | --------------------------- |
+| VS Code     | Agents, workflow skills, hidden stances, instructions, and hooks |
+| Claude Code | Agents, workflow skills, stances materialized as hidden skills, and hooks |
+| Codex       | Workflow skills and stances materialized as hidden skills; agents are packaged as reference material |
+
+Codex does not currently activate this plugin's agents, instructions, or
+hooks. Claude Code does not consume the VS Code instruction format. These are
+visible host capability boundaries, not alternate definitions of the shared
+resources.
+
+See [docs/setup.md](https://github.com/wycats/vscode-ai-plugin/blob/main/docs/setup.md) for full configuration details, including model presets by provider and tool group reference.
 
 ## Development
 
