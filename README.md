@@ -20,7 +20,7 @@ A **stance** is a consistent set of relationships between the writer, the conten
 
 The practical question for skill design is always: **does each instruction deepen the same well, or does it create a competing well?** Instructions that reinforce each other produce precise, coherent output. Instructions that compete produce confused or stilted output.
 
-This idea has consequences for how skills should be written: described honestly rather than prescriptively, using tensions rather than rules, separating generation from evaluation. [FOUNDATIONS.md](FOUNDATIONS.md) develops the full framework. [QUALITY.md](QUALITY.md) translates it into practical principles.
+This idea has consequences for how skills should be written: described honestly rather than prescriptively, using tensions rather than rules, separating generation from evaluation. [FOUNDATIONS.md](https://github.com/wycats/vscode-ai-plugin/blob/main/FOUNDATIONS.md) develops the full framework. [QUALITY.md](https://github.com/wycats/vscode-ai-plugin/blob/main/QUALITY.md) translates it into practical principles.
 
 The framework preserves stable relational invariants across situated
 projections. A stance owns the canonical articulation of an invariant; skills
@@ -39,13 +39,13 @@ is not a separate workflow entity.
 
 The repo has two kinds of documentation: foundational theory that explains why the plugin is written this way, and design notes that explore emerging workflow concepts before they become skills.
 
-- [FOUNDATIONS.md](FOUNDATIONS.md) — distributional mechanics: probability landscapes, stances, information boundaries, generation vs. evaluation, and selection across timescales.
-- [QUALITY.md](QUALITY.md) — practical principles for writing skills, agents, instructions, and hooks from those mechanics.
-- [docs/canonical-resources-and-runtime-projections.md](docs/canonical-resources-and-runtime-projections.md) — semantic authority across stance, workflow, project-state, and runtime projections.
-- [docs/per-arc.md](docs/per-arc.md) — lightweight reference note for preserving current-bet orientation and evidence across repeated PER cycles.
-- [docs/exo-composition.md](docs/exo-composition.md) — exploratory brief for how stance-shaped cognition composes with durable project state and operational steering surfaces.
-- [docs/lane-centered-ai-workbench.md](docs/lane-centered-ai-workbench.md) — thought experiment for a workbench where project vision, a current bet, visible lanes, and PER-sized goals share one project reality.
-- [docs/setup.md](docs/setup.md) — configuration, local registration, and build setup details.
+- [FOUNDATIONS.md](https://github.com/wycats/vscode-ai-plugin/blob/main/FOUNDATIONS.md) — distributional mechanics: probability landscapes, stances, information boundaries, generation vs. evaluation, and selection across timescales.
+- [QUALITY.md](https://github.com/wycats/vscode-ai-plugin/blob/main/QUALITY.md) — practical principles for writing skills, agents, instructions, and hooks from those mechanics.
+- [docs/canonical-resources-and-runtime-projections.md](https://github.com/wycats/vscode-ai-plugin/blob/main/docs/canonical-resources-and-runtime-projections.md) — semantic authority across stance, workflow, project-state, and runtime projections.
+- [docs/per-arc.md](https://github.com/wycats/vscode-ai-plugin/blob/main/docs/per-arc.md) — lightweight reference note for preserving current-bet orientation and evidence across repeated PER cycles.
+- [docs/exo-composition.md](https://github.com/wycats/vscode-ai-plugin/blob/main/docs/exo-composition.md) — exploratory brief for how stance-shaped cognition composes with durable project state and operational steering surfaces.
+- [docs/lane-centered-ai-workbench.md](https://github.com/wycats/vscode-ai-plugin/blob/main/docs/lane-centered-ai-workbench.md) — thought experiment for a workbench where project vision, a current bet, visible lanes, and PER-sized goals share one project reality.
+- [docs/setup.md](https://github.com/wycats/vscode-ai-plugin/blob/main/docs/setup.md) — configuration, local registration, and build setup details.
 
 ## Stances
 
@@ -205,7 +205,7 @@ hooks. Claude Code does not consume the VS Code instruction format. These are
 visible host capability boundaries, not alternate definitions of the shared
 resources.
 
-See [docs/setup.md](docs/setup.md) for full configuration details, including model presets by provider and tool group reference.
+See [docs/setup.md](https://github.com/wycats/vscode-ai-plugin/blob/main/docs/setup.md) for full configuration details, including model presets by provider and tool group reference.
 
 ## Development
 
