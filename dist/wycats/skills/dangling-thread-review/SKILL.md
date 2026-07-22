@@ -17,7 +17,7 @@ user's situated judgment determines whether a thread remains live. Use
 
 1. **Read the conversation thoroughly.** Not a skim. The threads you're looking for are the ones that are easy to miss — the offhand remark, the idea that got overtaken, the tension that was named and never resolved.
 
-2. **Build the coherent account first** (interpretive synthesis), **then read for what it left out** (gap reading). You need the narrative of what happened in order to see what the narrative doesn't explain.
+2. **Build the coherent account first** (**interpretive-synthesis**), **then read for what it left out** (**gap-reading**). You need the narrative of what happened in order to see what the narrative doesn't explain.
 
 3. **Categorize what you find.** Not all dangling threads are equal:
    - Threads the user explicitly deferred ("let's come back to this")
@@ -25,7 +25,7 @@ user's situated judgment determines whether a thread remains live. Use
    - Ideas that surfaced without anyone recognizing their significance
    - Material the work itself produced incidentally (fragments, asides, half-formed connections)
 
-4. **Present what you found and collaborate.** The user has situated knowledge about which threads are still live. Some of what you find will have been silently resolved. Some will turn out to be important. Use diagnostic questioning to check: "I noticed you mentioned X early on and we never came back to it — is that something that matters, or was it superseded?"
+4. **Present what you found and collaborate.** The user has situated knowledge about which threads are still live. Some of what you find will have been silently resolved. Some will turn out to be important. Use **diagnostic-questioning** to check: "I noticed you mentioned X early on and we never came back to it — is that something that matters, or was it superseded?"
 
 ## When to use
 
