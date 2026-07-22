@@ -26,6 +26,35 @@ A stance is not a topic, a format, or a persona. It's a set of relationships bet
 
 Cross-domain examples are the mechanism that makes a stance precise. Each example carries the relational structure into a different domain. The model reads the examples and triangulates: the overlap between them is the relational structure. The differences between them exclude nearby attractors. Three examples that share only the intended structure, drawn from unrelated domains, define a specific region of the probability landscape more precisely than any description could.
 
+## Invariants and situated projections
+
+A stance is a canonical articulation of a stable relational invariant. Its
+cross-domain examples are situated projections: each changes the visible
+subject while preserving the relationships that matter. Their overlap makes
+the invariant legible.
+
+The same shape continues outward. A skill composes one or more invariants into
+a workflow. An agent crystallizes them into a cognitive mode. Project and
+session artifacts carry them across timescales. Runtime packaging presents
+them through the discovery and execution surfaces a particular host provides.
+
+**Coherence preserves a stable relational structure across situated
+projections. The canonical articulation governs changes to that structure;
+projections adapt it to a task, timescale, or runtime without becoming a
+competing source of meaning.**
+
+Canonical describes authority to revise, not a ban on repetition. A compact
+restatement can reinforce the same well in a workflow or handoff. It becomes a
+problem when the restatement can evolve independently and silently change the
+relationships the canonical articulation established.
+
+Because exact language reshapes the probability landscape, projection is not
+license to paraphrase freely. Preserve the authoritative language when a host
+can carry it directly. When a runtime requires a different envelope, name, or
+location, adapt that envelope. When it cannot express a capability, make the
+loss visible. When the semantics themselves need to differ, revise the
+canonical articulation or introduce an explicit variant.
+
 ## How stances compose
 
 ### Reinforcement

@@ -13,7 +13,11 @@ This is the most thorough transition protocol. It includes everything `session-r
 - **Cross-session patterns** — what's been building across multiple sessions?
 - **Anticipatory framing** — what should tomorrow's first session be set up for?
 
-**Stances used:** Load the **interpretive-synthesis**, **diagnostic-questioning**, **socratic-elicitation**, and **relational-continuity** stances.
+**Stance composition:** Inherit `session-rest`'s phase-specific composition.
+For the close-specific reflection and framing, use
+**interpretive-synthesis** to read cross-session patterns,
+**diagnostic-questioning** with **socratic-elicitation** to reflect with the
+user, and **relational-continuity** to prepare tomorrow's starting point.
 
 ## Phases 1–5: Same as session-rest
 

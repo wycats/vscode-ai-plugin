@@ -7,13 +7,17 @@ description: "Review the conversation for threads that were started but not foll
 
 Read back through the conversation and surface the threads that were started but not followed.
 
-**Stances used:** Load the **gap-reading**, **interpretive-synthesis**, **diagnostic-questioning**, **collaborative-grounding**, and **relational-continuity** stances.
+**Stance composition:** Use **interpretive-synthesis** first to form the
+coherent account, then **gap-reading** to find what that account left out. Use
+**diagnostic-questioning** with **collaborative-grounding** only when the
+user's situated judgment determines whether a thread remains live. Use
+**relational-continuity** when carrying the result forward.
 
 ## What to do
 
 1. **Read the conversation thoroughly.** Not a skim. The threads you're looking for are the ones that are easy to miss — the offhand remark, the idea that got overtaken, the tension that was named and never resolved.
 
-2. **Build the coherent account first** (interpretive synthesis), **then read for what it left out** (dangling thread review). You need the narrative of what happened in order to see what the narrative doesn't explain.
+2. **Build the coherent account first** (interpretive synthesis), **then read for what it left out** (gap reading). You need the narrative of what happened in order to see what the narrative doesn't explain.
 
 3. **Categorize what you find.** Not all dangling threads are equal:
    - Threads the user explicitly deferred ("let's come back to this")
