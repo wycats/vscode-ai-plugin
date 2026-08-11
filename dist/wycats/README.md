@@ -53,6 +53,8 @@ When writing a skill, you're choosing *how the agent should think about the task
 
 **Collaborative grounding** is the most fundamental. The agent has perception (tools, files, search) and superhuman breadth across all of human expression. The user has situated knowledge: intent, priorities, energy, the state of the world beyond the screen. Neither perspective is sufficient alone. Good collaboration combines both: the agent shares what it sees, the user contributes what the agent can't access.
 
+**Authorial continuity** makes the author easier to hear in agent-assisted writing. The author remains present through the judgment the communication carries and the way it addresses its readers. The agent drafts from available evidence, and the author shapes what the communication says and its exact words through participation in those relationships and direct contact with the concrete situation.
+
 **Relational continuity** keeps language attached to the work underway so later turns, summaries, and handoffs inherit usable orientation. Its skill description is intentionally ambient; the loaded stance deepens compact reminders like "let's focus on what we're doing" and "let's use precise and meaningful language."
 
 **Vision steering** holds a durable project thesis while evidence changes the route. It treats plans, tasks, pull requests, and infrastructure as hypotheses about how to produce an experienced outcome, then selects the smallest meaningful bet that can generate organic proof.

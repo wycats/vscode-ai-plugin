@@ -1,92 +1,127 @@
 ---
 name: gh-write-pr-description
-description: "Use when drafting, updating, or reviewing a GitHub pull request title or body, including PR creation flows that need reviewer-facing prose. Follow the repo PR template when present, preserve the user's or project's voice, and route validation/session details to the right surface."
+description: "Use when drafting, updating, or reviewing a GitHub pull request title or body. Build the reviewer's intuition for the change, preserve the author's judgment and relationship with the readers, follow the repository template, and keep evidence at the strength it supports."
 ---
 
 # GH Write PR Description
 
-A PR description is a reviewer-facing change story, not a session report. It
-should help a reviewer understand why the PR exists, what changed at the
-product or maintainer level, and what deserves attention. The repo template
-supplies form. The user and project supply voice. Local execution details
-belong only when they change how the reviewer should read the PR.
+Carry the reasoning behind a change into review. Build the reviewer's intuition
+for why the change exists, then explain how it works, what changes for users or
+maintainers, and where its limits are.
+
+Keep the author present through the judgment the description carries and the
+way it addresses its readers.
+
+This skill has three phases: recover the change's reasoning and the author's
+position, draft and revise a coherent PR description with the author, then
+evaluate the finished artifact from the reader's side.
+
+**Stances used:** Keep **authorial-continuity** active throughout. It always
+relies on **collaborative-grounding**. Use **interpretive-synthesis** during
+recovery and **relational-continuity** during drafting. Add
+**public-design-reasoning** when the change needs a durable design explanation.
+During evaluation, use **gap-reading** for material the description may have
+left out and **observational-grounding** when evidence from different surfaces
+conflicts or may not describe the same phenomenon.
 
 ## Core tension
 
-The tension is reviewer story vs. local execution log.
+The reviewer needs enough context to build the right intuition, while every
+additional sentence competes for their attention.
 
-Agents often drift toward completion reports because the recent context is full
-of files changed, commands run, and checks performed. That information can be
-real without belonging in the PR body. Write for the person reviewing the PR,
-not for the agent proving that it worked.
+Working context accumulates commands, file inventories, false starts, private
+shorthand, design discoveries, and evidence. Carry forward the history that
+makes the decision intelligible and the evidence that shapes reviewer
+confidence. Keep the rest in its useful working context.
 
-Hold five concerns together:
+Framing belongs to the whole description. An accurate detail can still weaken
+it by competing with the central idea. Let complexity determine the length.
+Each part earns its place by helping the reviewer understand or evaluate the
+change.
 
-- **Template fidelity**: inspect the repository's PR template and inhabit its
-  sections instead of inventing a generic body.
-- **Reviewer-facing story**: explain motivation, user or maintainer impact,
-  approach, tradeoffs, and review focus.
-- **Voice preservation**: match the user's and project's tone: density,
-  directness, vocabulary, and appetite for detail.
-- **Evidence routing**: keep validation evidence where reviewers expect it:
-  CI, comments, follow-up discussion, or the chat closeout, unless the template
-  asks for it or the result is itself review-relevant.
-- **Relational continuity**: load **relational-continuity** to keep the PR
-  language attached to the review story the change actually supports.
+## Phase 1: Recover the reasoning
 
-## Workflow
+Read the repository's PR template first. Keep its headings and make each
+section do the work it promises the reviewer. If no template exists, use the
+smallest useful reviewer-facing structure, usually `Why`, `What changed`, and
+`Reviewer focus`.
 
-1. Find the template.
-   - Check common locations such as `.github/pull_request_template.md`,
-     `.github/PULL_REQUEST_TEMPLATE.md`, `.github/PULL_REQUEST_TEMPLATE/*.md`,
-     `docs/pull_request_template.md`, `pull_request_template.md`, and
-     `PULL_REQUEST_TEMPLATE.md`.
-   - If a template exists, preserve its headings and omit optional sections
-     that carry no signal.
-   - If no template exists, use a small reviewer-facing structure: `Why`,
-     `What changed`, and `Reviewer focus` when useful.
+Inspect the issue or request, the diff and relevant code, the surrounding
+design, the evidence, and the parts of task history that explain the change.
+Use **interpretive-synthesis** to recover reasoning in which the details and
+the whole agree. When the material supports it, make this path visible:
 
-2. Calibrate the voice.
-   - Prefer the current user's phrasing and the repo's template comments.
-   - If useful and cheap, inspect one or two recent merged PR descriptions for
-     tone and section density.
-   - Keep the body compatible with the template even when matching the user's
-     style.
+```text
+situation or force -> observation -> author's judgment -> change -> consequence
+```
 
-3. Draft the body.
-   - Put `Why` first, or directly under the template's summary when that is the
-     established shape.
-   - Describe the change at the level a reviewer needs: behavior, design,
-     user-facing effect, or maintenance impact.
-   - Include implementation notes only when the approach, tradeoff, risk, or
-     non-obvious constraint matters for review.
-   - Include reviewer focus only when there is a concrete decision, risk, or
-     intentionally deferred follow-up.
+Preserve the design and learning history that makes the decision
+understandable. Give private shorthand its meaning before asking the reviewer
+to use it.
 
-4. Route validation evidence.
-   - Mention validation in the PR body only when the template asks for it, the
-     PR's risk makes the evidence part of the review story, or the reviewer
-     needs a specific result to understand confidence.
-   - If the template has a `Testing`, `Validation`, or similar section, fill it
-     with the reviewer-relevant signal rather than an exhaustive command log.
-   - Otherwise leave local command lists for chat closeout, CI, PR comments, or
-     reviewer discussion.
+Use the current conversation and sources close to the PR to understand what the
+author wants to say to its readers in this concrete situation. Keep user,
+agent, and third-party language distinguishable while forming the description.
 
-5. Do a final pass for session-report drift.
-   - Remove mechanical file inventories unless the template calls for them.
-   - Remove agent process narration.
-   - Remove local validation boilerplate that does not change review.
-   - Keep specific risks, constraints, and reviewer questions.
+## Phase 2: Draft with the author for the reviewer
 
-## Practical notes
+Write the title so the intended reviewer can understand the concrete change
+before reading the body. Prefer ordinary behavior words. Use project terms that
+already carry shared meaning for this audience. Let the title establish the
+same change the body and evidence will explain.
 
-A good PR body can be short. If the change is straightforward, the template may
-only need `Why` and one concrete user-facing or maintainer-facing change.
+Use `Why` to build the reader's intuition. Begin with the situation that made
+the change necessary. Show what the author learned and why this change is the
+right response. Explain enough that the implementation feels like a consequence
+of the reasoning.
 
-If the user asks for a body in their own style, preserve their cadence and
-emphasis while still fitting the repository's template. Voice matching should
-not flatten the user's intent into generic release-note prose.
+Use the remaining template sections to:
 
-If a publishing skill also runs checks before opening the PR, treat that as
-execution evidence for the chat result. Copy it into the PR body only when it is
-part of the reviewer story.
+- Describe behavior and mechanism at the level needed to review the change.
+- Put risks, tradeoffs, constraints, deferred work, and concrete review
+  questions where they can guide attention.
+- Describe user-facing changes in terms of the experience before and after the
+  change. When the PR includes visual evidence such as a side-by-side video,
+  use the same terms for the improvement in the title, body, and artifact.
+- State evidence at the strength it supports. Include limitations when they
+  change what a reviewer can conclude. Keep exhaustive command logs in CI
+  output, comments, or the task closeout. Bring a result into the PR body when
+  it matters to review.
+
+Let the material determine the structure. Put a draft in front of the author
+early, then work on the actual words together:
+
+```text
+repeat:
+  1. Put the current title and body in front of the author.
+  2. Revise what the description says and the actual words together so it
+     carries the author's judgment in language they would use with these
+     readers in this concrete situation.
+until the author is ready to read the description from the reader's side
+```
+
+## Phase 3: Read it from the other side
+
+Read the completed description as a reviewer who did not participate in the
+work. It should give them an intuition they can use: why the change exists, why
+it takes this form, and what matters when they encounter an unfamiliar detail.
+
+Look for breaks in the account. The title, body, evidence, and visual artifacts
+should describe the same change. The reviewer should be able to distinguish
+what was observed from what the author concluded, understand how strongly the
+evidence supports that conclusion, and see where confidence ends. When evidence
+comes from different surfaces, establish that it bears on the same behavior
+before combining it into one claim.
+
+Return to the working material and look for anything the coherent description
+left out that would change the review: a live tradeoff, limitation, deferred
+piece of work, or decision the reviewer needs to make.
+
+Read it again as a communication from this author to these readers. The
+language should carry the author's judgment and fit the relationships and
+current context around the review.
+
+Run the slop-linter as a separate evaluator when available. Use its findings to
+remove filler and identify missing substance. Bring any resulting revisions
+back through the author before publication, then read the description again as
+a whole.
