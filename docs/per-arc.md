@@ -93,10 +93,12 @@ This preserves the generation/evaluation separation that makes PER useful:
 - live tensions mark places where neither side is enough without the user's situated judgment
 
 The dashboard keeps these categories distinct. A hypothesis is not evidence. A
-divergence is not automatically a problem. Implementation validation is not
-organic proof unless that validation experience is itself the experienced
-outcome. Review records whether proof arrived and whether the next steering
-signal was reached.
+divergence is not automatically a problem. Implementation validation does not
+establish Organic proof unless that validation experience is itself the
+experienced outcome. Review records whether the cycle produced the current
+bet's Organic proof, strengthened or qualified a necessary path toward that
+proof, or left that proof pending, and whether the next steering signal was
+reached.
 
 While the bet remains active, a local divergence changes its implementation
 route or immediate gate. When the named signal arrives, relationship-breaking
@@ -117,20 +119,23 @@ properties on which the claim depends, and make each necessary qualification a
 bounded experiment. The qualifying work stays in service of the capability
 claim rather than expanding into a general substrate-readiness project.
 
-Name the next effect boundary before crossing it. A launch, mutation, spend, or
-external communication changes what the experiment can affect and what its
-result can establish. Crossing one boundary at a time keeps the evidence
-attributable to a specific attempt and makes retry semantics explicit at the
-point where they matter.
+Within the Immediate gate, name the next effect boundary before crossing it. A
+launch, mutation, spend, or external communication changes what the experiment
+can affect and what its result can establish. Crossing one boundary at a time
+keeps the evidence attributable to a specific attempt and makes retry semantics
+explicit at the point where they matter.
 
-The arc carries three evidence layers forward:
+The arc carries attempt disposition for every result and, when evidence exists,
+its evidence layer. It keeps the dimensions separate:
 
-- **Capability evidence** observes the claimed behavior through its intended
-  path.
-- **Substrate evidence** qualifies a property of that path on which the claim
-  depends.
-- A **precondition miss** records waiting or failure before the next effect
-  boundary, so it does not become evidence for or against the capability.
+- **Evidence layer:** capability, substrate, or both.
+- **Attempt disposition:** effect boundary crossed, or precondition miss before
+  the boundary.
+
+**Capability evidence** directly bears on the claimed behavior. **Substrate
+evidence** qualifies a dependency of the observation path. A **precondition
+miss** means the required effect boundary was not crossed. It provides no
+capability evidence but may provide substrate evidence.
 
 When the substrate repeatedly diverges from the hypothesis, that divergence
 becomes its own bounded qualification cycle. Once the dependency is qualified,
@@ -187,8 +192,9 @@ The active prediction or intended move. This is generative material: what the ag
 ### Evidence
 
 Observable facts gathered so far: files inspected, commands run, test results,
-review findings, or concrete behavior seen in ordinary use. Record
-implementation validation separately from organic proof.
+review findings, or concrete behavior seen in ordinary use. Preserve both
+evidence layer and attempt disposition when they matter, and record
+implementation validation separately from Organic proof.
 
 ### Divergences
 
