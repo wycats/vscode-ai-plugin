@@ -93,10 +93,11 @@ This preserves the generation/evaluation separation that makes PER useful:
 - live tensions mark places where neither side is enough without the user's situated judgment
 
 The dashboard keeps these categories distinct. A hypothesis is not evidence. A
-divergence is not automatically a problem. Implementation validation is not
-organic proof unless that validation experience is itself the experienced
-outcome. Review records whether proof arrived and whether the next steering
-signal was reached.
+divergence is not automatically a problem. Implementation validation is
+distinct from Organic proof unless that validation experience is itself the
+experienced outcome. Review records whether the cycle produced the current
+bet's Organic proof, strengthened or qualified a necessary path toward it, or
+left it pending, and whether the next steering signal was reached.
 
 While the bet remains active, a local divergence changes its implementation
 route or immediate gate. When the named signal arrives, relationship-breaking
@@ -123,14 +124,16 @@ result can establish. Crossing one boundary at a time keeps the evidence
 attributable to a specific attempt and makes retry semantics explicit at the
 point where they matter.
 
-The arc carries three evidence layers forward:
+The arc carries results forward along two independent dimensions:
 
-- **Capability evidence** observes the claimed behavior through its intended
-  path.
-- **Substrate evidence** qualifies a property of that path on which the claim
-  depends.
-- A **precondition miss** records waiting or failure before the next effect
-  boundary, so it does not become evidence for or against the capability.
+- **Observation subject:** capability (the claimed behavior reached through its
+  intended path), substrate (a depended-on property of that path), both, or
+  neither.
+- **Attempt disposition:** effect boundary crossed, or precondition miss before
+  the boundary.
+
+A precondition miss can still produce substrate evidence without becoming a
+capability or product attempt.
 
 When the substrate repeatedly diverges from the hypothesis, that divergence
 becomes its own bounded qualification cycle. Once the dependency is qualified,
