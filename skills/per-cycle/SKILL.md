@@ -49,6 +49,17 @@ Keep valuable longer arcs and their return signals on the steering or
 coordination surface. They should remain visible without entering phase prompts
 and competing with the current bet.
 
+## The shortest honest evidence path
+
+A cycle chooses the smallest experiment that can honestly support its claim.
+The observation path is part of the hypothesis: prepare predicts both the
+capability result and how execute will reach and observe it.
+
+The tension is **evidence sufficiency vs. path expansion**. Qualify only the
+substrate properties on which the claim depends. Each added qualification earns
+its place by making the result more interpretable and stays bounded to the
+depended-on property.
+
 ## The arc
 
 ### Prepare: form the hypothesis
@@ -61,6 +72,16 @@ current bet remain the purpose boundary; prepare forms its predictions within
 them.
 
 What comes back is a pre-execution hypothesis: specific, falsifiable predictions organized by confidence and consequence. The most valuable predictions are the ones where being wrong would change the approach.
+
+The hypothesis also gives the experiment five anchors:
+
+- **Claim:** the bounded conclusion the result could support.
+- **Organic proof:** what ordinary use would reveal if the claim holds.
+- **Capability assumptions:** what the behavior itself is expected to do.
+- **Substrate assumptions:** what the observation path must provide for the
+  attempt to reach that behavior.
+- **Next effect boundary:** the next launch, mutation, spend, external
+  communication, or other consequential step the experiment may cross.
 
 Before proceeding: check whether the high-consequence predictions are grounded in evidence (file paths that exist, symbols that are real, assumptions verified against the workspace). If a critical prediction is unverified or vague, send it back to prepare with what's missing. The hypothesis needs to be specific enough that execute can test it and review can evaluate it.
 
@@ -77,6 +98,11 @@ outcome; or the user revises project purpose or experienced outcome. Then
 
 What comes back is changed files, executed commands, and an honest account of what happened — including where prepare's predictions were wrong and where reality surprised.
 
+Execute crosses one named effect boundary at a time and reports which boundary
+it crossed. At that boundary, declare whether and how a precondition miss will
+be retried. Waiting or failure before the boundary remains a precondition miss;
+it does not silently become a product attempt.
+
 Before proceeding: spot-check the account against the workspace. Did the reported changes actually happen? Are the reported test results consistent with what the commands would produce? Execute maintains contact with reality, but the coordinating agent verifies that the reporting is accurate too.
 
 ### Review: evaluate the hypothesis
@@ -89,6 +115,16 @@ its experienced outcome.
 What comes back is a calibration report: what matched, what diverged, what the
 divergences mean, and whether the immediate result and the current bet's route
 warrant confidence.
+
+Review classifies each result before judging what it means for the claim:
+
+- **Capability evidence** directly bears on the claimed behavior.
+- **Substrate evidence** qualifies a dependency of the observation path.
+- A **precondition miss** means the attempt did not cross the effect boundary
+  needed to test the capability.
+
+The classification keeps evidence about the observation path distinct from
+evidence about the capability reached through it.
 
 The report also names the evidence the cycle produced for the selected bet:
 whether organic proof arrived, which assumption changed, and whether the next
@@ -111,6 +147,11 @@ The cycle is not always linear. Reality creates branches.
 **Prepare discovers something that blocks the plan.** The prediction is: "this won't work as described." Don't proceed to execute. Resolve the blocker in conversation with the user, then re-enter prepare with the revised understanding.
 
 **Execute encounters something prepare didn't predict.** The mismatch between prediction and reality is itself a finding. Execute surfaces it rather than absorbing it. If the mismatch changes the approach, return to prepare. If it's local and manageable, execute continues and documents the divergence for review.
+
+**The substrate repeatedly diverges from the hypothesis.** Return to prepare
+and make the depended-on substrate property its own bounded qualification
+cycle. Carry its result back into the capability experiment instead of
+accumulating local patches along the observation path.
 
 **Review finds a consequential problem.** When the problem remains inside the
 current bet, it becomes a new bounded task. Re-enter execute with the specific
