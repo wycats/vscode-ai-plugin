@@ -99,9 +99,9 @@ outcome; or the user revises project purpose or experienced outcome. Then
 
 What comes back is changed files, executed commands, and an honest account of what happened — including where prepare's predictions were wrong and where reality surprised.
 
-Execute crosses one named effect boundary at a time and reports whether it
-crossed. It also declares whether and how any waiting or failure before the
-boundary will be retried.
+Execute crosses one named effect boundary at a time and reports which boundary
+and whether it crossed. It also declares whether and how any precondition miss
+before the boundary will be retried.
 
 Before proceeding: spot-check the account against the workspace. Did the reported changes actually happen? Are the reported test results consistent with what the commands would produce? Execute maintains contact with reality, but the coordinating agent verifies that the reporting is accurate too.
 

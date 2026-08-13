@@ -93,8 +93,8 @@ This preserves the generation/evaluation separation that makes PER useful:
 - live tensions mark places where neither side is enough without the user's situated judgment
 
 The dashboard keeps these categories distinct. A hypothesis is not evidence. A
-divergence is not automatically a problem. Implementation validation is
-distinct from Organic proof unless that validation experience is itself the
+divergence is not automatically a problem. Implementation validation does not
+establish Organic proof unless that validation experience is itself the
 experienced outcome. Review records whether the cycle produced the current
 bet's Organic proof, strengthened or qualified a necessary path toward it, or
 left it pending, and whether the next steering signal was reached.
