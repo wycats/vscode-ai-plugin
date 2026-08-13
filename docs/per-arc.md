@@ -118,11 +118,11 @@ properties on which the claim depends, and make each necessary qualification a
 bounded experiment. The qualifying work stays in service of the capability
 claim rather than expanding into a general substrate-readiness project.
 
-Name the next effect boundary before crossing it. A launch, mutation, spend, or
-external communication changes what the experiment can affect and what its
-result can establish. Crossing one boundary at a time keeps the evidence
-attributable to a specific attempt and makes retry semantics explicit at the
-point where they matter.
+Within the Immediate gate, name the next effect boundary before crossing it. A
+launch, mutation, spend, or external communication changes what the experiment
+can affect and what its result can establish. Crossing one boundary at a time
+keeps the evidence attributable to a specific attempt and makes retry semantics
+explicit at the point where they matter.
 
 The arc carries results forward along two independent dimensions:
 
@@ -190,8 +190,9 @@ The active prediction or intended move. This is generative material: what the ag
 ### Evidence
 
 Observable facts gathered so far: files inspected, commands run, test results,
-review findings, or concrete behavior seen in ordinary use. Record
-implementation validation separately from organic proof.
+review findings, or concrete behavior seen in ordinary use. Preserve both
+observation subject and attempt disposition when they matter, and record
+implementation validation separately from Organic proof.
 
 ### Divergences
 

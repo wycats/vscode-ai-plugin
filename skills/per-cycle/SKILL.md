@@ -81,8 +81,9 @@ The hypothesis also gives the experiment five anchors:
 - **Capability assumptions:** what the behavior itself is expected to do.
 - **Substrate assumptions:** what the observation path must provide for the
   attempt to reach that behavior.
-- **Next effect boundary:** the next launch, mutation, spend, external
-  communication, or other consequential step the experiment may cross.
+- **Next effect boundary:** the next consequential transition inside the
+  Immediate gate that the experiment may cross, such as a launch, mutation,
+  spend, or external communication.
 
 Before proceeding: check whether the high-consequence predictions are grounded in evidence (file paths that exist, symbols that are real, assumptions verified against the workspace). If a critical prediction is unverified or vague, send it back to prepare with what's missing. The hypothesis needs to be specific enough that execute can test it and review can evaluate it.
 
@@ -99,9 +100,9 @@ outcome; or the user revises project purpose or experienced outcome. Then
 
 What comes back is changed files, executed commands, and an honest account of what happened — including where prepare's predictions were wrong and where reality surprised.
 
-Execute crosses one named effect boundary at a time and reports which boundary
-and whether it crossed. It also declares whether and how any precondition miss
-before the boundary will be retried.
+Execute attempts one named effect boundary at a time and reports which boundary
+it attempted and whether it crossed it. It also declares whether and how any
+precondition miss before the boundary will be retried.
 
 Before proceeding: spot-check the account against the workspace. Did the reported changes actually happen? Are the reported test results consistent with what the commands would produce? Execute maintains contact with reality, but the coordinating agent verifies that the reporting is accurate too.
 
