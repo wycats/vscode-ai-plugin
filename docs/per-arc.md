@@ -103,6 +103,40 @@ route or immediate gate. When the named signal arrives, relationship-breaking
 evidence appears, or the user revises project purpose, the arc returns its
 evidence to `/steer-by-vision` rather than choosing the next project move.
 
+## The shortest honest evidence path
+
+Acceptance work stays attached to the current bet by choosing the smallest
+experiment that can honestly support its claim. The observation path is part of
+the hypothesis: the arc records not only what capability should become visible,
+but also how the experiment will reach and observe it.
+
+The tension is **evidence sufficiency vs. path expansion**. An observation path
+often depends on a launcher, environment, account, fixture, or service. Each
+dependency can invite broader qualification work. Qualify only the substrate
+properties on which the claim depends, and make each necessary qualification a
+bounded experiment. The qualifying work stays in service of the capability
+claim rather than expanding into a general substrate-readiness project.
+
+Name the next effect boundary before crossing it. A launch, mutation, spend, or
+external communication changes what the experiment can affect and what its
+result can establish. Crossing one boundary at a time keeps the evidence
+attributable to a specific attempt and makes retry semantics explicit at the
+point where they matter.
+
+The arc carries three evidence layers forward:
+
+- **Capability evidence** observes the claimed behavior through its intended
+  path.
+- **Substrate evidence** qualifies a property of that path on which the claim
+  depends.
+- A **precondition miss** records waiting or failure before the next effect
+  boundary, so it does not become evidence for or against the capability.
+
+When the substrate repeatedly diverges from the hypothesis, that divergence
+becomes its own bounded qualification cycle. Once the dependency is qualified,
+the arc returns to the capability experiment with a shorter, better-grounded
+observation path.
+
 ## Relationship to session lifecycle skills
 
 The session lifecycle skills preserve context across time. The PER arc preserves
