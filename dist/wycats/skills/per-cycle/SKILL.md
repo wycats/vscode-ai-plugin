@@ -76,8 +76,8 @@ What comes back is a pre-execution hypothesis: specific, falsifiable predictions
 The hypothesis also gives the experiment five anchors:
 
 - **Claim:** the bounded conclusion the result could support.
-- **Proof relationship:** how this claim would produce the current bet's
-  Organic proof, qualify a necessary path toward it, or leave it pending.
+- **Relationship to Organic proof:** how this claim would produce the current
+  bet's Organic proof, qualify a necessary path toward it, or leave it pending.
 - **Capability assumptions:** what the behavior itself is expected to do.
 - **Substrate assumptions:** what the observation path must provide for the
   attempt to reach that behavior.
@@ -117,16 +117,17 @@ What comes back is a calibration report: what matched, what diverged, what the
 divergences mean, and whether the immediate result and the current bet's route
 warrant confidence.
 
-Review records each result along two independent dimensions before judging what
-it means for the claim:
+Review records evidence and attempt disposition independently before judging
+what the result means for the claim:
 
-- **Observation subject:** capability (the claimed behavior), substrate (a
-  depended-on property of the observation path), both, or neither.
+- **Evidence layer:** capability, substrate, or both.
 - **Attempt disposition:** effect boundary crossed, or precondition miss before
   the boundary.
 
-A precondition miss can still produce substrate evidence without becoming a
-capability or product attempt.
+**Capability evidence** observes the claimed behavior through its intended
+path. **Substrate evidence** qualifies a depended-on property of that
+observation path. A **precondition miss** means the required boundary was not
+crossed. It provides no capability evidence but may provide substrate evidence.
 
 The report also records how the cycle's result bears on the selected bet:
 whether it produced the bet's Organic proof, strengthened or qualified a

@@ -124,16 +124,17 @@ can affect and what its result can establish. Crossing one boundary at a time
 keeps the evidence attributable to a specific attempt and makes retry semantics
 explicit at the point where they matter.
 
-The arc carries results forward along two independent dimensions:
+The arc carries evidence and attempt disposition forward as two independent
+dimensions:
 
-- **Observation subject:** capability (the claimed behavior reached through its
-  intended path), substrate (a depended-on property of that path), both, or
-  neither.
+- **Evidence layer:** capability, substrate, or both.
 - **Attempt disposition:** effect boundary crossed, or precondition miss before
   the boundary.
 
-A precondition miss can still produce substrate evidence without becoming a
-capability or product attempt.
+**Capability evidence** observes the claimed behavior through its intended
+path. **Substrate evidence** qualifies a depended-on property of that
+observation path. A **precondition miss** means the required boundary was not
+crossed. It provides no capability evidence but may provide substrate evidence.
 
 When the substrate repeatedly diverges from the hypothesis, that divergence
 becomes its own bounded qualification cycle. Once the dependency is qualified,
@@ -191,7 +192,7 @@ The active prediction or intended move. This is generative material: what the ag
 
 Observable facts gathered so far: files inspected, commands run, test results,
 review findings, or concrete behavior seen in ordinary use. Preserve both
-observation subject and attempt disposition when they matter, and record
+evidence layer and attempt disposition when they matter, and record
 implementation validation separately from Organic proof.
 
 ### Divergences
