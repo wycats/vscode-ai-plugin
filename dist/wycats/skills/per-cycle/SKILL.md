@@ -76,12 +76,15 @@ What comes back is a pre-execution hypothesis: specific, falsifiable predictions
 The hypothesis also gives the experiment five anchors:
 
 - **Claim:** the bounded conclusion the result could support.
-- **Organic proof:** what ordinary use would reveal if the claim holds.
+- **Relationship to Organic proof:** how this claim would produce the current
+  bet's Organic proof, qualify a necessary path toward that proof, or leave that
+  proof pending.
 - **Capability assumptions:** what the behavior itself is expected to do.
 - **Substrate assumptions:** what the observation path must provide for the
   attempt to reach that behavior.
-- **Next effect boundary:** the next launch, mutation, spend, external
-  communication, or other consequential step the experiment may cross.
+- **Next effect boundary:** the next consequential transition inside the
+  Immediate gate that the experiment may cross, such as a launch, mutation,
+  spend, or external communication.
 
 Before proceeding: check whether the high-consequence predictions are grounded in evidence (file paths that exist, symbols that are real, assumptions verified against the workspace). If a critical prediction is unverified or vague, send it back to prepare with what's missing. The hypothesis needs to be specific enough that execute can test it and review can evaluate it.
 
@@ -98,10 +101,9 @@ outcome; or the user revises project purpose or experienced outcome. Then
 
 What comes back is changed files, executed commands, and an honest account of what happened — including where prepare's predictions were wrong and where reality surprised.
 
-Execute crosses one named effect boundary at a time and reports which boundary
-it crossed. At that boundary, declare whether and how a precondition miss will
-be retried. Waiting or failure before the boundary remains a precondition miss;
-it does not silently become a product attempt.
+Execute attempts to cross one named effect boundary at a time, then reports the
+boundary and whether it was crossed. It also declares whether and how any
+precondition miss before the boundary will be retried.
 
 Before proceeding: spot-check the account against the workspace. Did the reported changes actually happen? Are the reported test results consistent with what the commands would produce? Execute maintains contact with reality, but the coordinating agent verifies that the reporting is accurate too.
 
@@ -116,27 +118,31 @@ What comes back is a calibration report: what matched, what diverged, what the
 divergences mean, and whether the immediate result and the current bet's route
 warrant confidence.
 
-Review classifies each result before judging what it means for the claim:
+Review records attempt disposition for every result and, when evidence exists,
+its evidence layer. It keeps the dimensions separate before judging what the
+result means for the claim:
 
-- **Capability evidence** directly bears on the claimed behavior.
-- **Substrate evidence** qualifies a dependency of the observation path.
-- A **precondition miss** means the attempt did not cross the effect boundary
-  needed to test the capability.
+- **Evidence layer:** capability, substrate, or both.
+- **Attempt disposition:** effect boundary crossed, or precondition miss before
+  the boundary.
 
-The classification keeps evidence about the observation path distinct from
-evidence about the capability reached through it.
+**Capability evidence** directly bears on the claimed behavior. **Substrate
+evidence** qualifies a dependency of the observation path. A **precondition
+miss** means the required effect boundary was not crossed. It provides no
+capability evidence but may provide substrate evidence.
 
-The report also names the evidence the cycle produced for the selected bet:
-whether organic proof arrived, which assumption changed, and whether the next
-steering signal has been reached. Keep implementation validation distinct from
-organic proof. Tests, checks, and PR readiness do not establish organic proof
-unless that release or maintenance experience is itself the experienced outcome
-being tested. When ordinary use was not observed, report **Implementation
-validated; organic proof pending**. Review surfaces a reached steering signal;
-it also surfaces relationship-breaking evidence — signs that the result no
-longer plausibly advances the experienced outcome — or an explicit user
-revision of project purpose or experienced outcome. Selection at that boundary
-belongs to **steer-by-vision**.
+The report also records how the cycle's result bears on the selected bet:
+whether it produced the bet's Organic proof, strengthened or qualified a
+necessary path toward that proof, or left that proof pending; which assumption
+changed; and whether the next steering signal has been reached. Keep implementation
+validation distinct from Organic proof. Tests, checks, and PR readiness do not
+establish Organic proof unless that release or maintenance experience is itself
+the experienced outcome being tested. When ordinary use was not observed,
+report **Implementation validated; Organic proof pending**. Review surfaces a
+reached steering signal; it also surfaces relationship-breaking evidence —
+signs that the result no longer plausibly advances the experienced outcome — or
+an explicit user revision of project purpose or experienced outcome. Selection
+at that boundary belongs to **steer-by-vision**.
 
 When the user wants a collaborative review rather than a one-shot report, use the `walkthrough` skill to conduct the review phase interactively — examining the changes together, one chunk at a time.
 
