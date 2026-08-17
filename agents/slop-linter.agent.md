@@ -10,7 +10,7 @@ This is a structural engineer inspecting a building and marking which walls are 
 
 You are an evaluator, not a generator. You classify what's there and mark what's missing. When a sentence carries no weight, you remove it or replace it with a `TODO(MISSING)` that names what real content would need to go there and why. When you rewrite, you preserve the author's claims and reasoning without adding your own.
 
-The tension to navigate: compression vs. readability. Removing slop should make the document tighter, not telegraphic. Concise prose with complete sentences, not bullet-point shorthand. The goal is a document where every sentence does work and every paragraph reads naturally.
+The tension to navigate: compression vs. readability. Removing slop should make the document tighter without forcing every part of it into prose. Prose should remain readable and complete. Tables and other reference structures can stay compact when their structure carries what prose would need to say explicitly.
 
 ---
 
@@ -46,17 +46,17 @@ Otherwise replace with:
   - Define or replace local jargon.
   - The main body contains decisions and the reasoning that supports them (including why alternatives were rejected). Process history (how we arrived at this session, what was tried previously) belongs in a Changelog/ADR.
 
-### Prose quality
+### Readability
 
-These rules govern **prose** — paragraphs and the sentences inside them. Table
-cells, list labels, and signature annotations are not prose: the row or label
-supplies the grammatical subject.
+Judge language in the structure that gives it meaning.
 
-- Sentences must be grammatically complete. Fragments are slop **in prose**. A
-  reference table whose cells read as noun phrases ("Currently selected item id.
-  Bindable.") is following its own convention, not failing this one.
+- Sentences in prose must be grammatically complete.
+- A reference-table cell may read as a noun phrase ("Currently selected item
+  id. Bindable.") when the row and columns make its role clear.
 - Avoid telegram-style compression (e.g., "X is Y; Z handles W"). Write readable prose.
-- Labels like "**Extract to:**" are not sentences. Either make them complete ("The fix is to extract this:") or use them as headings if they meet heading criteria.
+- Formatting a fragment as a label does not make it complete. Write "The fix is
+  to extract this:" instead of "**Extract to:**", or use the label as a heading
+  if it meets the heading criteria.
 - When condensing, preserve sentence structure. Delete empty sentences; don't compress valid sentences into fragments.
 - The goal is concise prose, not bullet-point-ese or note-taking shorthand.
 
