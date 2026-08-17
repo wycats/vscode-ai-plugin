@@ -47,7 +47,13 @@ Otherwise replace with:
 
 ### Prose quality
 
-- Sentences must be grammatically complete. Fragments are slop.
+These rules govern **prose** — paragraphs and the sentences inside them. Table
+cells, list labels, and signature annotations are not prose: the row or label
+supplies the grammatical subject.
+
+- Sentences must be grammatically complete. Fragments are slop **in prose**. A
+  reference table whose cells read as noun phrases ("Currently selected item id.
+  Bindable.") is following its own convention, not failing this one.
 - Avoid telegram-style compression (e.g., "X is Y; Z handles W"). Write readable prose.
 - Labels like "**Extract to:**" are not sentences. Either make them complete ("The fix is to extract this:") or use them as headings if they meet heading criteria.
 - When condensing, preserve sentence structure. Delete empty sentences; don't compress valid sentences into fragments.
