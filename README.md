@@ -219,6 +219,8 @@ pnpm build:codex # Build the Codex target from the example config
 pnpm package-codex # Build an ignored local Codex marketplace
 pnpm validate  # Check discovered resources and plugin metadata
 pnpm check     # TypeScript + ESLint strict type-checked
+pnpm test:eval # Test evaluation fixtures, parsing, and grading without a model
+pnpm eval -- --target claude-code # Run behavioral evaluations through Claude Code
 ```
 
 Edit agents, skills, and stances in this directory. For VS Code, the watch script rebuilds `out/wycats/` on every change. All VS Code windows consume the installed plugin.

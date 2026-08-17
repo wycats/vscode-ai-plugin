@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "resource": {
+    "identity": "wycats-plugin:agents/slop-linter",
+    "name": "slop-linter",
+    "path": "agents/slop-linter.agent.md"
+  },
+  "description": "Distinguish prose defects from legitimate uses of similar forms.",
+  "cases": [
+    {
+      "id": "generic-opening",
+      "description": "A polished opening that contributes no claim or constraint.",
+      "document": "In today's rapidly evolving landscape, organizations must embrace innovation to stay ahead of the curve. This proposal adds structured result files to the evaluation runner.",
+      "expect": {
+        "requiredFindings": [
+          { "anyOf": ["Generic claims", "Rhetorical framing"] }
+        ],
+        "rewriteIncludes": ["structured result files"]
+      }
+    },
+    {
+      "id": "concrete-opening",
+      "description": "A direct opening whose details establish the change.",
+      "document": "The evaluation runner writes one JSON result per run. Each result records the target, source revision, raw response, and grade.",
+      "expect": {
+        "maximumFindings": 0
+      }
+    },
+    {
+      "id": "empty-contrast",
+      "description": "A contrast that gives the preferred option no additional meaning.",
+      "document": "This is not just a validation script; it is a foundation for confidence. The command runs the configured cases.",
+      "expect": {
+        "requiredFindings": [
+          { "anyOf": ["Empty contrast"] }
+        ],
+        "rewriteIncludes": ["runs the configured cases"]
+      }
+    },
+    {
+      "id": "contractual-contrast",
+      "description": "A contrast that defines opposite sides of a contract.",
+      "document": "The upload endpoint accepts PNG and JPEG images and rejects executable files. Rejected files never reach object storage.",
+      "expect": {
+        "maximumFindings": 0
+      }
+    },
+    {
+      "id": "ornamental-triad",
+      "description": "A three-part list whose terms do not establish testable properties.",
+      "document": "The new harness is robust, scalable, and future-proof. It runs evaluation cases from a JSON file.",
+      "expect": {
+        "requiredFindings": [
+          { "anyOf": ["Ornamental triads", "Generic claims"] }
+        ],
+        "rewriteIncludes": ["runs evaluation cases from a JSON file"]
+      }
+    },
+    {
+      "id": "substantive-three-field-list",
+      "description": "Three fields that state the observable contents of an artifact.",
+      "document": "Each result records the target adapter, the canonical source revision, and every failed assertion. These fields let a reviewer reproduce and interpret the run.",
+      "expect": {
+        "maximumFindings": 0
+      }
+    },
+    {
+      "id": "reference-table-fragments",
+      "description": "Compact table cells that are complete within a reference structure.",
+      "document": "| Field | Meaning |\n| --- | --- |\n| target | Runtime adapter used for the case |\n| revision | Canonical source commit under evaluation |\n| failures | Assertions the response did not satisfy |",
+      "expect": {
+        "maximumFindings": 0
+      }
+    },
+    {
+      "id": "label-as-prose",
+      "description": "A label presented as though it were a sentence in running prose.",
+      "document": "The current module mixes parsing with process execution. **Extract to:** a target adapter. The runner should own case selection and grading.",
+      "expect": {
+        "requiredFindings": [
+          { "anyOf": ["Label-only pseudo-sentences"] }
+        ],
+        "rewriteIncludes": ["runner should own case selection and grading"]
+      }
+    }
+  ]
+}
