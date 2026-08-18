@@ -1,7 +1,7 @@
-import { ClaudeCodeAdapter } from "./claude-code.ts";
+import { ClaudeCodeCliAdapter } from "./claude-code.ts";
 import type { EvaluationAdapter } from "./adapter.ts";
 
-export function createAdapter(target: string, root: string): EvaluationAdapter {
-  if (target === "claude-code") return new ClaudeCodeAdapter(root);
-  throw new Error(`Unsupported evaluation target: ${target}.`);
+export function createAdapter(adapter: string, root: string): EvaluationAdapter {
+  if (adapter === "claude-code-cli") return new ClaudeCodeCliAdapter(root);
+  throw new Error(`Unsupported evaluation adapter: ${adapter}.`);
 }

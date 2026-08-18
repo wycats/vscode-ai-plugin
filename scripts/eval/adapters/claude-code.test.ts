@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ClaudeCodeAdapter } from "./claude-code.ts";
+import { ClaudeCodeCliAdapter } from "./claude-code.ts";
 import type { EvaluationSuite } from "../core.ts";
 
 const suite: EvaluationSuite = {
@@ -16,13 +16,16 @@ const suite: EvaluationSuite = {
       id: "example",
       description: "Example case",
       document: "Example document.",
-      expect: { maximumFindings: 0 },
+      expect: { rewriteEqualsInput: true },
     },
   ],
 };
 
 void test("adds only the Claude Code invocation envelope to a canonical request", () => {
-  const adapter = new ClaudeCodeAdapter("/tmp/example-plugin");
+  const adapter = new ClaudeCodeCliAdapter("/tmp/example-plugin");
+  assert.equal(adapter.id, "claude-code-cli");
+  assert.equal(adapter.target, "claude-code");
+  assert.equal(adapter.transport, "cli");
   const canonicalPrompt = "Canonical request";
   assert.equal(
     adapter.projectPrompt(suite, canonicalPrompt),

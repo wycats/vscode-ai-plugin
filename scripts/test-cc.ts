@@ -10,22 +10,23 @@
 import { execSync } from "node:child_process";
 import { readFile, writeFile, rm } from "node:fs/promises";
 import { join } from "node:path";
+import { findClaudeExecutable } from "./claude-executable.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
 const CC_OUT = join(ROOT, "out", "claude-code");
 const CONFIG_PATH = join(ROOT, "config.json");
 const CC_EXAMPLE = join(ROOT, "config.claude-code.example.json");
 
-// Find claude binary — proto doesn't shim it
-const CLAUDE =
-  execSync("which claude 2>/dev/null || find ~/.proto/tools/node -name claude -type f 2>/dev/null | head -1", {
-    encoding: "utf-8",
-  }).trim();
-
-if (!CLAUDE) {
-  console.error("Claude Code CLI not found. Install with: npm install -g @anthropic-ai/claude-code");
-  process.exit(1);
+function requireClaudeExecutable(): string {
+  const executable = findClaudeExecutable();
+  if (!executable) {
+    console.error("Claude Code CLI not found. Install with: npm install -g @anthropic-ai/claude-code");
+    process.exit(1);
+  }
+  return executable;
 }
+
+const CLAUDE = requireClaudeExecutable();
 
 const EXPECTED_AGENTS = [
   "execute",
