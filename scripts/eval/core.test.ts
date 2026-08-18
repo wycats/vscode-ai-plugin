@@ -62,9 +62,23 @@ void test("ties required findings to their expected passages", () => {
   });
   assert.equal(failure.passed, false);
   assert.deepEqual(failure.failures, [
+    "Unexpected finding on quote \"This changes everything.\".",
     "Unexpected finding on quote \"The report records the target.\".",
+    "Observed 2 findings; expected 1.",
     "Missing required finding on passage \"This changes everything.\" with one of these labels: Generic claims, Rhetorical framing.",
     "Rewritten document does not include: report records the target.",
+  ]);
+});
+
+void test("rejects duplicate and contradictory findings on an expected passage", () => {
+  const grade = gradeResponse(testCase, {
+    ...response,
+    findings: [response.findings[0], { ...response.findings[0], label: "Empty contrast" }],
+  });
+  assert.equal(grade.passed, false);
+  assert.deepEqual(grade.failures, [
+    "Unexpected finding on quote \"This changes everything.\".",
+    "Observed 2 findings; expected 1.",
   ]);
 });
 
@@ -129,7 +143,33 @@ void test("requires clean counterexamples to remain unchanged", () => {
   assert.equal(grade.passed, false);
   assert.deepEqual(grade.failures, [
     "Unexpected finding on quote \"The report records the target.\".",
+    "Observed 1 findings; expected 0.",
     "Rewritten document differs from the input.",
+  ]);
+});
+
+void test("allows a rewrite to delete the complete input", () => {
+  const parsed = parseEvaluationResponse(
+    JSON.stringify({ findings: response.findings, rewrittenDocument: "" }),
+  );
+  assert.equal(parsed.rewrittenDocument, "");
+});
+
+void test("requires a positive rewrite to remove the diagnosed defect", () => {
+  const removalCase: EvaluationCase = {
+    ...testCase,
+    expect: {
+      ...testCase.expect,
+      rewriteExcludes: ["This changes everything."],
+    },
+  };
+  const grade = gradeResponse(removalCase, {
+    ...response,
+    rewrittenDocument: testCase.document,
+  });
+  assert.equal(grade.passed, false);
+  assert.deepEqual(grade.failures, [
+    "Rewritten document still includes \"This changes everything.\".",
   ]);
 });
 

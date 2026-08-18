@@ -15,10 +15,11 @@ writing](https://en.wikipedia.org/w/index.php?title=Wikipedia:Signs_of_AI_writin
 can suggest cases, but each case needs to name the underlying prose failure and
 include a counterexample where the same surface feature is doing real work.
 
-A required finding names the passage it should diagnose. Findings on other
-passages fail the case. Add accepted labels when the classification itself is
-part of the contract; leave them out when the case is only about whether the
-passage receives a finding. `rewritePreserves` keeps an exact span unchanged
+A required finding names the exact passage it should diagnose, with one finding
+expected for each declared passage. Add accepted labels when the classification
+itself is part of the contract; leave them out when the case is only about
+whether the passage receives a finding. `rewriteExcludes` verifies that a
+diagnosed defect was removed. `rewritePreserves` keeps an exact span unchanged
 inside a larger rewrite, while `rewriteEqualsInput` protects a clean document
 as a whole.
 
