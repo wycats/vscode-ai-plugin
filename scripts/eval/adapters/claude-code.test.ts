@@ -32,3 +32,19 @@ void test("adds only the Claude Code invocation envelope to a canonical request"
     "Use the slop-linter agent from the loaded plugin for this task.\n\nCanonical request",
   );
 });
+
+void test("projects skills and stances through Claude Code's skill surface", () => {
+  const adapter = new ClaudeCodeCliAdapter("/tmp/example-plugin");
+  const stanceSuite: EvaluationSuite = {
+    ...suite,
+    resource: {
+      identity: "wycats-plugin:stances/relational-continuity",
+      name: "relational-continuity",
+      path: "stances/relational-continuity/SKILL.md",
+    },
+  };
+  assert.equal(
+    adapter.projectPrompt(stanceSuite, "Canonical request"),
+    "Use the relational-continuity skill from the loaded plugin for this task.\n\nCanonical request",
+  );
+});

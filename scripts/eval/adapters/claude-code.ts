@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { findClaudeExecutable } from "../../claude-executable.ts";
 import type { EvaluationSuite } from "../core.ts";
+import { canonicalResourceDescriptor } from "../resource.ts";
 import type { AdapterMetadata, AdapterObservation, EvaluationAdapter } from "./adapter.ts";
 
 export class ClaudeCodeCliAdapter implements EvaluationAdapter {
@@ -46,7 +47,9 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
   }
 
   projectPrompt(suite: EvaluationSuite, canonicalPrompt: string): string {
-    return `Use the ${suite.resource.name} agent from the loaded plugin for this task.\n\n${canonicalPrompt}`;
+    const descriptor = canonicalResourceDescriptor(suite.resource.path);
+    const invocationKind = descriptor.kind === "agent" ? "agent" : "skill";
+    return `Use the ${suite.resource.name} ${invocationKind} from the loaded plugin for this task.\n\n${canonicalPrompt}`;
   }
 
   execute(projectedPrompt: string): AdapterObservation {

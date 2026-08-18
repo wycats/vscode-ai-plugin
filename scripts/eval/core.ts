@@ -8,6 +8,7 @@ export interface RequiredFinding {
 export interface CaseExpectation {
   requiredFindings?: RequiredFinding[];
   rewriteIncludes?: string[];
+  rewriteExcludes?: string[];
   rewritePreserves?: string[];
   rewriteEqualsInput?: true;
 }
@@ -61,6 +62,13 @@ function requireString(value: unknown, path: string): string {
   return value;
 }
 
+function requireStringValue(value: unknown, path: string): string {
+  if (typeof value !== "string") {
+    throw new Error(`${path} must be a string.`);
+  }
+  return value;
+}
+
 function optionalStringArray(value: unknown, path: string): string[] | undefined {
   if (value === undefined) return undefined;
   if (!Array.isArray(value)) {
@@ -103,6 +111,7 @@ function parseExpectation(value: unknown, path: string): CaseExpectation {
   const expectation: CaseExpectation = {
     requiredFindings,
     rewriteIncludes: optionalStringArray(value.rewriteIncludes, `${path}.rewriteIncludes`),
+    rewriteExcludes: optionalStringArray(value.rewriteExcludes, `${path}.rewriteExcludes`),
     rewritePreserves: optionalStringArray(value.rewritePreserves, `${path}.rewritePreserves`),
   };
   if (value.rewriteEqualsInput !== undefined) {
@@ -115,6 +124,7 @@ function parseExpectation(value: unknown, path: string): CaseExpectation {
   if (
     !expectation.requiredFindings?.length &&
     !expectation.rewriteIncludes?.length &&
+    !expectation.rewriteExcludes?.length &&
     !expectation.rewritePreserves?.length &&
     !expectation.rewriteEqualsInput
   ) {
@@ -148,6 +158,11 @@ export function parseSuite(value: unknown): EvaluationSuite {
     for (const preserved of expect.rewritePreserves ?? []) {
       if (!document.includes(preserved)) {
         throw new Error(`${path}.expect preserved text does not appear in the document.`);
+      }
+    }
+    for (const excluded of expect.rewriteExcludes ?? []) {
+      if (!document.includes(excluded)) {
+        throw new Error(`${path}.expect excluded text does not appear in the document.`);
       }
     }
     return {
@@ -211,7 +226,7 @@ export function parseEvaluationResponse(raw: string): EvaluationResponse {
     findings: value.findings.map((finding, index) =>
       parseFinding(finding, `findings[${String(index)}]`),
     ),
-    rewrittenDocument: requireString(value.rewrittenDocument, "rewrittenDocument"),
+    rewrittenDocument: requireStringValue(value.rewrittenDocument, "rewrittenDocument"),
   };
 }
 
@@ -242,9 +257,15 @@ export function gradeResponse(testCase: EvaluationCase, response: EvaluationResp
     if (!testCase.document.includes(finding.quote)) {
       failures.push(`Finding ${String(index + 1)} quotes text that does not appear in the document.`);
     }
-    if (!requirements.some((requirement) => findingQuotesPassage(finding, requirement.passage))) {
+    if (!requirements.some((requirement) => findingSatisfiesRequirement(finding, requirement))) {
       failures.push(`Unexpected finding on quote ${JSON.stringify(finding.quote)}.`);
     }
+  }
+
+  if (response.findings.length !== requirements.length) {
+    failures.push(
+      `Observed ${String(response.findings.length)} findings; expected ${String(requirements.length)}.`,
+    );
   }
 
   for (const requirement of requirements) {
@@ -262,6 +283,12 @@ export function gradeResponse(testCase: EvaluationCase, response: EvaluationResp
   for (const text of testCase.expect.rewriteIncludes ?? []) {
     if (!normalizedRewrite.includes(normalize(text))) {
       failures.push(`Rewritten document does not include: ${text}.`);
+    }
+  }
+
+  for (const text of testCase.expect.rewriteExcludes ?? []) {
+    if (normalizedRewrite.includes(normalize(text))) {
+      failures.push(`Rewritten document still includes ${JSON.stringify(text)}.`);
     }
   }
 
