@@ -10,12 +10,13 @@ import {
   parseEvaluationResponse,
   type EvaluationCase,
 } from "./core.ts";
+import { validateCanonicalResource } from "./resource.ts";
 
 const ROOT = new URL("../..", import.meta.url).pathname.replace(/\/$/, "");
 const DEFAULT_SUITE = join(ROOT, "evals", "slop-linter", "cases.json");
 
 interface Options {
-  target: "claude-code";
+  adapter: "claude-code-cli";
   suitePath: string;
   caseId?: string;
   outputPath?: string;
@@ -23,7 +24,7 @@ interface Options {
 }
 
 function usage(): string {
-  return `Usage: pnpm eval -- --target claude-code [options]
+  return `Usage: pnpm eval -- --adapter claude-code-cli [options]
 
 Options:
   --suite <path>   Evaluation suite (default: evals/slop-linter/cases.json)
@@ -43,7 +44,7 @@ function optionValue(args: string[], index: number, option: string): string {
 }
 
 function parseOptions(args = process.argv.slice(2)): Options {
-  let target: string | undefined;
+  let adapter: string | undefined;
   let suitePath = DEFAULT_SUITE;
   let caseId: string | undefined;
   let outputPath: string | undefined;
@@ -56,9 +57,9 @@ function parseOptions(args = process.argv.slice(2)): Options {
       dryRun = true;
       continue;
     }
-    if (argument === "--target" || argument === "--suite" || argument === "--case" || argument === "--output") {
+    if (argument === "--adapter" || argument === "--suite" || argument === "--case" || argument === "--output") {
       const value = optionValue(args, index, argument);
-      if (argument === "--target") target = value;
+      if (argument === "--adapter") adapter = value;
       if (argument === "--suite") suitePath = resolve(ROOT, value);
       if (argument === "--case") caseId = value;
       if (argument === "--output") outputPath = resolve(ROOT, value);
@@ -68,10 +69,10 @@ function parseOptions(args = process.argv.slice(2)): Options {
     argumentError(`Unknown argument: ${argument}`);
   }
 
-  if (target !== "claude-code") {
-    argumentError(target ? `Unsupported target: ${target}.` : "Missing --target.");
+  if (adapter !== "claude-code-cli") {
+    argumentError(adapter ? `Unsupported adapter: ${adapter}.` : "Missing --adapter.");
   }
-  return { target, suitePath, caseId, outputPath, dryRun };
+  return { adapter, suitePath, caseId, outputPath, dryRun };
 }
 
 function selectCases(cases: EvaluationCase[], caseId?: string): EvaluationCase[] {
@@ -89,7 +90,7 @@ function displayPath(path: string): string {
 
 function defaultOutputPath(): string {
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  return join(ROOT, ".runtime", "evals", `${timestamp}-claude-code.json`);
+  return join(ROOT, ".runtime", "evals", `${timestamp}-claude-code-cli.json`);
 }
 
 function resolveRepositoryPath(path: string): string {
@@ -111,16 +112,19 @@ async function run(): Promise<void> {
   const suite = await loadSuite(options.suitePath);
   const cases = selectCases(suite.cases, options.caseId);
   const resourcePath = resolveRepositoryPath(suite.resource.path);
+  validateCanonicalResource(suite.resource, await readFile(resourcePath, "utf-8"));
   const resourceDigest = await sha256(resourcePath);
   const suiteDigest = await sha256(options.suitePath);
-  const adapter = createAdapter(options.target, ROOT);
+  const adapter = createAdapter(options.adapter, ROOT);
 
   if (options.dryRun) {
     console.log(`Suite: ${displayPath(options.suitePath)}`);
     console.log(`Resource: ${suite.resource.identity} (${suite.resource.path})`);
     console.log(`Resource digest: ${resourceDigest}`);
     console.log(`Suite digest: ${suiteDigest}`);
-    console.log(`Target: ${options.target}`);
+    console.log(`Adapter: ${options.adapter}`);
+    console.log(`Target: ${adapter.target}`);
+    console.log(`Transport: ${adapter.transport}`);
     for (const testCase of cases) {
       console.log(`\n--- ${testCase.id}: ${testCase.description} ---\n`);
       const canonicalPrompt = buildCanonicalPrompt(suite.resource.name, testCase);
@@ -132,7 +136,7 @@ async function run(): Promise<void> {
     return;
   }
 
-  const target = await adapter.prepare();
+  const execution = await adapter.prepare();
   const revision = execFileSync("git", ["rev-parse", "HEAD"], {
     cwd: ROOT,
     encoding: "utf-8",
@@ -149,11 +153,22 @@ async function run(): Promise<void> {
     const canonicalPrompt = buildCanonicalPrompt(suite.resource.name, testCase);
     const projectedPrompt = adapter.projectPrompt(suite, canonicalPrompt);
     let rawResponse: string | undefined;
+    let stderr: string | undefined;
     let durationMs: number | undefined;
+    let exitCode: number | null | undefined;
+    let executionError: string | undefined;
     try {
       const observation = adapter.execute(projectedPrompt);
       rawResponse = observation.rawResponse;
+      stderr = observation.stderr;
       durationMs = observation.durationMs;
+      exitCode = observation.exitCode;
+      executionError = observation.executionError;
+      if (executionError || exitCode !== 0) {
+        throw new Error(
+          executionError ?? `Claude Code CLI exited with status ${String(exitCode)}.`,
+        );
+      }
       const response = parseEvaluationResponse(observation.rawResponse);
       const grade = gradeResponse(testCase, response);
       results.push({
@@ -163,6 +178,8 @@ async function run(): Promise<void> {
         projectedPrompt,
         durationMs,
         rawResponse: observation.rawResponse,
+        stderr,
+        exitCode,
         response,
         grade,
       });
@@ -176,6 +193,9 @@ async function run(): Promise<void> {
         projectedPrompt,
         durationMs,
         rawResponse,
+        stderr,
+        exitCode,
+        executionError,
         grade: { passed: false, failures: [message], observedFindingLabels: [] },
       });
       console.log(`failed: ${message}`);
@@ -195,7 +215,7 @@ async function run(): Promise<void> {
       sourceRevision: revision,
       sourceTreeDirty,
     },
-    target,
+    execution,
     startedAt,
     completedAt: new Date().toISOString(),
     results,
