@@ -75,9 +75,10 @@ Judge language in the structure that gives it meaning.
 
 ### Formatting
 
-- Use headings, lists, and ordinary punctuation to carry structure and emphasis.
-  Preserve Unicode characters in project-defined identifiers (e.g., `I✓`, `B✓`).
-- Use bold for key/value labels or literal tokens.
+- Carry structure and emphasis through headings, lists, ordinary punctuation,
+  and the document's established notation. Remove decorative Unicode and emoji;
+  preserve Unicode characters in project-defined identifiers (e.g., `I✓`, `B✓`).
+- Use bold only for key/value labels or literal tokens.
 - A heading earns its place when it:
   - groups ≥3 items or ≥150 words,
   - states an axis (component/module, lifecycle phase, decision point, failure
