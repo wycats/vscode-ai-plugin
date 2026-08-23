@@ -1,6 +1,8 @@
 import matter from "gray-matter";
 import type { EvaluationResource } from "./core.ts";
 
+export const CANONICAL_RESOURCE_AUTHORITY = "wycats-plugin";
+
 export interface CanonicalResourceDescriptor {
   kind: "agent" | "skill" | "stance";
   name: string;
@@ -47,9 +49,13 @@ export function validateCanonicalResource(
   const separator = resource.identity.indexOf(":");
   const sourceName = resource.identity.slice(0, separator);
   const identityLocator = resource.identity.slice(separator + 1);
-  if (separator <= 0 || !sourceName || identityLocator !== descriptor.locator) {
+  if (
+    separator <= 0 ||
+    sourceName !== CANONICAL_RESOURCE_AUTHORITY ||
+    identityLocator !== descriptor.locator
+  ) {
     throw new Error(
-      `Resource identity '${resource.identity}' does not match canonical path '${descriptor.locator}'.`,
+      `Resource identity '${resource.identity}' does not match canonical identity '${CANONICAL_RESOURCE_AUTHORITY}:${descriptor.locator}'.`,
     );
   }
 }

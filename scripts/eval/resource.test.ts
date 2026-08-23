@@ -45,7 +45,20 @@ void test("ties resource name and identity to the canonical source", () => {
         source,
       );
     },
-    /does not match canonical path 'agents\/slop-linter'/,
+    /does not match canonical identity 'wycats-plugin:agents\/slop-linter'/,
+  );
+  assert.throws(
+    () => {
+      validateCanonicalResource(
+        {
+          identity: "other-plugin:agents/slop-linter",
+          name: "slop-linter",
+          path: "agents/slop-linter.agent.md",
+        },
+        source,
+      );
+    },
+    /does not match canonical identity 'wycats-plugin:agents\/slop-linter'/,
   );
 });
 

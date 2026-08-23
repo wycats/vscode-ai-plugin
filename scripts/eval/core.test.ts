@@ -20,6 +20,7 @@ const testCase: EvaluationCase = {
         labelsAnyOf: ["Generic claims", "Rhetorical framing"],
       },
     ],
+    maximumFindings: 1,
     rewriteIncludes: ["report records the target"],
   },
 };
@@ -40,6 +41,17 @@ void test("parses plain and fenced JSON responses", () => {
   const raw = JSON.stringify(response);
   assert.deepEqual(parseEvaluationResponse(raw), response);
   assert.deepEqual(parseEvaluationResponse(`\`\`\`json\n${raw}\n\`\`\``), response);
+});
+
+void test("rejects unsupported finding actions", () => {
+  const invalid = {
+    ...response,
+    findings: [{ ...response.findings[0], action: "keep" }],
+  };
+  assert.throws(
+    () => parseEvaluationResponse(JSON.stringify(invalid)),
+    /findings\[0\]\.action must be delete, replace, or TODO/,
+  );
 });
 
 void test("ties required findings to their expected passages", () => {
@@ -64,8 +76,8 @@ void test("ties required findings to their expected passages", () => {
   assert.deepEqual(failure.failures, [
     "Unexpected finding on quote \"This changes everything.\".",
     "Unexpected finding on quote \"The report records the target.\".",
-    "Observed 2 findings; expected 1.",
-    "Missing required finding on passage \"This changes everything.\" with one of these labels: Generic claims, Rhetorical framing.",
+    "Observed 2 findings; expected at most 1.",
+    "Findings do not cover required passage \"This changes everything.\" with one of these labels: Generic claims, Rhetorical framing.",
     "Rewritten document does not include: report records the target.",
   ]);
 });
@@ -78,7 +90,7 @@ void test("rejects duplicate and contradictory findings on an expected passage",
   assert.equal(grade.passed, false);
   assert.deepEqual(grade.failures, [
     "Unexpected finding on quote \"This changes everything.\".",
-    "Observed 2 findings; expected 1.",
+    "Observed 2 findings; expected at most 1.",
   ]);
 });
 
@@ -91,7 +103,7 @@ void test("rejects a finding whose quote was invented", () => {
   assert.deepEqual(grade.failures, [
     "Finding 1 quotes text that does not appear in the document.",
     "Unexpected finding on quote \"Text absent from the document.\".",
-    "Missing required finding on passage \"This changes everything.\" with one of these labels: Generic claims, Rhetorical framing.",
+    "Findings do not cover required passage \"This changes everything.\" with one of these labels: Generic claims, Rhetorical framing.",
   ]);
 });
 
@@ -103,8 +115,79 @@ void test("rejects a finding that quotes beyond its expected passage", () => {
   assert.equal(grade.passed, false);
   assert.deepEqual(grade.failures, [
     `Unexpected finding on quote ${JSON.stringify(testCase.document)}.`,
-    "Missing required finding on passage \"This changes everything.\" with one of these labels: Generic claims, Rhetorical framing.",
+    "Findings do not cover required passage \"This changes everything.\" with one of these labels: Generic claims, Rhetorical framing.",
   ]);
+});
+
+void test("allows multiple exact quotes to cover one required passage", () => {
+  const passage = "In today's rapidly evolving landscape, component APIs must be intuitive and powerful.";
+  const splitCase: EvaluationCase = {
+    id: "split-passage",
+    description: "One passage diagnosed as two clauses",
+    document: passage,
+    expect: { requiredFindings: [{ passage }] },
+  };
+  const grade = gradeResponse(splitCase, {
+    findings: [
+      {
+        quote: "In today's rapidly evolving landscape,",
+        label: "Rhetorical framing",
+        why: "The opening carries no claim.",
+        action: "delete",
+      },
+      {
+        quote: "component APIs must be intuitive and powerful.",
+        label: "Generic claims",
+        why: "The claim supplies no criterion.",
+        action: "delete",
+      },
+    ],
+    rewrittenDocument: "",
+  });
+  assert.deepEqual(grade, {
+    passed: true,
+    failures: [],
+    observedFindingLabels: ["Rhetorical framing", "Generic claims"],
+  });
+});
+
+void test("requires the findings to cover the complete required passage", () => {
+  const passage = "The first clause carries a defect, and the second clause does too.";
+  const grade = gradeResponse(
+    {
+      id: "coverage-gap",
+      description: "A required passage with an undiagnosed gap",
+      document: passage,
+      expect: { requiredFindings: [{ passage }] },
+    },
+    {
+      findings: [
+        {
+          quote: "The first clause carries a defect,",
+          label: "Generic claims",
+          why: "The first clause is unsupported.",
+          action: "delete",
+        },
+      ],
+      rewrittenDocument: "and the second clause does too.",
+    },
+  );
+  assert.equal(grade.passed, false);
+  assert.deepEqual(grade.failures, [
+    `Findings do not cover required passage ${JSON.stringify(passage)}.`,
+  ]);
+});
+
+void test("applies finding-count limits only when a case declares one", () => {
+  const grade = gradeResponse(
+    {
+      ...testCase,
+      expect: { ...testCase.expect, maximumFindings: 0 },
+    },
+    response,
+  );
+  assert.equal(grade.passed, false);
+  assert.deepEqual(grade.failures, ["Observed 1 findings; expected at most 0."]);
 });
 
 void test("allows a passage assertion to leave label taxonomy out of scope", () => {
@@ -112,6 +195,7 @@ void test("allows a passage assertion to leave label taxonomy out of scope", () 
     ...testCase,
     expect: {
       ...testCase.expect,
+      maximumFindings: undefined,
       requiredFindings: [{ passage: "This changes everything." }],
     },
   };
@@ -143,7 +227,6 @@ void test("requires clean counterexamples to remain unchanged", () => {
   assert.equal(grade.passed, false);
   assert.deepEqual(grade.failures, [
     "Unexpected finding on quote \"The report records the target.\".",
-    "Observed 1 findings; expected 0.",
     "Rewritten document differs from the input.",
   ]);
 });
@@ -225,6 +308,69 @@ void test("validates suite identity and assertions", () => {
       }),
     /at least one assertion/,
   );
+  assert.throws(
+    () =>
+      parseSuite({
+        schemaVersion: 1,
+        resource: {
+          identity: "wycats-plugin:agents/slop-linter",
+          name: "slop-linter",
+          path: "agents/slop-linter.agent.md",
+        },
+        description: "Example",
+        cases: [
+          {
+            id: "misspelled",
+            description: "Misspelled assertion",
+            document: "Text",
+            expect: { requiredFindings: [], rewriteExclude: ["Text"] },
+          },
+        ],
+      }),
+    /cases\[0\]\.expect contains unknown field: rewriteExclude/,
+  );
+  assert.throws(
+    () =>
+      parseSuite({
+        schemaVersion: 1,
+        resource: {
+          identity: "wycats-plugin:agents/slop-linter",
+          name: "slop-linter",
+          path: "agents/slop-linter.agent.md",
+        },
+        description: "Example",
+        cases: [
+          {
+            id: "unknown-finding-field",
+            description: "Unknown required-finding field",
+            document: "Text",
+            expect: { requiredFindings: [{ passage: "Text", labelAnyOf: ["Generic claims"] }] },
+          },
+        ],
+      }),
+    /cases\[0\]\.expect\.requiredFindings\[0\] contains unknown field: labelAnyOf/,
+  );
+  assert.throws(
+    () =>
+      parseSuite({
+        schemaVersion: 1,
+        resource: {
+          identity: "wycats-plugin:agents/slop-linter",
+          name: "slop-linter",
+          path: "agents/slop-linter.agent.md",
+        },
+        description: "Example",
+        cases: [
+          {
+            id: "invalid-maximum",
+            description: "Invalid finding limit",
+            document: "Text",
+            expect: { maximumFindings: -1 },
+          },
+        ],
+      }),
+    /cases\[0\]\.expect\.maximumFindings must be a non-negative integer/,
+  );
 });
 
 void test("builds a host-neutral prompt with an authorship boundary", () => {
@@ -235,6 +381,7 @@ void test("builds a host-neutral prompt with an authorship boundary", () => {
   const prompt = buildCanonicalPrompt("slop-linter", boundaryCase);
   assert.match(prompt, /according to the slop-linter resource's own instructions/);
   assert.match(prompt, /Do not infer or discuss whether a person or a model wrote/);
+  assert.match(prompt, /The action must be "delete", "replace", or "TODO"/);
   const input = prompt.slice(prompt.lastIndexOf("\n") + 1);
   assert.deepEqual(JSON.parse(input), { document: boundaryCase.document });
   assert.doesNotMatch(prompt, /Claude|Codex|VS Code/);

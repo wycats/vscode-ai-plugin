@@ -9,6 +9,8 @@ import {
   loadSuite,
   parseEvaluationResponse,
   type EvaluationCase,
+  type EvaluationResponse,
+  type Grade,
 } from "./core.ts";
 import { validateCanonicalResource } from "./resource.ts";
 
@@ -21,6 +23,20 @@ interface Options {
   caseId?: string;
   outputPath?: string;
   dryRun: boolean;
+}
+
+interface EvaluationResult {
+  id: string;
+  description: string;
+  canonicalPrompt: string;
+  projectedPrompt: string;
+  durationMs?: number;
+  rawResponse?: string;
+  stderr?: string;
+  exitCode?: number | null;
+  executionError?: string;
+  response?: EvaluationResponse;
+  grade: Grade;
 }
 
 function usage(): string {
@@ -146,7 +162,7 @@ async function run(): Promise<void> {
     encoding: "utf-8",
   }).trim() !== "";
   const startedAt = new Date().toISOString();
-  const results = [];
+  const results: EvaluationResult[] = [];
 
   for (const testCase of cases) {
     process.stdout.write(`${testCase.id}... `);
