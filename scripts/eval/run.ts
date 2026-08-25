@@ -46,7 +46,7 @@ function usage(): string {
 Options:
   --suite <path>   Evaluation suite (default: evals/slop-linter/cases.json)
   --case <id>      Run one case
-  --output <path>  Result file (default: .runtime/evals/<timestamp>.json)
+  --output <path>  Result file (default: .runtime/evals/<timestamp>-claude-code-cli.json)
   --dry-run        Print case prompts without invoking the target`;
 }
 

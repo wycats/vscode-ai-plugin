@@ -30,10 +30,11 @@ export function resolveClaudeCommand(
   discoveredPath: string,
   targetPlatform = platform(),
 ): ClaudeCommand | undefined {
-  if (targetPlatform !== "win32" || extname(discoveredPath).toLowerCase() === ".exe") {
+  const extension = extname(discoveredPath).toLowerCase();
+  if (targetPlatform !== "win32" || extension === ".exe" || extension === ".com") {
     return { discoveredPath, executable: discoveredPath, argumentPrefix: [] };
   }
-  if (extname(discoveredPath).toLowerCase() !== ".cmd") return undefined;
+  if (extension !== ".cmd" && extension !== ".bat") return undefined;
 
   const prefix = dirname(discoveredPath);
   const cli = readable(

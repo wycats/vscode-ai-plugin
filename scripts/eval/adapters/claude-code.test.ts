@@ -25,21 +25,23 @@ const suite: EvaluationSuite = {
   ],
 };
 
-void test("launches a Windows npm command shim through its Node entrypoint", () => {
+void test("launches Windows npm command shims through their Node entrypoint", () => {
   const prefix = mkdtempSync(join(tmpdir(), "claude-command-"));
   try {
-    const shim = join(prefix, "claude.cmd");
     const cli = join(prefix, "node_modules", "@anthropic-ai", "claude-code", "cli.js");
     mkdirSync(join(prefix, "node_modules", "@anthropic-ai", "claude-code"), {
       recursive: true,
     });
-    writeFileSync(shim, "@echo off\n");
     writeFileSync(cli, "");
-    assert.deepEqual(resolveClaudeCommand(shim, "win32"), {
-      discoveredPath: shim,
-      executable: process.execPath,
-      argumentPrefix: [cli],
-    });
+    for (const extension of ["cmd", "bat"]) {
+      const shim = join(prefix, `claude.${extension}`);
+      writeFileSync(shim, "@echo off\n");
+      assert.deepEqual(resolveClaudeCommand(shim, "win32"), {
+        discoveredPath: shim,
+        executable: process.execPath,
+        argumentPrefix: [cli],
+      });
+    }
   } finally {
     rmSync(prefix, { recursive: true, force: true });
   }
