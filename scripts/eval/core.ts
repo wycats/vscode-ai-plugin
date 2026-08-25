@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { parseTree, type Node as JsonNode } from "jsonc-parser";
 
 export interface RequiredFinding {
   passage: string;
@@ -205,6 +206,9 @@ export function parseSuite(value: unknown): EvaluationSuite {
       if (!document.includes(requirement.passage)) {
         throw new Error(`${path}.expect required passage does not appear in the document.`);
       }
+      if (document.indexOf(requirement.passage) !== document.lastIndexOf(requirement.passage)) {
+        throw new Error(`${path}.expect required passage appears more than once in the document.`);
+      }
     }
     for (const preserved of expect.rewritePreserves ?? []) {
       if (!document.includes(preserved)) {
@@ -246,7 +250,34 @@ export async function loadSuite(path: string): Promise<EvaluationSuite> {
   } catch (error) {
     throw new Error(`Could not parse suite JSON at ${path}: ${String(error)}`, { cause: error });
   }
+  const tree = parseTree(source);
+  if (!tree) throw new Error(`Could not inspect suite JSON at ${path}.`);
+  rejectDuplicateJsonMembers(tree, "$", path);
   return parseSuite(parsed);
+}
+
+function rejectDuplicateJsonMembers(node: JsonNode, location: string, path: string): void {
+  if (node.type === "object") {
+    const seen = new Set<string>();
+    for (const property of node.children ?? []) {
+      const keyNode = property.children?.[0];
+      const valueNode = property.children?.[1];
+      const key = String(keyNode?.value);
+      if (seen.has(key)) {
+        throw new Error(
+          `Suite JSON at ${path} contains duplicate member ${JSON.stringify(key)} at ${location}.`,
+        );
+      }
+      seen.add(key);
+      if (valueNode) rejectDuplicateJsonMembers(valueNode, `${location}.${key}`, path);
+    }
+    return;
+  }
+  if (node.type === "array") {
+    for (const [index, child] of (node.children ?? []).entries()) {
+      rejectDuplicateJsonMembers(child, `${location}[${String(index)}]`, path);
+    }
+  }
 }
 
 function parseFinding(value: unknown, path: string): EvaluationFinding {
@@ -332,19 +363,47 @@ export function gradeResponse(testCase: EvaluationCase, response: EvaluationResp
   const requirements = testCase.expect.requiredFindings ?? [];
   const findingsAreCountOnly =
     requirements.length === 0 && testCase.expect.maximumFindings !== undefined;
-  const seenFindings = new Set<string>();
+  const seenQuotes = new Set<string>();
+  const acceptedFindings: EvaluationFinding[] = [];
 
   for (const [index, finding] of response.findings.entries()) {
-    if (!testCase.document.includes(finding.quote)) {
+    const firstOccurrence = testCase.document.indexOf(finding.quote);
+    if (firstOccurrence === -1) {
       failures.push(`Finding ${String(index + 1)} quotes text that does not appear in the document.`);
+    } else if (firstOccurrence !== testCase.document.lastIndexOf(finding.quote)) {
+      failures.push(`Finding ${String(index + 1)} quotes text that appears more than once in the document.`);
     }
-    const identity = JSON.stringify([finding.quote, finding.label]);
-    if (seenFindings.has(identity)) {
+    if (seenQuotes.has(finding.quote)) {
       failures.push(
-        `Finding ${String(index + 1)} duplicates an earlier finding on quote ${JSON.stringify(finding.quote)} with label ${JSON.stringify(finding.label)}.`,
+        `Finding ${String(index + 1)} duplicates an earlier finding on quote ${JSON.stringify(finding.quote)}.`,
       );
     }
-    seenFindings.add(identity);
+    seenQuotes.add(finding.quote);
+    for (const earlier of acceptedFindings) {
+      if (earlier.quote === finding.quote) continue;
+      if (
+        requirements.some((requirement) => {
+          if (
+            !findingSatisfiesRequirement(earlier, requirement) ||
+            !findingSatisfiesRequirement(finding, requirement)
+          ) {
+            return false;
+          }
+          const earlierStart = requirement.passage.indexOf(earlier.quote);
+          const findingStart = requirement.passage.indexOf(finding.quote);
+          return (
+            earlierStart < findingStart + finding.quote.length &&
+            findingStart < earlierStart + earlier.quote.length
+          );
+        })
+      ) {
+        failures.push(
+          `Finding ${String(index + 1)} overlaps an earlier finding on the same required passage.`,
+        );
+        break;
+      }
+    }
+    acceptedFindings.push(finding);
     if (
       !findingsAreCountOnly &&
       !requirements.some((requirement) => findingSatisfiesRequirement(finding, requirement))

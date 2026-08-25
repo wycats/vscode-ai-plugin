@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import {
   buildCanonicalPrompt,
   gradeResponse,
+  loadSuite,
   parseEvaluationResponse,
   parseSuite,
   type EvaluationCase,
@@ -89,6 +93,7 @@ void test("rejects duplicate and contradictory findings on an expected passage",
   });
   assert.equal(grade.passed, false);
   assert.deepEqual(grade.failures, [
+    'Finding 2 duplicates an earlier finding on quote "This changes everything.".',
     "Unexpected finding on quote \"This changes everything.\".",
     "Observed 2 findings; expected at most 1.",
   ]);
@@ -107,7 +112,27 @@ void test("rejects duplicate findings even when finding count is not constrained
   );
   assert.equal(grade.passed, false);
   assert.deepEqual(grade.failures, [
-    'Finding 2 duplicates an earlier finding on quote "This changes everything." with label "Generic claims".',
+    'Finding 2 duplicates an earlier finding on quote "This changes everything.".',
+  ]);
+});
+
+void test("rejects the same diagnosis under alternate accepted labels", () => {
+  const grade = gradeResponse(
+    {
+      ...testCase,
+      expect: { ...testCase.expect, maximumFindings: undefined },
+    },
+    {
+      ...response,
+      findings: [
+        response.findings[0],
+        { ...response.findings[0], label: "Rhetorical framing" },
+      ],
+    },
+  );
+  assert.equal(grade.passed, false);
+  assert.deepEqual(grade.failures, [
+    'Finding 2 duplicates an earlier finding on quote "This changes everything.".',
   ]);
 });
 
@@ -166,6 +191,67 @@ void test("allows multiple exact quotes to cover one required passage", () => {
     failures: [],
     observedFindingLabels: ["Rhetorical framing", "Generic claims"],
   });
+});
+
+void test("rejects overlapping quotes on one required passage", () => {
+  const passage = "The opening is broad and unsupported.";
+  const grade = gradeResponse(
+    {
+      id: "overlapping-coverage",
+      description: "Overlapping diagnoses",
+      document: passage,
+      expect: { requiredFindings: [{ passage }] },
+    },
+    {
+      findings: [
+        {
+          quote: "The opening is broad",
+          label: "Generic claims",
+          why: "The claim is broad.",
+          action: "delete",
+        },
+        {
+          quote: "broad and unsupported.",
+          label: "Generic claims",
+          why: "The claim is unsupported.",
+          action: "delete",
+        },
+      ],
+      rewrittenDocument: "",
+    },
+  );
+  assert.equal(grade.passed, false);
+  assert.deepEqual(grade.failures, [
+    "Finding 2 overlaps an earlier finding on the same required passage.",
+    `Findings do not cover required passage ${JSON.stringify(passage)}.`,
+  ]);
+});
+
+void test("rejects a finding quote that does not identify one occurrence", () => {
+  const repeated = "Generic opening. Generic opening.";
+  const grade = gradeResponse(
+    {
+      id: "ambiguous-quote",
+      description: "Repeated quote",
+      document: repeated,
+      expect: { maximumFindings: 1 },
+    },
+    {
+      findings: [
+        {
+          quote: "Generic opening.",
+          label: "Generic claims",
+          why: "The sentence is unsupported.",
+          action: "delete",
+        },
+      ],
+      rewrittenDocument: repeated,
+    },
+  );
+  assert.equal(grade.passed, false);
+  assert.deepEqual(grade.failures, [
+    "Finding 1 quotes text that appears more than once in the document.",
+  ]);
 });
 
 void test("requires the findings to cover the complete required passage", () => {
@@ -450,6 +536,44 @@ void test("validates suite identity and assertions", () => {
       }),
     /cases\[0\]\.expect\.rewriteEquals must be a string/,
   );
+  assert.throws(
+    () =>
+      parseSuite({
+        schemaVersion: 1,
+        resource: {
+          identity: "wycats-plugin:agents/slop-linter",
+          name: "slop-linter",
+          path: "agents/slop-linter.agent.md",
+        },
+        description: "Example",
+        cases: [
+          {
+            id: "repeated-passage",
+            description: "Ambiguous required passage",
+            document: "Same sentence. Same sentence.",
+            expect: { requiredFindings: [{ passage: "Same sentence." }] },
+          },
+        ],
+      }),
+    /cases\[0\]\.expect required passage appears more than once in the document/,
+  );
+});
+
+void test("rejects duplicate JSON members before suite validation", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "eval-suite-"));
+  const path = join(directory, "cases.json");
+  try {
+    await writeFile(
+      path,
+      '{"schemaVersion":1,"resource":{"identity":"wycats-plugin:agents/slop-linter","name":"slop-linter","path":"agents/slop-linter.agent.md"},"description":"Example","cases":[{"id":"duplicate","description":"Duplicate expectation","document":"Text","expect":{"rewriteEqualsInput":true},"expect":{"maximumFindings":0}}]}',
+    );
+    await assert.rejects(
+      loadSuite(path),
+      /contains duplicate member "expect" at \$\.cases\[0\]/,
+    );
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 
 void test("builds a host-neutral prompt with an authorship boundary", () => {

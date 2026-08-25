@@ -9,10 +9,11 @@
 
 import { execSync, spawnSync } from "node:child_process";
 import { readFile, writeFile, rm } from "node:fs/promises";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { findClaudeCommand, type ClaudeCommand } from "./claude-executable.ts";
 
-const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
+const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const CC_OUT = join(ROOT, "out", "claude-code");
 const CONFIG_PATH = join(ROOT, "config.json");
 const CC_EXAMPLE = join(ROOT, "config.claude-code.example.json");

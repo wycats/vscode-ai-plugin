@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { createAdapter } from "./adapters/index.ts";
 import {
   buildCanonicalPrompt,
@@ -14,7 +15,7 @@ import {
 } from "./core.ts";
 import { validateCanonicalResource } from "./resource.ts";
 
-const ROOT = new URL("../..", import.meta.url).pathname.replace(/\/$/, "");
+const ROOT = resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const DEFAULT_SUITE = join(ROOT, "evals", "slop-linter", "cases.json");
 
 interface Options {

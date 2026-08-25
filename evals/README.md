@@ -16,16 +16,21 @@ writing](https://en.wikipedia.org/w/index.php?title=Wikipedia:Signs_of_AI_writin
 can suggest cases, but each case needs to name the underlying prose failure and
 include a counterexample where the same surface feature is doing real work.
 
-A required finding names the exact passage it should diagnose. One finding can
-quote the complete passage, or several exact quotes can cover it together. Add
-accepted labels when the classification itself is part of the contract; leave
-them out when the case is only about whether the passage receives a finding.
+A required finding names one exact passage in the document. Every returned quote
+must also identify one occurrence. One finding can quote the complete passage,
+or several disjoint exact quotes can cover it together. Repeated and overlapping
+diagnoses fail. Add accepted labels when the classification itself is part of
+the contract; leave them out when the case is only about whether the passage
+receives a finding.
 Use `maximumFindings` when finding count is itself meaningful, including when
 the suite leaves the particular findings open. `rewriteExcludes` verifies that
 a diagnosed defect was removed. `rewritePreserves` keeps an exact span unchanged
 inside a larger rewrite. `rewriteEquals` names the complete expected result when
 the rewrite must remove a defect without changing or adding anything else, while
 `rewriteEqualsInput` protects a clean document as a whole.
+
+Suite JSON rejects repeated object member names before schema validation, so an
+edited assertion cannot silently replace another assertion with the same name.
 
 ## Running the suite
 
