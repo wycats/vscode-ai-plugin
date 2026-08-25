@@ -18,12 +18,7 @@
             "labelsAnyOf": ["Generic claims", "Rhetorical framing"]
           }
         ],
-        "rewritePreserves": [
-          "This proposal adds structured result files to the evaluation runner."
-        ],
-        "rewriteExcludes": [
-          "In today's rapidly evolving landscape, organizations must embrace innovation to stay ahead of the curve."
-        ]
+        "rewriteEquals": "This proposal adds structured result files to the evaluation runner."
       }
     },
     {
@@ -45,10 +40,7 @@
             "labelsAnyOf": ["Empty contrast"]
           }
         ],
-        "rewritePreserves": ["The command runs the configured cases."],
-        "rewriteExcludes": [
-          "This is not just a validation script; it is a foundation for confidence."
-        ]
+        "rewriteEquals": "The command runs the configured cases."
       }
     },
     {
@@ -70,10 +62,7 @@
             "labelsAnyOf": ["Ornamental triads", "Generic claims"]
           }
         ],
-        "rewritePreserves": ["It runs evaluation cases from a JSON file."],
-        "rewriteExcludes": [
-          "The new harness is robust, scalable, and future-proof."
-        ]
+        "rewriteEquals": "It runs evaluation cases from a JSON file."
       }
     },
     {
@@ -94,12 +83,7 @@
             "passage": "In today's rapidly evolving landscape, component APIs must be intuitive and powerful."
           }
         ],
-        "rewriteExcludes": [
-          "In today's rapidly evolving landscape, component APIs must be intuitive and powerful."
-        ],
-        "rewritePreserves": [
-          "| Prop | Description |\n| --- | --- |\n| selectedId | Currently selected item id. Bindable. |\n| disabled | Prevents interaction. |\n| onSelect | Called with the selected item id. |"
-        ]
+        "rewriteEquals": "| Prop | Description |\n| --- | --- |\n| selectedId | Currently selected item id. Bindable. |\n| disabled | Prevents interaction. |\n| onSelect | Called with the selected item id. |"
       }
     },
     {
@@ -113,11 +97,15 @@
             "labelsAnyOf": ["Label-only pseudo-sentences"]
           }
         ],
-        "rewritePreserves": [
-          "The current module mixes parsing with process execution.",
-          "The runner should own case selection and grading."
-        ],
-        "rewriteExcludes": ["**Extract to:** a target adapter."]
+        "rewriteEquals": "The current module mixes parsing with process execution. The runner should own case selection and grading."
+      }
+    },
+    {
+      "id": "label-as-heading",
+      "description": "The same label used as a heading for several concrete destinations.",
+      "document": "## Extract to\n\n- `parser.ts` owns suite parsing.\n- `runner.ts` owns case selection and grading.\n- `adapter.ts` owns target invocation.",
+      "expect": {
+        "rewriteEqualsInput": true
       }
     }
   ]

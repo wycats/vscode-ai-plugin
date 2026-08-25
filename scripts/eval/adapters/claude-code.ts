@@ -2,7 +2,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { performance } from "node:perf_hooks";
-import { findClaudeExecutable } from "../../claude-executable.ts";
+import { findClaudeCommand, type ClaudeCommand } from "../../claude-executable.ts";
 import type { EvaluationSuite } from "../core.ts";
 import { canonicalResourceDescriptor } from "../resource.ts";
 import type { AdapterMetadata, AdapterObservation, EvaluationAdapter } from "./adapter.ts";
@@ -13,7 +13,8 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
   readonly transport = "cli" as const;
   readonly #root: string;
   readonly #projection: string;
-  #executable = "";
+  #command: ClaudeCommand | undefined;
+  #launcherModel = "";
 
   constructor(root: string) {
     this.#root = root;
@@ -21,8 +22,8 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
   }
 
   async prepare(): Promise<AdapterMetadata> {
-    this.#executable = findClaudeExecutable() ?? "";
-    if (!this.#executable) {
+    this.#command = findClaudeCommand();
+    if (!this.#command) {
       throw new Error(
         "The claude-code-cli adapter requires an authenticated Claude Code executable. A Claude Code extension session does not provide this transport.",
       );
@@ -31,6 +32,12 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
     const config = JSON.parse(await readFile(configPath, "utf-8")) as {
       models: Record<string, string | null>;
     };
+    this.#launcherModel = config.models.balanced ?? "";
+    if (!this.#launcherModel) {
+      throw new Error(
+        "The claude-code-cli adapter requires a concrete balanced model mapping for reproducible evaluation runs.",
+      );
+    }
     execFileSync(
       process.execPath,
       ["scripts/build.ts", "--config", "config.claude-code.example.json"],
@@ -40,9 +47,19 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
       id: this.id,
       target: this.target,
       transport: this.transport,
-      executable: this.#executable,
-      runtimeVersion: execFileSync(this.#executable, ["--version"], { encoding: "utf-8" }).trim(),
+      discoveredCommand: this.#command.discoveredPath,
+      executable: this.#command.executable,
+      argumentPrefix: this.#command.argumentPrefix,
+      runtimeVersion: execFileSync(
+        this.#command.executable,
+        [...this.#command.argumentPrefix, "--version"],
+        { encoding: "utf-8" },
+      ).trim(),
       projection: this.#projection,
+      launcherModel: {
+        role: "balanced",
+        target: this.#launcherModel,
+      },
       modelMapping: config.models,
     };
   }
@@ -54,17 +71,20 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
   }
 
   execute(projectedPrompt: string): AdapterObservation {
-    if (!this.#executable) throw new Error("Claude Code CLI adapter has not been prepared.");
+    if (!this.#command) throw new Error("Claude Code CLI adapter has not been prepared.");
     const started = performance.now();
     const result = spawnSync(
-      this.#executable,
+      this.#command.executable,
       [
+        ...this.#command.argumentPrefix,
         "--plugin-dir",
         this.#projection,
         "-p",
         projectedPrompt,
         "--output-format",
         "text",
+        "--model",
+        this.#launcherModel,
         "--max-turns",
         "3",
       ],

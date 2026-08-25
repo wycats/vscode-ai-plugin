@@ -3,7 +3,8 @@
 The cases in this directory describe what a canonical resource should do. They
 do not describe how a particular host invokes it. Runtime adapters project the
 same request into each host and report the target, transport, model mapping,
-source revision, raw response, and grade.
+selected launcher model role and target model, source revision, raw response,
+and grade.
 
 Each positive case should have a nearby counterexample. A phrase can be a useful
 clue without being a defect in every context. The paired case keeps the
@@ -22,8 +23,9 @@ them out when the case is only about whether the passage receives a finding.
 Use `maximumFindings` when finding count is itself meaningful, including when
 the suite leaves the particular findings open. `rewriteExcludes` verifies that
 a diagnosed defect was removed. `rewritePreserves` keeps an exact span unchanged
-inside a larger rewrite, while `rewriteEqualsInput` protects a clean document as
-a whole.
+inside a larger rewrite. `rewriteEquals` names the complete expected result when
+the rewrite must remove a defect without changing or adding anything else, while
+`rewriteEqualsInput` protects a clean document as a whole.
 
 ## Running the suite
 

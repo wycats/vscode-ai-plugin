@@ -11,6 +11,7 @@ export interface CaseExpectation {
   rewriteIncludes?: string[];
   rewriteExcludes?: string[];
   rewritePreserves?: string[];
+  rewriteEquals?: string;
   rewriteEqualsInput?: true;
 }
 
@@ -110,6 +111,7 @@ function parseExpectation(value: unknown, path: string): CaseExpectation {
       "rewriteIncludes",
       "rewriteExcludes",
       "rewritePreserves",
+      "rewriteEquals",
       "rewriteEqualsInput",
     ],
     path,
@@ -158,6 +160,9 @@ function parseExpectation(value: unknown, path: string): CaseExpectation {
     rewriteExcludes: optionalStringArray(value.rewriteExcludes, `${path}.rewriteExcludes`),
     rewritePreserves: optionalStringArray(value.rewritePreserves, `${path}.rewritePreserves`),
   };
+  if (value.rewriteEquals !== undefined) {
+    expectation.rewriteEquals = requireStringValue(value.rewriteEquals, `${path}.rewriteEquals`);
+  }
   if (value.rewriteEqualsInput !== undefined) {
     if (value.rewriteEqualsInput !== true) {
       throw new Error(`${path}.rewriteEqualsInput must be true when present.`);
@@ -171,6 +176,7 @@ function parseExpectation(value: unknown, path: string): CaseExpectation {
     !expectation.rewriteIncludes?.length &&
     !expectation.rewriteExcludes?.length &&
     !expectation.rewritePreserves?.length &&
+    expectation.rewriteEquals === undefined &&
     !expectation.rewriteEqualsInput
   ) {
     throw new Error(`${path} must contain at least one assertion.`);
@@ -384,6 +390,13 @@ export function gradeResponse(testCase: EvaluationCase, response: EvaluationResp
     if (!response.rewrittenDocument.includes(text)) {
       failures.push(`Rewritten document does not preserve exact text: ${text}.`);
     }
+  }
+
+  if (
+    testCase.expect.rewriteEquals !== undefined &&
+    response.rewrittenDocument !== testCase.expect.rewriteEquals
+  ) {
+    failures.push("Rewritten document does not match the expected rewrite.");
   }
 
   if (

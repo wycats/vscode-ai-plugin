@@ -317,6 +317,23 @@ void test("distinguishes normalized inclusion from exact rewrite preservation", 
   ]);
 });
 
+void test("rejects additions beyond the complete expected rewrite", () => {
+  const expectedRewriteCase: EvaluationCase = {
+    ...testCase,
+    expect: {
+      ...testCase.expect,
+      rewriteIncludes: undefined,
+      rewriteEquals: "The report records the target.",
+    },
+  };
+  const grade = gradeResponse(expectedRewriteCase, {
+    ...response,
+    rewrittenDocument: "The report records the target. This changes every workflow.",
+  });
+  assert.equal(grade.passed, false);
+  assert.deepEqual(grade.failures, ["Rewritten document does not match the expected rewrite."]);
+});
+
 void test("validates suite identity and assertions", () => {
   assert.throws(
     () =>
@@ -411,6 +428,27 @@ void test("validates suite identity and assertions", () => {
         ],
       }),
     /cases\[0\]\.expect\.maximumFindings must be a non-negative integer/,
+  );
+  assert.throws(
+    () =>
+      parseSuite({
+        schemaVersion: 1,
+        resource: {
+          identity: "wycats-plugin:agents/slop-linter",
+          name: "slop-linter",
+          path: "agents/slop-linter.agent.md",
+        },
+        description: "Example",
+        cases: [
+          {
+            id: "invalid-rewrite",
+            description: "Invalid complete rewrite",
+            document: "Text",
+            expect: { rewriteEquals: ["Text"] },
+          },
+        ],
+      }),
+    /cases\[0\]\.expect\.rewriteEquals must be a string/,
   );
 });
 

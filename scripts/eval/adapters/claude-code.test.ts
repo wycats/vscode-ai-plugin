@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
+import { resolveClaudeCommand } from "../../claude-executable.ts";
 import { ClaudeCodeCliAdapter } from "./claude-code.ts";
 import type { EvaluationSuite } from "../core.ts";
 
@@ -20,6 +24,26 @@ const suite: EvaluationSuite = {
     },
   ],
 };
+
+void test("launches a Windows npm command shim through its Node entrypoint", () => {
+  const prefix = mkdtempSync(join(tmpdir(), "claude-command-"));
+  try {
+    const shim = join(prefix, "claude.cmd");
+    const cli = join(prefix, "node_modules", "@anthropic-ai", "claude-code", "cli.js");
+    mkdirSync(join(prefix, "node_modules", "@anthropic-ai", "claude-code"), {
+      recursive: true,
+    });
+    writeFileSync(shim, "@echo off\n");
+    writeFileSync(cli, "");
+    assert.deepEqual(resolveClaudeCommand(shim, "win32"), {
+      discoveredPath: shim,
+      executable: process.execPath,
+      argumentPrefix: [cli],
+    });
+  } finally {
+    rmSync(prefix, { recursive: true, force: true });
+  }
+});
 
 void test("adds only the Claude Code invocation envelope to a canonical request", () => {
   const adapter = new ClaudeCodeCliAdapter("/tmp/example-plugin");

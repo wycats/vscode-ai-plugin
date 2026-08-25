@@ -7,26 +7,26 @@
  * Requires: Claude Code CLI authenticated.
  */
 
-import { execSync } from "node:child_process";
+import { execSync, spawnSync } from "node:child_process";
 import { readFile, writeFile, rm } from "node:fs/promises";
 import { join } from "node:path";
-import { findClaudeExecutable } from "./claude-executable.ts";
+import { findClaudeCommand, type ClaudeCommand } from "./claude-executable.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
 const CC_OUT = join(ROOT, "out", "claude-code");
 const CONFIG_PATH = join(ROOT, "config.json");
 const CC_EXAMPLE = join(ROOT, "config.claude-code.example.json");
 
-function requireClaudeExecutable(): string {
-  const executable = findClaudeExecutable();
-  if (!executable) {
+function requireClaudeCommand(): ClaudeCommand {
+  const command = findClaudeCommand();
+  if (!command) {
     console.error("Claude Code CLI not found. Install with: npm install -g @anthropic-ai/claude-code");
     process.exit(1);
   }
-  return executable;
+  return command;
 }
 
-const CLAUDE = requireClaudeExecutable();
+const CLAUDE = requireClaudeCommand();
 
 const EXPECTED_AGENTS = [
   "execute",
@@ -57,15 +57,22 @@ interface TestResult {
 const results: TestResult[] = [];
 
 function cc(prompt: string, maxTurns = 3): string {
-  try {
-    return execSync(
-      `${CLAUDE} --plugin-dir ${CC_OUT} -p ${JSON.stringify(prompt)} --output-format text --max-turns ${String(maxTurns)}`,
-      { cwd: ROOT, encoding: "utf-8", timeout: 120_000, stdio: ["pipe", "pipe", "pipe"] },
-    );
-  } catch (err: unknown) {
-    const e = err as { stdout?: string; stderr?: string; message?: string };
-    return e.stdout ?? e.stderr ?? e.message ?? "unknown error";
-  }
+  const result = spawnSync(
+    CLAUDE.executable,
+    [
+      ...CLAUDE.argumentPrefix,
+      "--plugin-dir",
+      CC_OUT,
+      "-p",
+      prompt,
+      "--output-format",
+      "text",
+      "--max-turns",
+      String(maxTurns),
+    ],
+    { cwd: ROOT, encoding: "utf-8", timeout: 120_000, stdio: ["pipe", "pipe", "pipe"] },
+  );
+  return result.stdout || result.stderr || result.error?.message || "unknown error";
 }
 
 async function ensureCCBuild(): Promise<void> {
