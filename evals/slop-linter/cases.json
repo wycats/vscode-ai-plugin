@@ -30,6 +30,14 @@
       }
     },
     {
+      "id": "empty-document",
+      "description": "An empty document has no prose to diagnose or rewrite.",
+      "document": "",
+      "expect": {
+        "rewriteEqualsInput": true
+      }
+    },
+    {
       "id": "empty-contrast",
       "description": "A contrast that gives the preferred option no additional meaning.",
       "document": "This is not just a validation script; it is a foundation for confidence. The command runs the configured cases.",

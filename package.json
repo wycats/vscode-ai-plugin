@@ -16,7 +16,7 @@
     "publish-codex": "node scripts/publish-codex.ts",
     "publish-vscode": "node scripts/publish-vscode.ts",
     "eval": "node scripts/eval/run.ts",
-    "test:eval": "node --test scripts/eval/core.test.ts scripts/eval/resource.test.ts scripts/eval/adapters/claude-code.test.ts",
+    "test:eval": "node --test scripts/eval/core.test.ts scripts/eval/resource.test.ts scripts/eval/run.test.ts scripts/eval/adapters/claude-code.test.ts",
     "test-cc": "node scripts/test-cc.ts",
     "validate": "node scripts/validate.ts",
     "lint": "eslint scripts/",

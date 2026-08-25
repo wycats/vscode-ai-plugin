@@ -365,6 +365,27 @@ void test("allows a rewrite to delete the complete input", () => {
   assert.equal(parsed.rewrittenDocument, "");
 });
 
+void test("allows an empty document as an evaluation input", () => {
+  const suite = parseSuite({
+    schemaVersion: 1,
+    resource: {
+      identity: "wycats-plugin:agents/slop-linter",
+      name: "slop-linter",
+      path: "agents/slop-linter.agent.md",
+    },
+    description: "Empty input",
+    cases: [
+      {
+        id: "empty-document",
+        description: "No prose to evaluate",
+        document: "",
+        expect: { rewriteEqualsInput: true },
+      },
+    ],
+  });
+  assert.equal(suite.cases[0].document, "");
+});
+
 void test("requires a positive rewrite to remove the diagnosed defect", () => {
   const removalCase: EvaluationCase = {
     ...testCase,

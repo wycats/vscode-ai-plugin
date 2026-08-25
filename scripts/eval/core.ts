@@ -200,7 +200,7 @@ export function parseSuite(value: unknown): EvaluationSuite {
     const id = requireString(entry.id, `${path}.id`);
     if (seenIds.has(id)) throw new Error(`${path}.id duplicates '${id}'.`);
     seenIds.add(id);
-    const document = requireString(entry.document, `${path}.document`);
+    const document = requireStringValue(entry.document, `${path}.document`);
     const expect = parseExpectation(entry.expect, `${path}.expect`);
     for (const requirement of expect.requiredFindings ?? []) {
       if (!document.includes(requirement.passage)) {
