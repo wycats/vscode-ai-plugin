@@ -78,7 +78,12 @@ function cc(prompt: string, maxTurns = 3): string {
       stdio: ["pipe", "pipe", "pipe"],
     },
   );
-  return result.stdout || result.stderr || result.error?.message || "unknown error";
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    const detail = result.stderr || result.stdout || `signal ${result.signal ?? "unknown"}`;
+    throw new Error(`Claude Code CLI exited with status ${String(result.status)}: ${detail}`);
+  }
+  return result.stdout;
 }
 
 async function ensureCCBuild(): Promise<void> {
