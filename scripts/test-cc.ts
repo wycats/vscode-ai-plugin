@@ -70,7 +70,13 @@ function cc(prompt: string, maxTurns = 3): string {
       "--max-turns",
       String(maxTurns),
     ],
-    { cwd: ROOT, encoding: "utf-8", timeout: 120_000, stdio: ["pipe", "pipe", "pipe"] },
+    {
+      cwd: ROOT,
+      encoding: "utf-8",
+      timeout: 120_000,
+      maxBuffer: 10 * 1024 * 1024,
+      stdio: ["pipe", "pipe", "pipe"],
+    },
   );
   return result.stdout || result.stderr || result.error?.message || "unknown error";
 }
