@@ -1,6 +1,7 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { performance } from "node:perf_hooks";
 import { findClaudeExecutable } from "../../claude-executable.ts";
 import type { EvaluationSuite } from "../core.ts";
 import { canonicalResourceDescriptor } from "../resource.ts";
