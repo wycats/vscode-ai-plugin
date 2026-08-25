@@ -94,6 +94,23 @@ void test("rejects duplicate and contradictory findings on an expected passage",
   ]);
 });
 
+void test("rejects duplicate findings even when finding count is not constrained", () => {
+  const grade = gradeResponse(
+    {
+      ...testCase,
+      expect: { ...testCase.expect, maximumFindings: undefined },
+    },
+    {
+      ...response,
+      findings: [response.findings[0], { ...response.findings[0], why: "Repeated diagnosis." }],
+    },
+  );
+  assert.equal(grade.passed, false);
+  assert.deepEqual(grade.failures, [
+    'Finding 2 duplicates an earlier finding on quote "This changes everything." with label "Generic claims".',
+  ]);
+});
+
 void test("rejects a finding whose quote was invented", () => {
   const grade = gradeResponse(testCase, {
     ...response,
@@ -190,6 +207,18 @@ void test("applies finding-count limits only when a case declares one", () => {
   assert.deepEqual(grade.failures, ["Observed 1 findings; expected at most 0."]);
 });
 
+void test("allows a finding-count assertion without prescribing findings", () => {
+  const countOnlyCase: EvaluationCase = {
+    ...testCase,
+    expect: { maximumFindings: 1 },
+  };
+  assert.deepEqual(gradeResponse(countOnlyCase, response), {
+    passed: true,
+    failures: [],
+    observedFindingLabels: ["Generic claims"],
+  });
+});
+
 void test("allows a passage assertion to leave label taxonomy out of scope", () => {
   const passageOnlyCase: EvaluationCase = {
     ...testCase,
@@ -204,6 +233,18 @@ void test("allows a passage assertion to leave label taxonomy out of scope", () 
     findings: [{ ...response.findings[0], label: "Soft assertions" }],
   });
   assert.equal(grade.passed, true);
+});
+
+void test("requires declared taxonomy labels exactly", () => {
+  const grade = gradeResponse(testCase, {
+    ...response,
+    findings: [{ ...response.findings[0], label: "generic claims" }],
+  });
+  assert.equal(grade.passed, false);
+  assert.deepEqual(grade.failures, [
+    'Unexpected finding on quote "This changes everything.".',
+    'Findings do not cover required passage "This changes everything." with one of these labels: Generic claims, Rhetorical framing.',
+  ]);
 });
 
 void test("requires clean counterexamples to remain unchanged", () => {

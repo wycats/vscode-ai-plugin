@@ -19,10 +19,11 @@ A required finding names the exact passage it should diagnose. One finding can
 quote the complete passage, or several exact quotes can cover it together. Add
 accepted labels when the classification itself is part of the contract; leave
 them out when the case is only about whether the passage receives a finding.
-Use `maximumFindings` when finding count is itself meaningful. `rewriteExcludes`
-verifies that a diagnosed defect was removed. `rewritePreserves` keeps an exact
-span unchanged inside a larger rewrite, while `rewriteEqualsInput` protects a
-clean document as a whole.
+Use `maximumFindings` when finding count is itself meaningful, including when
+the suite leaves the particular findings open. `rewriteExcludes` verifies that
+a diagnosed defect was removed. `rewritePreserves` keeps an exact span unchanged
+inside a larger rewrite, while `rewriteEqualsInput` protects a clean document as
+a whole.
 
 ## Running the suite
 

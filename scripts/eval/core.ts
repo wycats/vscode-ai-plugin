@@ -293,8 +293,7 @@ function findingSatisfiesRequirement(
 ): boolean {
   if (!requirement.passage.includes(finding.quote)) return false;
   if (!requirement.labelsAnyOf) return true;
-  const label = normalize(finding.label);
-  return requirement.labelsAnyOf.some((candidate) => normalize(candidate) === label);
+  return requirement.labelsAnyOf.includes(finding.label);
 }
 
 function findingsCoverRequirement(
@@ -325,12 +324,25 @@ export function gradeResponse(testCase: EvaluationCase, response: EvaluationResp
   const failures: string[] = [];
   const observedFindingLabels = response.findings.map((finding) => finding.label);
   const requirements = testCase.expect.requiredFindings ?? [];
+  const findingsAreCountOnly =
+    requirements.length === 0 && testCase.expect.maximumFindings !== undefined;
+  const seenFindings = new Set<string>();
 
   for (const [index, finding] of response.findings.entries()) {
     if (!testCase.document.includes(finding.quote)) {
       failures.push(`Finding ${String(index + 1)} quotes text that does not appear in the document.`);
     }
-    if (!requirements.some((requirement) => findingSatisfiesRequirement(finding, requirement))) {
+    const identity = JSON.stringify([finding.quote, finding.label]);
+    if (seenFindings.has(identity)) {
+      failures.push(
+        `Finding ${String(index + 1)} duplicates an earlier finding on quote ${JSON.stringify(finding.quote)} with label ${JSON.stringify(finding.label)}.`,
+      );
+    }
+    seenFindings.add(identity);
+    if (
+      !findingsAreCountOnly &&
+      !requirements.some((requirement) => findingSatisfiesRequirement(finding, requirement))
+    ) {
       failures.push(`Unexpected finding on quote ${JSON.stringify(finding.quote)}.`);
     }
   }

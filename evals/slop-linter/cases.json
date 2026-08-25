@@ -18,7 +18,9 @@
             "labelsAnyOf": ["Generic claims", "Rhetorical framing"]
           }
         ],
-        "rewriteIncludes": ["structured result files"],
+        "rewritePreserves": [
+          "This proposal adds structured result files to the evaluation runner."
+        ],
         "rewriteExcludes": [
           "In today's rapidly evolving landscape, organizations must embrace innovation to stay ahead of the curve."
         ]
@@ -43,7 +45,7 @@
             "labelsAnyOf": ["Empty contrast"]
           }
         ],
-        "rewriteIncludes": ["runs the configured cases"],
+        "rewritePreserves": ["The command runs the configured cases."],
         "rewriteExcludes": [
           "This is not just a validation script; it is a foundation for confidence."
         ]
@@ -68,7 +70,7 @@
             "labelsAnyOf": ["Ornamental triads", "Generic claims"]
           }
         ],
-        "rewriteIncludes": ["runs evaluation cases from a JSON file"],
+        "rewritePreserves": ["It runs evaluation cases from a JSON file."],
         "rewriteExcludes": [
           "The new harness is robust, scalable, and future-proof."
         ]
@@ -111,7 +113,10 @@
             "labelsAnyOf": ["Label-only pseudo-sentences"]
           }
         ],
-        "rewriteIncludes": ["runner should own case selection and grading"],
+        "rewritePreserves": [
+          "The current module mixes parsing with process execution.",
+          "The runner should own case selection and grading."
+        ],
         "rewriteExcludes": ["**Extract to:** a target adapter."]
       }
     }
