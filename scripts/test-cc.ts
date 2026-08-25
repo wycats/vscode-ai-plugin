@@ -86,10 +86,14 @@ function cc(prompt: string, maxTurns = 3): ClaudeInvocation {
   );
   if (result.error) return { output: "", failure: result.error.message };
   if (result.status !== 0) {
-    const detail = result.stderr || result.stdout || `signal ${result.signal ?? "unknown"}`;
+    const detail = result.stderr || result.stdout || "No process output.";
+    const outcome =
+      result.status === null
+        ? `was terminated by signal ${result.signal ?? "unknown"}`
+        : `exited with status ${String(result.status)}`;
     return {
       output: "",
-      failure: `Claude Code CLI exited with status ${String(result.status)}: ${detail}`,
+      failure: `Claude Code CLI ${outcome}: ${detail}`,
     };
   }
   return { output: result.stdout };

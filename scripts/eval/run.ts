@@ -183,7 +183,7 @@ async function run(): Promise<void> {
       executionError = observation.executionError;
       if (executionError || exitCode !== 0) {
         throw new Error(
-          executionError ?? `Claude Code CLI exited with status ${String(exitCode)}.`,
+          executionError ?? `${adapter.id} exited with status ${String(exitCode)}.`,
         );
       }
       const response = parseEvaluationResponse(observation.rawResponse);

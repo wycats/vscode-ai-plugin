@@ -578,6 +578,27 @@ void test("validates suite identity and assertions", () => {
       }),
     /cases\[0\]\.expect required passage appears more than once in the document/,
   );
+  assert.throws(
+    () =>
+      parseSuite({
+        schemaVersion: 1,
+        resource: {
+          identity: "wycats-plugin:agents/slop-linter",
+          name: "slop-linter",
+          path: "agents/slop-linter.agent.md",
+        },
+        description: "Example",
+        cases: [
+          {
+            id: "contradictory-rewrite",
+            description: "Two exact rewrite assertions",
+            document: "Text",
+            expect: { rewriteEquals: "Text", rewriteEqualsInput: true },
+          },
+        ],
+      }),
+    /cannot combine rewriteEquals with rewriteEqualsInput/,
+  );
 });
 
 void test("rejects duplicate JSON members before suite validation", async () => {

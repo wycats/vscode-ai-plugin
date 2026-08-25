@@ -170,6 +170,9 @@ function parseExpectation(value: unknown, path: string): CaseExpectation {
     }
     expectation.rewriteEqualsInput = true;
   }
+  if (expectation.rewriteEquals !== undefined && expectation.rewriteEqualsInput) {
+    throw new Error(`${path} cannot combine rewriteEquals with rewriteEqualsInput.`);
+  }
 
   if (
     !expectation.requiredFindings?.length &&
