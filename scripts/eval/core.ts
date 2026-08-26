@@ -31,6 +31,7 @@ export interface EvaluationResource {
 
 export interface EvaluationSuite {
   schemaVersion: 1;
+  protocol: "document-review/v1";
   resource: EvaluationResource;
   description: string;
   cases: EvaluationCase[];
@@ -191,7 +192,15 @@ function parseExpectation(value: unknown, path: string): CaseExpectation {
 
 export function parseSuite(value: unknown): EvaluationSuite {
   if (!isRecord(value)) throw new Error("Suite must be an object.");
+  rejectUnknownKeys(
+    value,
+    ["schemaVersion", "protocol", "resource", "description", "cases"],
+    "Suite",
+  );
   if (value.schemaVersion !== 1) throw new Error("schemaVersion must be 1.");
+  if (value.protocol !== "document-review/v1") {
+    throw new Error("protocol must be document-review/v1.");
+  }
   if (!Array.isArray(value.cases) || value.cases.length === 0) {
     throw new Error("cases must be a non-empty array.");
   }
@@ -232,9 +241,11 @@ export function parseSuite(value: unknown): EvaluationSuite {
   });
 
   if (!isRecord(value.resource)) throw new Error("resource must be an object.");
+  rejectUnknownKeys(value.resource, ["identity", "name", "path"], "resource");
 
   return {
     schemaVersion: 1,
+    protocol: "document-review/v1",
     resource: {
       identity: requireString(value.resource.identity, "resource.identity"),
       name: requireString(value.resource.name, "resource.name"),
@@ -255,11 +266,11 @@ export async function loadSuite(path: string): Promise<EvaluationSuite> {
   }
   const tree = parseTree(source);
   if (!tree) throw new Error(`Could not inspect suite JSON at ${path}.`);
-  rejectDuplicateJsonMembers(tree, "$", path);
+  rejectDuplicateJsonMembers(tree, "$", `Suite JSON at ${path}`);
   return parseSuite(parsed);
 }
 
-function rejectDuplicateJsonMembers(node: JsonNode, location: string, path: string): void {
+function rejectDuplicateJsonMembers(node: JsonNode, location: string, context: string): void {
   if (node.type === "object") {
     const seen = new Set<string>();
     for (const property of node.children ?? []) {
@@ -268,17 +279,17 @@ function rejectDuplicateJsonMembers(node: JsonNode, location: string, path: stri
       const key = String(keyNode?.value);
       if (seen.has(key)) {
         throw new Error(
-          `Suite JSON at ${path} contains duplicate member ${JSON.stringify(key)} at ${location}.`,
+          `${context} contains duplicate member ${JSON.stringify(key)} at ${location}.`,
         );
       }
       seen.add(key);
-      if (valueNode) rejectDuplicateJsonMembers(valueNode, `${location}.${key}`, path);
+      if (valueNode) rejectDuplicateJsonMembers(valueNode, `${location}.${key}`, context);
     }
     return;
   }
   if (node.type === "array") {
     for (const [index, child] of (node.children ?? []).entries()) {
-      rejectDuplicateJsonMembers(child, `${location}[${String(index)}]`, path);
+      rejectDuplicateJsonMembers(child, `${location}[${String(index)}]`, context);
     }
   }
 }
@@ -308,6 +319,9 @@ export function parseEvaluationResponse(raw: string): EvaluationResponse {
   } catch (error) {
     throw new Error(`Response is not JSON: ${String(error)}`, { cause: error });
   }
+  const tree = parseTree(json);
+  if (!tree) throw new Error("Could not inspect response JSON.");
+  rejectDuplicateJsonMembers(tree, "$", "Response JSON");
   if (!isRecord(value)) throw new Error("Response must be a JSON object.");
   if (!Array.isArray(value.findings)) throw new Error("Response findings must be an array.");
 
@@ -475,8 +489,10 @@ export function gradeResponse(testCase: EvaluationCase, response: EvaluationResp
   };
 }
 
-export function buildCanonicalPrompt(resourceName: string, testCase: EvaluationCase): string {
-  return `Evaluate the document according to the ${resourceName} resource's own instructions.
+export function buildCanonicalPrompt(suite: EvaluationSuite, testCase: EvaluationCase): string {
+  return `Protocol: ${suite.protocol}
+
+Evaluate the document according to the ${suite.resource.name} resource's own instructions.
 
 Return only a JSON object with this shape:
 {

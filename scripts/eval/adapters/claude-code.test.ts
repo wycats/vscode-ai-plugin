@@ -9,6 +9,7 @@ import type { EvaluationSuite } from "../core.ts";
 
 const suite: EvaluationSuite = {
   schemaVersion: 1,
+  protocol: "document-review/v1",
   resource: {
     identity: "wycats-plugin:agents/slop-linter",
     name: "slop-linter",

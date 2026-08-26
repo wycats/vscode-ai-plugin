@@ -6,6 +6,12 @@ same request into each host and report the target, transport, model mapping,
 selected launcher model role and target model, source revision, raw response,
 and grade.
 
+Every suite declares the behavioral protocol it exercises. Version one supports
+`document-review/v1`: the resource evaluates a document and returns structured
+findings plus the complete rewritten document. A resource with a different task
+needs another explicit protocol and grader rather than inheriting this response
+shape implicitly.
+
 Each positive case should have a nearby counterexample. A phrase can be a useful
 clue without being a defect in every context. The paired case keeps the
 evaluation attached to the judgment the resource is meant to make.

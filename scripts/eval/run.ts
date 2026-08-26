@@ -144,7 +144,7 @@ async function run(): Promise<void> {
     console.log(`Transport: ${adapter.transport}`);
     for (const testCase of cases) {
       console.log(`\n--- ${testCase.id}: ${testCase.description} ---\n`);
-      const canonicalPrompt = buildCanonicalPrompt(suite.resource.name, testCase);
+      const canonicalPrompt = buildCanonicalPrompt(suite, testCase);
       console.log("Canonical request:\n");
       console.log(canonicalPrompt);
       console.log("\nTarget projection:\n");
@@ -167,7 +167,7 @@ async function run(): Promise<void> {
 
   for (const testCase of cases) {
     process.stdout.write(`${testCase.id}... `);
-    const canonicalPrompt = buildCanonicalPrompt(suite.resource.name, testCase);
+    const canonicalPrompt = buildCanonicalPrompt(suite, testCase);
     const projectedPrompt = adapter.projectPrompt(suite, canonicalPrompt);
     let rawResponse: string | undefined;
     let stderr: string | undefined;
@@ -225,6 +225,7 @@ async function run(): Promise<void> {
     schemaVersion: 1,
     suite: {
       path: displayPath(options.suitePath),
+      protocol: suite.protocol,
       resource: suite.resource,
       description: suite.description,
       suiteDigest,
