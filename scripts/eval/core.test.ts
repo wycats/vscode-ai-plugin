@@ -216,6 +216,20 @@ void test("allows multiple exact quotes to cover one required passage", () => {
 
 void test("rejects overlapping quotes on one required passage", () => {
   const passage = "The opening is broad and unsupported.";
+  const findings: EvaluationResponse["findings"] = [
+    {
+      quote: "The opening is broad",
+      label: "Generic claims",
+      why: "The claim is broad.",
+      action: "delete",
+    },
+    {
+      quote: "broad and unsupported.",
+      label: "Generic claims",
+      why: "The claim is unsupported.",
+      action: "delete",
+    },
+  ];
   const grade = gradeResponse(
     {
       id: "overlapping-coverage",
@@ -224,27 +238,28 @@ void test("rejects overlapping quotes on one required passage", () => {
       expect: { requiredFindings: [{ passage }] },
     },
     {
-      findings: [
-        {
-          quote: "The opening is broad",
-          label: "Generic claims",
-          why: "The claim is broad.",
-          action: "delete",
-        },
-        {
-          quote: "broad and unsupported.",
-          label: "Generic claims",
-          why: "The claim is unsupported.",
-          action: "delete",
-        },
-      ],
+      findings,
       rewrittenDocument: "",
     },
   );
   assert.equal(grade.passed, false);
   assert.deepEqual(grade.failures, [
-    "Finding 2 overlaps an earlier finding on the same required passage.",
+    "Finding 2 overlaps an earlier finding in the document.",
     `Findings do not cover required passage ${JSON.stringify(passage)}.`,
+  ]);
+
+  const countOnlyGrade = gradeResponse(
+    {
+      id: "count-only-overlap",
+      description: "Count-only overlapping diagnoses",
+      document: passage,
+      expect: { maximumFindings: 2 },
+    },
+    { findings, rewrittenDocument: passage },
+  );
+  assert.equal(countOnlyGrade.passed, false);
+  assert.deepEqual(countOnlyGrade.failures, [
+    "Finding 2 overlaps an earlier finding in the document.",
   ]);
 });
 

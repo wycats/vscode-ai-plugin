@@ -401,24 +401,15 @@ export function gradeResponse(testCase: EvaluationCase, response: EvaluationResp
     seenQuotes.add(finding.quote);
     for (const earlier of acceptedFindings) {
       if (earlier.quote === finding.quote) continue;
+      const earlierStart = testCase.document.indexOf(earlier.quote);
       if (
-        requirements.some((requirement) => {
-          if (
-            !findingSatisfiesRequirement(earlier, requirement) ||
-            !findingSatisfiesRequirement(finding, requirement)
-          ) {
-            return false;
-          }
-          const earlierStart = requirement.passage.indexOf(earlier.quote);
-          const findingStart = requirement.passage.indexOf(finding.quote);
-          return (
-            earlierStart < findingStart + finding.quote.length &&
-            findingStart < earlierStart + earlier.quote.length
-          );
-        })
+        earlierStart !== -1 &&
+        firstOccurrence !== -1 &&
+        earlierStart < firstOccurrence + finding.quote.length &&
+        firstOccurrence < earlierStart + earlier.quote.length
       ) {
         failures.push(
-          `Finding ${String(index + 1)} overlaps an earlier finding on the same required passage.`,
+          `Finding ${String(index + 1)} overlaps an earlier finding in the document.`,
         );
         break;
       }
