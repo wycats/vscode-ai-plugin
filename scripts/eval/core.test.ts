@@ -447,7 +447,21 @@ void test("requires a positive rewrite to remove the diagnosed defect", () => {
   });
   assert.equal(todoGrade.passed, false);
   assert.deepEqual(todoGrade.failures, [
-    "Finding 1 uses action TODO without adding TODO(MISSING) to the rewritten document.",
+    "Finding 1 uses action TODO without adding a new TODO(MISSING) marker to the rewritten document.",
+  ]);
+
+  const existingTodoCase: EvaluationCase = {
+    ...removalCase,
+    document: `${testCase.document} TODO(MISSING): Existing gap.`,
+  };
+  const existingTodoGrade = gradeResponse(existingTodoCase, {
+    ...response,
+    findings: [{ ...response.findings[0], action: "TODO" }],
+    rewrittenDocument: "The report records the target. TODO(MISSING): Existing gap.",
+  });
+  assert.equal(existingTodoGrade.passed, false);
+  assert.deepEqual(existingTodoGrade.failures, [
+    "Finding 1 uses action TODO without adding a new TODO(MISSING) marker to the rewritten document.",
   ]);
 });
 
