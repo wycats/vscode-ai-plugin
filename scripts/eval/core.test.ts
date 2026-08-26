@@ -255,7 +255,7 @@ void test("rejects overlapping quotes on one required passage", () => {
       document: passage,
       expect: { maximumFindings: 2 },
     },
-    { findings, rewrittenDocument: passage },
+    { findings, rewrittenDocument: "" },
   );
   assert.equal(countOnlyGrade.passed, false);
   assert.deepEqual(countOnlyGrade.failures, [
@@ -281,7 +281,7 @@ void test("rejects a finding quote that does not identify one occurrence", () =>
           action: "delete",
         },
       ],
-      rewrittenDocument: repeated,
+      rewrittenDocument: "",
     },
   );
   assert.equal(grade.passed, false);
@@ -437,7 +437,17 @@ void test("requires a positive rewrite to remove the diagnosed defect", () => {
   });
   assert.equal(grade.passed, false);
   assert.deepEqual(grade.failures, [
+    "Finding 1 action replace leaves its quoted text in the rewritten document.",
     "Rewritten document still includes \"This changes everything.\".",
+  ]);
+
+  const todoGrade = gradeResponse(removalCase, {
+    ...response,
+    findings: [{ ...response.findings[0], action: "TODO" }],
+  });
+  assert.equal(todoGrade.passed, false);
+  assert.deepEqual(todoGrade.failures, [
+    "Finding 1 uses action TODO without adding TODO(MISSING) to the rewritten document.",
   ]);
 });
 

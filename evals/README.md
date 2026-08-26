@@ -12,6 +12,10 @@ findings plus the complete rewritten document. A resource with a different task
 needs another explicit protocol and grader rather than inheriting this response
 shape implicitly.
 
+Finding actions are part of that protocol. Every action removes its exact quote
+from the rewrite. `TODO` also requires a `TODO(MISSING)` marker in the rewritten
+document.
+
 Each positive case should have a nearby counterexample. A phrase can be a useful
 clue without being a defect in every context. The paired case keeps the
 evaluation attached to the judgment the resource is meant to make.
