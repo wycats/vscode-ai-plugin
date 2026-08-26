@@ -209,6 +209,7 @@ export function parseSuite(value: unknown): EvaluationSuite {
   const cases = value.cases.map((entry, index): EvaluationCase => {
     const path = `cases[${String(index)}]`;
     if (!isRecord(entry)) throw new Error(`${path} must be an object.`);
+    rejectUnknownKeys(entry, ["id", "description", "document", "expect"], path);
     const id = requireString(entry.id, `${path}.id`);
     if (seenIds.has(id)) throw new Error(`${path}.id duplicates '${id}'.`);
     seenIds.add(id);

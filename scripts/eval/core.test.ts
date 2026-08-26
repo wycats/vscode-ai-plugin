@@ -554,6 +554,29 @@ void test("validates suite identity and assertions", () => {
         description: "Example",
         cases: [
           {
+            id: "misplaced-assertion",
+            description: "Misplaced assertion",
+            document: "Text",
+            expect: { rewriteEqualsInput: true },
+            rewriteEquals: "Text",
+          },
+        ],
+      }),
+    /cases\[0\] contains unknown field: rewriteEquals/,
+  );
+  assert.throws(
+    () =>
+      parseSuite({
+        schemaVersion: 1,
+        protocol: "document-review/v1",
+        resource: {
+          identity: "wycats-plugin:agents/slop-linter",
+          name: "slop-linter",
+          path: "agents/slop-linter.agent.md",
+        },
+        description: "Example",
+        cases: [
+          {
             id: "unknown-finding-field",
             description: "Unknown required-finding field",
             document: "Text",
