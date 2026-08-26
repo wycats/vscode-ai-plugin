@@ -89,7 +89,7 @@ function parseOptions(args = process.argv.slice(2)): Options {
   if (adapter !== "claude-code-cli") {
     argumentError(adapter ? `Unsupported adapter: ${adapter}.` : "Missing --adapter.");
   }
-  return { adapter, suitePath, caseId, outputPath, dryRun };
+  return { adapter: "claude-code-cli", suitePath, caseId, outputPath, dryRun };
 }
 
 function selectCases(cases: EvaluationCase[], caseId?: string): EvaluationCase[] {
