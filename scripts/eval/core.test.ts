@@ -52,6 +52,20 @@ void test("parses plain and fenced JSON responses", () => {
       ),
     /Response JSON contains duplicate member "findings" at \$/,
   );
+  assert.throws(
+    () =>
+      parseEvaluationResponse(
+        '{"findings":[],"rewrittenDocument":"Unchanged.","analysis":"extra"}',
+      ),
+    /Response contains unknown field: analysis/,
+  );
+  assert.throws(
+    () =>
+      parseEvaluationResponse(
+        '{"findings":[{"quote":"Text","label":"Generic claims","why":"Unsupported.","action":"delete","confidence":1}],"rewrittenDocument":""}',
+      ),
+    /findings\[0\] contains unknown field: confidence/,
+  );
 });
 
 void test("rejects unsupported finding actions", () => {

@@ -1,4 +1,5 @@
 import matter from "gray-matter";
+import { posix } from "node:path";
 import type { EvaluationResource } from "./core.ts";
 
 export const CANONICAL_RESOURCE_AUTHORITY = "wycats-plugin";
@@ -11,6 +12,9 @@ export interface CanonicalResourceDescriptor {
 
 export function canonicalResourceDescriptor(path: string): CanonicalResourceDescriptor {
   const normalized = path.replaceAll("\\", "/");
+  if (path !== normalized || posix.normalize(normalized) !== normalized) {
+    throw new Error(`Resource path '${path}' must use its canonical repository-relative form.`);
+  }
   const agent = normalized.match(/^agents\/(.+)\.agent\.md$/);
   if (agent) return { kind: "agent", name: agent[1], locator: `agents/${agent[1]}` };
 

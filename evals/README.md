@@ -35,8 +35,9 @@ inside a larger rewrite. `rewriteEquals` names the complete expected result when
 the rewrite must remove a defect without changing or adding anything else, while
 `rewriteEqualsInput` protects a clean document as a whole.
 
-Suite JSON rejects repeated object member names before schema validation, so an
-edited assertion cannot silently replace another assertion with the same name.
+Suite and response JSON reject repeated object member names before schema
+validation, so one value cannot silently replace another. Responses also reject
+undeclared fields rather than hiding output-contract drift during grading.
 
 ## Running the suite
 

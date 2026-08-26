@@ -71,7 +71,7 @@
             "labelsAnyOf": ["Ornamental triads", "Generic claims"]
           }
         ],
-        "rewriteEquals": "It runs evaluation cases from a JSON file."
+        "rewriteEquals": "The new harness runs evaluation cases from a JSON file."
       }
     },
     {

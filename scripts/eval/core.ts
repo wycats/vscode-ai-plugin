@@ -296,6 +296,7 @@ function rejectDuplicateJsonMembers(node: JsonNode, location: string, context: s
 
 function parseFinding(value: unknown, path: string): EvaluationFinding {
   if (!isRecord(value)) throw new Error(`${path} must be an object.`);
+  rejectUnknownKeys(value, ["quote", "label", "why", "action"], path);
   const action = requireString(value.action, `${path}.action`);
   if (action !== "delete" && action !== "replace" && action !== "TODO") {
     throw new Error(`${path}.action must be delete, replace, or TODO.`);
@@ -323,6 +324,7 @@ export function parseEvaluationResponse(raw: string): EvaluationResponse {
   if (!tree) throw new Error("Could not inspect response JSON.");
   rejectDuplicateJsonMembers(tree, "$", "Response JSON");
   if (!isRecord(value)) throw new Error("Response must be a JSON object.");
+  rejectUnknownKeys(value, ["findings", "rewrittenDocument"], "Response");
   if (!Array.isArray(value.findings)) throw new Error("Response findings must be an array.");
 
   return {
