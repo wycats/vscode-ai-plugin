@@ -11,9 +11,16 @@ export interface AdapterObservation {
 }
 
 export interface ResourceInvocation {
-  tool: string;
+  surface: "cli-agent" | "tool";
   resource: string;
-  toolUseId: string;
+  tool?: string;
+  toolUseId?: string;
+}
+
+export interface AdapterRequest {
+  canonicalPrompt: string;
+  projectedPrompt: string;
+  resource: EvaluationResource;
 }
 
 export interface AdapterMetadata {
@@ -40,5 +47,5 @@ export interface EvaluationAdapter {
   prepare(): Promise<AdapterMetadata>;
   projectedResourcePath(resource: EvaluationResource): string;
   projectPrompt(suite: EvaluationSuite, canonicalPrompt: string): string;
-  execute(projectedPrompt: string, resource: EvaluationResource): AdapterObservation;
+  execute(request: AdapterRequest): AdapterObservation;
 }

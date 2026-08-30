@@ -8,6 +8,7 @@ import { canonicalResourceDescriptor } from "../resource.ts";
 import type {
   AdapterMetadata,
   AdapterObservation,
+  AdapterRequest,
   EvaluationAdapter,
   ResourceInvocation,
 } from "./adapter.ts";
@@ -32,26 +33,43 @@ function matchingInvocation(
   const descriptor = canonicalResourceDescriptor(resource.path);
   const expectedResource = `${pluginName}:${descriptor.name}`;
   if (
-    descriptor.kind === "agent" &&
-    (block.name === "Agent" || block.name === "Task") &&
-    block.input.subagent_type === expectedResource
-  ) {
-    return { tool: block.name, resource: expectedResource, toolUseId: block.id };
-  }
-  if (
     descriptor.kind !== "agent" &&
     block.name === "Skill" &&
     block.input.skill === expectedResource
   ) {
-    return { tool: "Skill", resource: expectedResource, toolUseId: block.id };
+    return {
+      surface: "tool",
+      tool: "Skill",
+      resource: expectedResource,
+      toolUseId: block.id,
+    };
   }
   return undefined;
+}
+
+export function claudeCodeInvocation(
+  resource: EvaluationResource,
+  pluginName: string,
+  canonicalPrompt: string,
+  projectedPrompt: string,
+): { resourceArguments: string[]; prompt: string; directInvocation?: ResourceInvocation } {
+  const descriptor = canonicalResourceDescriptor(resource.path);
+  if (descriptor.kind !== "agent") {
+    return { resourceArguments: [], prompt: projectedPrompt };
+  }
+  const scopedName = `${pluginName}:${descriptor.name}`;
+  return {
+    resourceArguments: ["--agent", scopedName],
+    prompt: canonicalPrompt,
+    directInvocation: { surface: "cli-agent", resource: scopedName },
+  };
 }
 
 export function parseClaudeCodeStream(
   output: string,
   resource: EvaluationResource,
   pluginName: string,
+  directInvocation?: ResourceInvocation,
 ): { result: string; resourceInvocation: ResourceInvocation } {
   const events = output
     .split("\n")
@@ -73,7 +91,7 @@ export function parseClaudeCodeStream(
 
   const invocations: ResourceInvocation[] = [];
   const completedToolUses = new Set<string>();
-  let result: string | undefined;
+  let launcherResult: string | undefined;
 
   for (const event of events) {
     if (event.type === "assistant") {
@@ -101,23 +119,31 @@ export function parseClaudeCodeStream(
       event.is_error !== true &&
       typeof event.result === "string"
     ) {
-      result = event.result;
+      launcherResult = event.result;
     }
   }
 
-  const resourceInvocation = invocations.find((invocation) =>
-    completedToolUses.has(invocation.toolUseId),
-  );
+  const descriptor = canonicalResourceDescriptor(resource.path);
+  const expectedResource = `${pluginName}:${descriptor.name}`;
+  const resourceInvocation =
+    descriptor.kind === "agent"
+      ? directInvocation?.surface === "cli-agent" && directInvocation.resource === expectedResource
+        ? directInvocation
+        : undefined
+      : invocations.find(
+          (invocation) =>
+            invocation.toolUseId !== undefined && completedToolUses.has(invocation.toolUseId),
+        );
   if (!resourceInvocation) {
     const descriptor = canonicalResourceDescriptor(resource.path);
     throw new Error(
       `Claude Code did not complete a ${pluginName}:${descriptor.name} resource invocation.`,
     );
   }
-  if (result === undefined) {
+  if (launcherResult === undefined) {
     throw new Error("Claude Code stream did not contain a successful result event.");
   }
-  return { result, resourceInvocation };
+  return { result: launcherResult, resourceInvocation };
 }
 
 export class ClaudeCodeCliAdapter implements EvaluationAdapter {
@@ -196,14 +222,21 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
 
   projectPrompt(suite: EvaluationSuite, canonicalPrompt: string): string {
     const descriptor = canonicalResourceDescriptor(suite.resource.path);
-    const invocationKind = descriptor.kind === "agent" ? "agent" : "skill";
-    return `Use the ${suite.resource.name} ${invocationKind} from the loaded plugin for this task.\n\n${canonicalPrompt}`;
+    if (descriptor.kind === "agent") return canonicalPrompt;
+    return `Invoke the ${suite.resource.name} skill from the loaded plugin before answering the canonical request below.\n\n${canonicalPrompt}`;
   }
 
-  execute(projectedPrompt: string, resource: EvaluationResource): AdapterObservation {
+  execute(request: AdapterRequest): AdapterObservation {
     if (!this.#command || !this.#pluginName) {
       throw new Error("Claude Code CLI adapter has not been prepared.");
     }
+    const { canonicalPrompt, projectedPrompt, resource } = request;
+    const invocation = claudeCodeInvocation(
+      resource,
+      this.#pluginName,
+      canonicalPrompt,
+      projectedPrompt,
+    );
     const started = performance.now();
     const result = spawnSync(
       this.#command.executable,
@@ -211,8 +244,9 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
         ...this.#command.argumentPrefix,
         "--plugin-dir",
         this.#projection,
+        ...invocation.resourceArguments,
         "-p",
-        projectedPrompt,
+        invocation.prompt,
         "--output-format",
         "stream-json",
         "--verbose",
@@ -239,7 +273,12 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
     };
     if (observation.executionError || observation.exitCode !== 0) return observation;
     try {
-      const parsed = parseClaudeCodeStream(result.stdout, resource, this.#pluginName);
+      const parsed = parseClaudeCodeStream(
+        result.stdout,
+        resource,
+        this.#pluginName,
+        invocation.directInvocation,
+      );
       return {
         ...observation,
         rawResponse: parsed.result,

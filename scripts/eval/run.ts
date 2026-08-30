@@ -133,6 +133,14 @@ async function assertSnapshotUnchanged(path: string, source: string, label: stri
   }
 }
 
+function adapterFailureMessage(message: string, stderr: string): string {
+  const detail = stderr.trim();
+  if (!detail) return message;
+  const limit = 1_000;
+  const snippet = detail.length > limit ? `${detail.slice(0, limit)}…` : detail;
+  return `${message}\nAdapter stderr: ${snippet}`;
+}
+
 async function run(): Promise<void> {
   const options = parseOptions();
   const { suite, source: suiteSource } = await loadSuiteSnapshot(options.suitePath);
@@ -201,7 +209,16 @@ async function run(): Promise<void> {
     let exitCode: number | null | undefined;
     let executionError: string | undefined;
     try {
-      const observation = adapter.execute(projectedPrompt, suite.resource);
+      await assertSnapshotUnchanged(
+        projectedResourcePath,
+        projectedResourceSource,
+        "Projected resource",
+      );
+      const observation = adapter.execute({
+        canonicalPrompt,
+        projectedPrompt,
+        resource: suite.resource,
+      });
       rawResponse = observation.rawResponse;
       transportOutput = observation.transportOutput;
       resourceInvocation = observation.resourceInvocation;
@@ -209,9 +226,17 @@ async function run(): Promise<void> {
       durationMs = observation.durationMs;
       exitCode = observation.exitCode;
       executionError = observation.executionError;
+      await assertSnapshotUnchanged(
+        projectedResourcePath,
+        projectedResourceSource,
+        "Projected resource",
+      );
       if (executionError || exitCode !== 0) {
         throw new Error(
-          executionError ?? `${adapter.id} exited with status ${String(exitCode)}.`,
+          adapterFailureMessage(
+            executionError ?? `${adapter.id} exited with status ${String(exitCode)}.`,
+            stderr,
+          ),
         );
       }
       const response = parseEvaluationResponse(observation.rawResponse);

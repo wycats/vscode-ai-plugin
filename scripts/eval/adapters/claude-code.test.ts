@@ -4,7 +4,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { resolveClaudeCommand } from "../../claude-executable.ts";
-import { ClaudeCodeCliAdapter, parseClaudeCodeStream } from "./claude-code.ts";
+import {
+  ClaudeCodeCliAdapter,
+  claudeCodeInvocation,
+  parseClaudeCodeStream,
+} from "./claude-code.ts";
 import type { EvaluationSuite } from "../core.ts";
 
 const suite: EvaluationSuite = {
@@ -56,7 +60,7 @@ void test("adds only the Claude Code invocation envelope to a canonical request"
   const canonicalPrompt = "Canonical request";
   assert.equal(
     adapter.projectPrompt(suite, canonicalPrompt),
-    "Use the slop-linter agent from the loaded plugin for this task.\n\nCanonical request",
+    "Canonical request",
   );
 });
 
@@ -72,7 +76,7 @@ void test("projects skills and stances through Claude Code's skill surface", () 
   };
   assert.equal(
     adapter.projectPrompt(stanceSuite, "Canonical request"),
-    "Use the relational-continuity skill from the loaded plugin for this task.\n\nCanonical request",
+    "Invoke the relational-continuity skill from the loaded plugin before answering the canonical request below.\n\nCanonical request",
   );
   assert.equal(
     adapter.projectedResourcePath(suite.resource),
@@ -88,41 +92,44 @@ function stream(...events: unknown[]): string {
   return events.map((event) => JSON.stringify(event)).join("\n");
 }
 
-void test("requires a completed invocation of the projected agent", () => {
-  const result = '{"findings":[],"rewrittenDocument":"Text"}';
+void test("runs a projected agent directly through Claude Code's agent surface", () => {
+  const canonicalPrompt = "Canonical request";
+  const result = '{"findings":[],"rewrittenDocument":"Agent result"}';
+  const invocation = claudeCodeInvocation(
+    suite.resource,
+    "wycats-ai-plugin",
+    canonicalPrompt,
+    "Projected launcher prompt",
+  );
+  assert.deepEqual(invocation, {
+    resourceArguments: ["--agent", "wycats-ai-plugin:slop-linter"],
+    prompt: canonicalPrompt,
+    directInvocation: {
+      surface: "cli-agent",
+      resource: "wycats-ai-plugin:slop-linter",
+    },
+  });
+  assert.throws(
+    () =>
+      parseClaudeCodeStream(
+        stream({ type: "result", subtype: "success", is_error: false, result }),
+        suite.resource,
+        "wycats-ai-plugin",
+      ),
+    /did not complete a wycats-ai-plugin:slop-linter resource invocation/,
+  );
   assert.deepEqual(
     parseClaudeCodeStream(
-      stream(
-        {
-          type: "assistant",
-          message: {
-            content: [
-              {
-                type: "tool_use",
-                id: "agent-1",
-                name: "Agent",
-                input: { subagent_type: "wycats-ai-plugin:slop-linter" },
-              },
-            ],
-          },
-        },
-        {
-          type: "user",
-          message: {
-            content: [{ type: "tool_result", tool_use_id: "agent-1", content: result }],
-          },
-        },
-        { type: "result", subtype: "success", is_error: false, result },
-      ),
+      stream({ type: "result", subtype: "success", is_error: false, result }),
       suite.resource,
       "wycats-ai-plugin",
+      invocation.directInvocation,
     ),
     {
       result,
       resourceInvocation: {
-        tool: "Agent",
+        surface: "cli-agent",
         resource: "wycats-ai-plugin:slop-linter",
-        toolUseId: "agent-1",
       },
     },
   );
@@ -165,6 +172,7 @@ void test("recognizes a completed invocation through the projected skill surface
     {
       result,
       resourceInvocation: {
+        surface: "tool",
         tool: "Skill",
         resource: "wycats-ai-plugin:relational-continuity",
         toolUseId: "skill-1",
@@ -173,7 +181,12 @@ void test("recognizes a completed invocation through the projected skill surface
   );
 });
 
-void test("rejects a launcher response without a successful resource invocation", () => {
+void test("rejects a skill response without a successful skill invocation", () => {
+  const resource = {
+    identity: "wycats-plugin:stances/relational-continuity",
+    name: "relational-continuity",
+    path: "stances/relational-continuity/SKILL.md",
+  };
   const directResult = stream({
     type: "result",
     subtype: "success",
@@ -181,8 +194,13 @@ void test("rejects a launcher response without a successful resource invocation"
     result: '{"findings":[],"rewrittenDocument":"Text"}',
   });
   assert.throws(
-    () => parseClaudeCodeStream(directResult, suite.resource, "wycats-ai-plugin"),
-    /did not complete a wycats-ai-plugin:slop-linter resource invocation/,
+    () =>
+      parseClaudeCodeStream(
+        directResult,
+        resource,
+        "wycats-ai-plugin",
+      ),
+    /did not complete a wycats-ai-plugin:relational-continuity resource invocation/,
   );
 
   const failedInvocation = stream(
@@ -193,8 +211,8 @@ void test("rejects a launcher response without a successful resource invocation"
           {
             type: "tool_use",
             id: "agent-1",
-            name: "Task",
-            input: { subagent_type: "wycats-ai-plugin:slop-linter" },
+            name: "Skill",
+            input: { skill: "wycats-ai-plugin:relational-continuity" },
           },
         ],
       },
@@ -208,7 +226,12 @@ void test("rejects a launcher response without a successful resource invocation"
     { type: "result", subtype: "success", is_error: false, result: "{}" },
   );
   assert.throws(
-    () => parseClaudeCodeStream(failedInvocation, suite.resource, "wycats-ai-plugin"),
-    /did not complete a wycats-ai-plugin:slop-linter resource invocation/,
+    () =>
+      parseClaudeCodeStream(
+        failedInvocation,
+        resource,
+        "wycats-ai-plugin",
+      ),
+    /did not complete a wycats-ai-plugin:relational-continuity resource invocation/,
   );
 });

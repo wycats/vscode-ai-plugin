@@ -34,5 +34,5 @@ void test("projects one case without invoking the target", () => {
   assert.match(result.stdout, /--- empty-document:/);
   assert.match(result.stdout, /Canonical request:/);
   assert.match(result.stdout, /Target projection:/);
-  assert.match(result.stdout, /Use the slop-linter agent from the loaded plugin/);
+  assert.match(result.stdout, /Target projection:\n\nProtocol: document-review\/v1/);
 });
