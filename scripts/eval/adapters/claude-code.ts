@@ -22,6 +22,10 @@ function messageContent(event: Record<string, unknown>): unknown[] {
   return event.message.content;
 }
 
+function spawnOutput(value: string | null): string {
+  return value ?? "";
+}
+
 function matchingInvocation(
   block: Record<string, unknown>,
   resource: EvaluationResource,
@@ -263,22 +267,19 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
       },
     );
     const durationMs = Math.round(performance.now() - started);
+    const stdout = spawnOutput(result.stdout as string | null);
+    const stderr = spawnOutput(result.stderr as string | null);
     const observation: AdapterObservation = {
       rawResponse: "",
-      transportOutput: result.stdout,
-      stderr: result.stderr,
+      transportOutput: stdout,
+      stderr,
       durationMs,
       exitCode: result.status,
       executionError: result.error?.message,
     };
     if (observation.executionError || observation.exitCode !== 0) return observation;
     try {
-      const parsed = parseClaudeCodeStream(
-        result.stdout,
-        resource,
-        this.#pluginName,
-        invocation.directInvocation,
-      );
+      const parsed = parseClaudeCodeStream(stdout, resource, this.#pluginName, invocation.directInvocation);
       return {
         ...observation,
         rawResponse: parsed.result,
