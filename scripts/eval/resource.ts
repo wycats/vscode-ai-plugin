@@ -36,6 +36,9 @@ export function validateCanonicalResource(
 ): void {
   const descriptor = canonicalResourceDescriptor(resource.path);
   const frontmatter = matter(source).data as Record<string, unknown>;
+  if (typeof frontmatter.description !== "string" || frontmatter.description.trim() === "") {
+    throw new Error(`${resource.path} must declare a non-empty description in frontmatter.`);
+  }
   if (frontmatter.name !== undefined && frontmatter.name !== descriptor.name) {
     throw new Error(
       `Resource name ${JSON.stringify(frontmatter.name)} in ${resource.path} does not match canonical name '${descriptor.name}'.`,
@@ -43,6 +46,9 @@ export function validateCanonicalResource(
   }
   if (descriptor.kind !== "agent" && frontmatter.name === undefined) {
     throw new Error(`${resource.path} must declare its canonical name in frontmatter.`);
+  }
+  if (descriptor.kind === "stance" && frontmatter["user-invocable"] !== false) {
+    throw new Error(`${resource.path} must declare 'user-invocable: false' in frontmatter.`);
   }
   if (resource.name !== descriptor.name) {
     throw new Error(

@@ -74,4 +74,12 @@ void test("projects skills and stances through Claude Code's skill surface", () 
     adapter.projectPrompt(stanceSuite, "Canonical request"),
     "Use the relational-continuity skill from the loaded plugin for this task.\n\nCanonical request",
   );
+  assert.equal(
+    adapter.projectedResourcePath(suite.resource),
+    "/tmp/example-plugin/out/claude-code/agents/slop-linter.agent.md",
+  );
+  assert.equal(
+    adapter.projectedResourcePath(stanceSuite.resource),
+    "/tmp/example-plugin/out/claude-code/skills/relational-continuity/SKILL.md",
+  );
 });

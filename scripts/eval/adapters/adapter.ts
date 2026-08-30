@@ -1,4 +1,4 @@
-import type { EvaluationSuite } from "../core.ts";
+import type { EvaluationResource, EvaluationSuite } from "../core.ts";
 
 export interface AdapterObservation {
   rawResponse: string;
@@ -29,6 +29,7 @@ export interface EvaluationAdapter {
   readonly target: string;
   readonly transport: string;
   prepare(): Promise<AdapterMetadata>;
+  projectedResourcePath(resource: EvaluationResource): string;
   projectPrompt(suite: EvaluationSuite, canonicalPrompt: string): string;
   execute(projectedPrompt: string): AdapterObservation;
 }

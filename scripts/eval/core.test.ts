@@ -713,6 +713,53 @@ void test("validates suite identity and assertions", () => {
       }),
     /cannot combine rewriteEquals with rewriteEqualsInput/,
   );
+  assert.throws(
+    () =>
+      parseSuite({
+        schemaVersion: 1,
+        protocol: "document-review/v1",
+        resource: {
+          identity: "wycats-plugin:agents/slop-linter",
+          name: "slop-linter",
+          path: "agents/slop-linter.agent.md",
+        },
+        description: "Example",
+        cases: [
+          {
+            id: "finding-with-unchanged-rewrite",
+            description: "Contradictory finding and rewrite",
+            document: "Text",
+            expect: {
+              requiredFindings: [{ passage: "Text" }],
+              rewriteEqualsInput: true,
+            },
+          },
+        ],
+      }),
+    /cannot combine requiredFindings with rewriteEqualsInput/,
+  );
+  assert.throws(
+    () =>
+      parseSuite({
+        schemaVersion: 1,
+        protocol: "document-review/v1",
+        resource: {
+          identity: "wycats-plugin:agents/slop-linter",
+          name: "slop-linter",
+          path: "agents/slop-linter.agent.md",
+        },
+        description: "Example",
+        cases: [
+          {
+            id: "exclusion-with-unchanged-rewrite",
+            description: "Contradictory exclusion and rewrite",
+            document: "Text",
+            expect: { rewriteExcludes: ["Text"], rewriteEqualsInput: true },
+          },
+        ],
+      }),
+    /cannot combine rewriteExcludes with rewriteEqualsInput/,
+  );
 });
 
 void test("rejects duplicate JSON members before suite validation", async () => {

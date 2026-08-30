@@ -87,3 +87,42 @@ void test("derives an agent name when frontmatter omits it", () => {
     );
   });
 });
+
+void test("requires runtime discovery frontmatter", () => {
+  assert.throws(
+    () => {
+      validateCanonicalResource(
+        {
+          identity: "wycats-plugin:agents/review",
+          name: "review",
+          path: "agents/review.agent.md",
+        },
+        `---\nname: review\n---\n\nInstructions.\n`,
+      );
+    },
+    /must declare a non-empty description in frontmatter/,
+  );
+  assert.throws(
+    () => {
+      validateCanonicalResource(
+        {
+          identity: "wycats-plugin:stances/quiet-review",
+          name: "quiet-review",
+          path: "stances/quiet-review/SKILL.md",
+        },
+        `---\nname: quiet-review\ndescription: Reviews quietly.\n---\n\nInstructions.\n`,
+      );
+    },
+    /must declare 'user-invocable: false' in frontmatter/,
+  );
+  assert.doesNotThrow(() => {
+    validateCanonicalResource(
+      {
+        identity: "wycats-plugin:stances/quiet-review",
+        name: "quiet-review",
+        path: "stances/quiet-review/SKILL.md",
+      },
+      `---\nname: quiet-review\ndescription: Reviews quietly.\nuser-invocable: false\n---\n\nInstructions.\n`,
+    );
+  });
+});

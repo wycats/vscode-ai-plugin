@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { performance } from "node:perf_hooks";
 import { findClaudeCommand, type ClaudeCommand } from "../../claude-executable.ts";
-import type { EvaluationSuite } from "../core.ts";
+import type { EvaluationResource, EvaluationSuite } from "../core.ts";
 import { canonicalResourceDescriptor } from "../resource.ts";
 import type { AdapterMetadata, AdapterObservation, EvaluationAdapter } from "./adapter.ts";
 
@@ -62,6 +62,14 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
       },
       modelMapping: config.models,
     };
+  }
+
+  projectedResourcePath(resource: EvaluationResource): string {
+    const descriptor = canonicalResourceDescriptor(resource.path);
+    if (descriptor.kind === "stance") {
+      return join(this.#projection, "skills", descriptor.name, "SKILL.md");
+    }
+    return join(this.#projection, resource.path);
   }
 
   projectPrompt(suite: EvaluationSuite, canonicalPrompt: string): string {

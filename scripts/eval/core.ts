@@ -37,6 +37,11 @@ export interface EvaluationSuite {
   cases: EvaluationCase[];
 }
 
+export interface EvaluationSuiteSnapshot {
+  suite: EvaluationSuite;
+  source: string;
+}
+
 export type EvaluationAction = "delete" | "replace" | "TODO";
 
 export interface EvaluationFinding {
@@ -174,6 +179,12 @@ function parseExpectation(value: unknown, path: string): CaseExpectation {
   if (expectation.rewriteEquals !== undefined && expectation.rewriteEqualsInput) {
     throw new Error(`${path} cannot combine rewriteEquals with rewriteEqualsInput.`);
   }
+  if (expectation.rewriteEqualsInput && expectation.requiredFindings?.length) {
+    throw new Error(`${path} cannot combine requiredFindings with rewriteEqualsInput.`);
+  }
+  if (expectation.rewriteEqualsInput && expectation.rewriteExcludes?.length) {
+    throw new Error(`${path} cannot combine rewriteExcludes with rewriteEqualsInput.`);
+  }
 
   if (
     !expectation.requiredFindings?.length &&
@@ -257,8 +268,7 @@ export function parseSuite(value: unknown): EvaluationSuite {
   };
 }
 
-export async function loadSuite(path: string): Promise<EvaluationSuite> {
-  const source = await readFile(path, "utf-8");
+function parseSuiteSource(source: string, path: string): EvaluationSuite {
   let parsed: unknown;
   try {
     parsed = JSON.parse(source) as unknown;
@@ -269,6 +279,15 @@ export async function loadSuite(path: string): Promise<EvaluationSuite> {
   if (!tree) throw new Error(`Could not inspect suite JSON at ${path}.`);
   rejectDuplicateJsonMembers(tree, "$", `Suite JSON at ${path}`);
   return parseSuite(parsed);
+}
+
+export async function loadSuiteSnapshot(path: string): Promise<EvaluationSuiteSnapshot> {
+  const source = await readFile(path, "utf-8");
+  return { suite: parseSuiteSource(source, path), source };
+}
+
+export async function loadSuite(path: string): Promise<EvaluationSuite> {
+  return (await loadSuiteSnapshot(path)).suite;
 }
 
 function rejectDuplicateJsonMembers(node: JsonNode, location: string, context: string): void {

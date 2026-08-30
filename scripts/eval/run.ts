@@ -7,7 +7,7 @@ import { createAdapter } from "./adapters/index.ts";
 import {
   buildCanonicalPrompt,
   gradeResponse,
-  loadSuite,
+  loadSuiteSnapshot,
   parseEvaluationResponse,
   type EvaluationCase,
   type EvaluationResponse,
@@ -119,19 +119,26 @@ function resolveRepositoryPath(path: string): string {
   return resolved;
 }
 
-async function sha256(path: string): Promise<string> {
-  const digest = createHash("sha256").update(await readFile(path)).digest("hex");
+function sha256(source: string): string {
+  const digest = createHash("sha256").update(source).digest("hex");
   return `sha256:${digest}`;
+}
+
+async function assertSnapshotUnchanged(path: string, source: string, label: string): Promise<void> {
+  if ((await readFile(path, "utf-8")) !== source) {
+    throw new Error(`${label} changed while the evaluation was being prepared: ${displayPath(path)}.`);
+  }
 }
 
 async function run(): Promise<void> {
   const options = parseOptions();
-  const suite = await loadSuite(options.suitePath);
+  const { suite, source: suiteSource } = await loadSuiteSnapshot(options.suitePath);
   const cases = selectCases(suite.cases, options.caseId);
   const resourcePath = resolveRepositoryPath(suite.resource.path);
-  validateCanonicalResource(suite.resource, await readFile(resourcePath, "utf-8"));
-  const resourceDigest = await sha256(resourcePath);
-  const suiteDigest = await sha256(options.suitePath);
+  const resourceSource = await readFile(resourcePath, "utf-8");
+  validateCanonicalResource(suite.resource, resourceSource);
+  const resourceDigest = sha256(resourceSource);
+  const suiteDigest = sha256(suiteSource);
   const adapter = createAdapter(options.adapter, ROOT);
 
   if (options.dryRun) {
@@ -153,7 +160,21 @@ async function run(): Promise<void> {
     return;
   }
 
-  const execution = await adapter.prepare();
+  const adapterMetadata = await adapter.prepare();
+  await Promise.all([
+    assertSnapshotUnchanged(options.suitePath, suiteSource, "Evaluation suite"),
+    assertSnapshotUnchanged(resourcePath, resourceSource, "Canonical resource"),
+  ]);
+  const projectedResourcePath = adapter.projectedResourcePath(suite.resource);
+  const projectedResourceSource = await readFile(projectedResourcePath, "utf-8");
+  validateCanonicalResource(suite.resource, projectedResourceSource);
+  const execution = {
+    ...adapterMetadata,
+    projectedResource: {
+      path: displayPath(projectedResourcePath),
+      digest: sha256(projectedResourceSource),
+    },
+  };
   const revision = execFileSync("git", ["rev-parse", "HEAD"], {
     cwd: ROOT,
     encoding: "utf-8",
