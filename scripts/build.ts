@@ -12,6 +12,7 @@
 
 import { readFile, writeFile, mkdir, cp, rm } from "node:fs/promises";
 import { join, relative, dirname, basename, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
 import { ModuleKind, ScriptTarget, transpileModule } from "typescript";
 import {
@@ -25,7 +26,7 @@ import {
   VSCODE_TARGET,
 } from "./target-output.ts";
 
-const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
+const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const DEFAULT_CONFIG_PATH = join(ROOT, "config.json");
 const CONFIG_ENV_VAR = "VSCODE_AI_PLUGIN_CONFIG_PATH";
 

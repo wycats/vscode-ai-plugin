@@ -7,25 +7,27 @@
  * Requires: Claude Code CLI authenticated.
  */
 
-import { execSync } from "node:child_process";
+import { execSync, spawnSync } from "node:child_process";
 import { readFile, writeFile, rm } from "node:fs/promises";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { findClaudeCommand, type ClaudeCommand } from "./claude-executable.ts";
 
-const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
+const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const CC_OUT = join(ROOT, "out", "claude-code");
 const CONFIG_PATH = join(ROOT, "config.json");
 const CC_EXAMPLE = join(ROOT, "config.claude-code.example.json");
 
-// Find claude binary — proto doesn't shim it
-const CLAUDE =
-  execSync("which claude 2>/dev/null || find ~/.proto/tools/node -name claude -type f 2>/dev/null | head -1", {
-    encoding: "utf-8",
-  }).trim();
-
-if (!CLAUDE) {
-  console.error("Claude Code CLI not found. Install with: npm install -g @anthropic-ai/claude-code");
-  process.exit(1);
+function requireClaudeCommand(): ClaudeCommand {
+  const command = findClaudeCommand();
+  if (!command) {
+    console.error("Claude Code CLI not found. Install with: npm install -g @anthropic-ai/claude-code");
+    process.exit(1);
+  }
+  return command;
 }
+
+const CLAUDE = requireClaudeCommand();
 
 const EXPECTED_AGENTS = [
   "execute",
@@ -53,18 +55,48 @@ interface TestResult {
   detail: string;
 }
 
+interface ClaudeInvocation {
+  output: string;
+  failure?: string;
+}
+
 const results: TestResult[] = [];
 
-function cc(prompt: string, maxTurns = 3): string {
-  try {
-    return execSync(
-      `${CLAUDE} --plugin-dir ${CC_OUT} -p ${JSON.stringify(prompt)} --output-format text --max-turns ${String(maxTurns)}`,
-      { cwd: ROOT, encoding: "utf-8", timeout: 120_000, stdio: ["pipe", "pipe", "pipe"] },
-    );
-  } catch (err: unknown) {
-    const e = err as { stdout?: string; stderr?: string; message?: string };
-    return e.stdout ?? e.stderr ?? e.message ?? "unknown error";
+function cc(prompt: string, maxTurns = 3): ClaudeInvocation {
+  const result = spawnSync(
+    CLAUDE.executable,
+    [
+      ...CLAUDE.argumentPrefix,
+      "--plugin-dir",
+      CC_OUT,
+      "-p",
+      prompt,
+      "--output-format",
+      "text",
+      "--max-turns",
+      String(maxTurns),
+    ],
+    {
+      cwd: ROOT,
+      encoding: "utf-8",
+      timeout: 120_000,
+      maxBuffer: 10 * 1024 * 1024,
+      stdio: ["pipe", "pipe", "pipe"],
+    },
+  );
+  if (result.error) return { output: "", failure: result.error.message };
+  if (result.status !== 0) {
+    const detail = result.stderr || result.stdout || "No process output.";
+    const outcome =
+      result.status === null
+        ? `was terminated by signal ${result.signal ?? "unknown"}`
+        : `exited with status ${String(result.status)}`;
+    return {
+      output: "",
+      failure: `Claude Code CLI ${outcome}: ${detail}`,
+    };
   }
+  return { output: result.stdout };
 }
 
 async function ensureCCBuild(): Promise<void> {
@@ -125,16 +157,18 @@ async function run() {
   const agentOutput = cc("List every plugin agent and plugin skill you have. Full names, one per line.", 2);
 
   test("All agents visible", () => {
+    if (agentOutput.failure) return agentOutput.failure;
     const missing = EXPECTED_AGENTS.filter(
-      (a) => !agentOutput.includes(`:${a}`) && !agentOutput.includes(a),
+      (a) => !agentOutput.output.includes(`:${a}`) && !agentOutput.output.includes(a),
     );
     return missing.length === 0 ? true : `missing: ${missing.join(", ")}`;
   });
 
   // Test 2: All skills visible (checks the same output)
   test("All skills visible", () => {
+    if (agentOutput.failure) return agentOutput.failure;
     const missing = EXPECTED_SKILLS.filter(
-      (s) => !agentOutput.includes(`:${s}`) && !agentOutput.includes(s),
+      (s) => !agentOutput.output.includes(`:${s}`) && !agentOutput.output.includes(s),
     );
     return missing.length === 0 ? true : `missing: ${missing.join(", ")}`;
   });
@@ -143,11 +177,12 @@ async function run() {
   const hookOutput = cc("Run this exact bash command: npm install leftpad. Tell me if it was blocked or allowed.", 4);
 
   test("Hook blocks npm", () => {
-    return hookOutput.toLowerCase().includes("block") ||
-      hookOutput.toLowerCase().includes("denied") ||
-      hookOutput.toLowerCase().includes("pnpm")
+    if (hookOutput.failure) return hookOutput.failure;
+    return hookOutput.output.toLowerCase().includes("block") ||
+      hookOutput.output.toLowerCase().includes("denied") ||
+      hookOutput.output.toLowerCase().includes("pnpm")
       ? true
-      : `expected block, got: ${hookOutput.slice(0, 100)}`;
+      : `expected block, got: ${hookOutput.output.slice(0, 100)}`;
   });
 
   // Test 4: Slop-linter agent works
@@ -157,9 +192,12 @@ async function run() {
   );
 
   test("Slop-linter produces findings", () => {
-    return slopOutput.includes("Label") || slopOutput.includes("Generic") || slopOutput.includes("slop")
+    if (slopOutput.failure) return slopOutput.failure;
+    return slopOutput.output.includes("Label") ||
+      slopOutput.output.includes("Generic") ||
+      slopOutput.output.includes("slop")
       ? true
-      : `no findings detected in: ${slopOutput.slice(0, 100)}`;
+      : `no findings detected in: ${slopOutput.output.slice(0, 100)}`;
   });
 
   // Test 5: Recon reads files
@@ -169,9 +207,10 @@ async function run() {
   );
 
   test("Recon reads codebase", () => {
-    return reconOutput.includes("config.json")
+    if (reconOutput.failure) return reconOutput.failure;
+    return reconOutput.output.includes("config.json")
       ? true
-      : `expected mention of config.json: ${reconOutput.slice(0, 100)}`;
+      : `expected mention of config.json: ${reconOutput.output.slice(0, 100)}`;
   });
 
   // Summary

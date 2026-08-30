@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "protocol": "document-review/v1",
+  "resource": {
+    "identity": "wycats-plugin:agents/slop-linter",
+    "name": "slop-linter",
+    "path": "agents/slop-linter.agent.md"
+  },
+  "description": "Distinguish prose defects from legitimate uses of similar forms.",
+  "cases": [
+    {
+      "id": "generic-opening",
+      "description": "A polished opening that contributes no claim or constraint.",
+      "document": "In today's rapidly evolving landscape, organizations must embrace innovation to stay ahead of the curve. This proposal adds structured result files to the evaluation runner.",
+      "expect": {
+        "requiredFindings": [
+          {
+            "passage": "In today's rapidly evolving landscape, organizations must embrace innovation to stay ahead of the curve.",
+            "labelsAnyOf": ["Generic claims", "Rhetorical framing"]
+          }
+        ],
+        "rewriteEquals": "This proposal adds structured result files to the evaluation runner."
+      }
+    },
+    {
+      "id": "concrete-opening",
+      "description": "A direct opening whose details establish the change.",
+      "document": "The evaluation runner writes one JSON result per run. Each result records the target, source revision, raw response, and grade.",
+      "expect": {
+        "rewriteEqualsInput": true
+      }
+    },
+    {
+      "id": "empty-document",
+      "description": "An empty document has no prose to diagnose or rewrite.",
+      "document": "",
+      "expect": {
+        "rewriteEqualsInput": true
+      }
+    },
+    {
+      "id": "empty-contrast",
+      "description": "A contrast that gives the preferred option no additional meaning.",
+      "document": "This is not just a validation script; it is a foundation for confidence. The command runs the configured cases.",
+      "expect": {
+        "requiredFindings": [
+          {
+            "passage": "This is not just a validation script; it is a foundation for confidence.",
+            "labelsAnyOf": ["Empty contrast"]
+          }
+        ],
+        "rewriteEquals": "The command runs the configured cases."
+      }
+    },
+    {
+      "id": "contractual-contrast",
+      "description": "A contrast that defines opposite sides of a contract.",
+      "document": "The upload endpoint does not just accept PNG and JPEG images; it rejects executable files before they reach object storage.",
+      "expect": {
+        "rewriteEqualsInput": true
+      }
+    },
+    {
+      "id": "ornamental-triad",
+      "description": "A three-part list whose terms do not establish testable properties.",
+      "document": "The new harness is robust, scalable, and future-proof. It runs evaluation cases from a JSON file.",
+      "expect": {
+        "requiredFindings": [
+          {
+            "passage": "The new harness is robust, scalable, and future-proof.",
+            "labelsAnyOf": ["Ornamental triads", "Generic claims"]
+          }
+        ],
+        "rewriteEquals": "The new harness runs evaluation cases from a JSON file."
+      }
+    },
+    {
+      "id": "substantive-three-field-list",
+      "description": "Three fields that state the observable contents of an artifact.",
+      "document": "Each result records the target adapter, the canonical source revision, and every failed assertion. These fields let a reviewer reproduce and interpret the run.",
+      "expect": {
+        "rewriteEqualsInput": true
+      }
+    },
+    {
+      "id": "reference-table-fragments",
+      "description": "A real prose defect should be removed without rewriting compact reference-table cells.",
+      "document": "In today's rapidly evolving landscape, component APIs must be intuitive and powerful.\n\n| Prop | Description |\n| --- | --- |\n| selectedId | Currently selected item id. Bindable. |\n| disabled | Prevents interaction. |\n| onSelect | Called with the selected item id. |",
+      "expect": {
+        "requiredFindings": [
+          {
+            "passage": "In today's rapidly evolving landscape, component APIs must be intuitive and powerful."
+          }
+        ],
+        "rewriteEquals": "| Prop | Description |\n| --- | --- |\n| selectedId | Currently selected item id. Bindable. |\n| disabled | Prevents interaction. |\n| onSelect | Called with the selected item id. |"
+      }
+    },
+    {
+      "id": "label-as-prose",
+      "description": "A label presented as though it were a sentence in running prose.",
+      "document": "The current module mixes parsing with process execution. **Extract to:** a target adapter. The runner should own case selection and grading.",
+      "expect": {
+        "requiredFindings": [
+          {
+            "passage": "**Extract to:** a target adapter.",
+            "labelsAnyOf": ["Label-only pseudo-sentences"]
+          }
+        ],
+        "rewriteEquals": "The current module mixes parsing with process execution. Process execution belongs in a target adapter. The runner should own case selection and grading."
+      }
+    },
+    {
+      "id": "label-as-heading",
+      "description": "The same label used as a heading for several concrete destinations.",
+      "document": "## Extract to\n\n- `parser.ts` owns suite parsing.\n- `runner.ts` owns case selection and grading.\n- `adapter.ts` owns target invocation.",
+      "expect": {
+        "rewriteEqualsInput": true
+      }
+    }
+  ]
+}
