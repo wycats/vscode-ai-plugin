@@ -36,3 +36,25 @@ void test("projects one case without invoking the target", () => {
   assert.match(result.stdout, /Target projection:/);
   assert.match(result.stdout, /Target projection:\n\nProtocol: document-review\/v1/);
 });
+
+void test("refuses output paths that overwrite evaluation inputs", () => {
+  const suiteResult = runEval([
+    "--adapter",
+    "claude-code-cli",
+    "--dry-run",
+    "--output",
+    "evals/slop-linter/cases.json",
+  ]);
+  assert.equal(suiteResult.status, 1);
+  assert.match(suiteResult.stderr, /must not overwrite the evaluation suite/);
+
+  const resourceResult = runEval([
+    "--adapter",
+    "claude-code-cli",
+    "--dry-run",
+    "--output",
+    "agents/slop-linter.agent.md",
+  ]);
+  assert.equal(resourceResult.status, 1);
+  assert.match(resourceResult.stderr, /must not overwrite the canonical resource/);
+});

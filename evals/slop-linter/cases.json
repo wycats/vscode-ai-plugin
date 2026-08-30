@@ -55,7 +55,7 @@
     {
       "id": "contractual-contrast",
       "description": "A contrast that defines opposite sides of a contract.",
-      "document": "The upload endpoint accepts PNG and JPEG images and rejects executable files. Rejected files never reach object storage.",
+      "document": "The upload endpoint does not just accept PNG and JPEG images; it rejects executable files before they reach object storage.",
       "expect": {
         "rewriteEqualsInput": true
       }
@@ -106,7 +106,7 @@
             "labelsAnyOf": ["Label-only pseudo-sentences"]
           }
         ],
-        "rewriteEquals": "The current module mixes parsing with process execution. The runner should own case selection and grading."
+        "rewriteEquals": "The current module mixes parsing with process execution. Process execution belongs in a target adapter. The runner should own case selection and grading."
       }
     },
     {

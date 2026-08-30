@@ -233,15 +233,41 @@ export function parseSuite(value: unknown): EvaluationSuite {
       if (document.indexOf(requirement.passage) !== document.lastIndexOf(requirement.passage)) {
         throw new Error(`${path}.expect required passage appears more than once in the document.`);
       }
+      if (expect.rewriteEquals?.includes(requirement.passage)) {
+        throw new Error(`${path}.expect rewriteEquals retains a required finding passage.`);
+      }
     }
     for (const preserved of expect.rewritePreserves ?? []) {
       if (!document.includes(preserved)) {
         throw new Error(`${path}.expect preserved text does not appear in the document.`);
       }
+      if (expect.rewriteEquals !== undefined && !expect.rewriteEquals.includes(preserved)) {
+        throw new Error(`${path}.expect rewriteEquals does not preserve required exact text.`);
+      }
     }
     for (const excluded of expect.rewriteExcludes ?? []) {
       if (!document.includes(excluded)) {
         throw new Error(`${path}.expect excluded text does not appear in the document.`);
+      }
+      if (countNormalizedOccurrences(document, excluded) !== 1) {
+        throw new Error(
+          `${path}.expect excluded text must have one case- and whitespace-normalized occurrence in the document.`,
+        );
+      }
+      if (
+        expect.rewriteEquals !== undefined &&
+        normalize(expect.rewriteEquals).includes(normalize(excluded))
+      ) {
+        throw new Error(`${path}.expect rewriteEquals retains excluded text.`);
+      }
+    }
+    for (const included of expect.rewriteIncludes ?? []) {
+      const expectedRewrite = expect.rewriteEquals ?? (expect.rewriteEqualsInput ? document : undefined);
+      if (
+        expectedRewrite !== undefined &&
+        !normalize(expectedRewrite).includes(normalize(included))
+      ) {
+        throw new Error(`${path}.expect exact rewrite does not include required text.`);
       }
     }
     return {
@@ -357,6 +383,20 @@ export function parseEvaluationResponse(raw: string): EvaluationResponse {
 
 function normalize(value: string): string {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function countNormalizedOccurrences(value: string, token: string): number {
+  const source = normalize(value);
+  const target = normalize(token);
+  let count = 0;
+  let offset = 0;
+  while (offset <= source.length - target.length) {
+    const index = source.indexOf(target, offset);
+    if (index === -1) break;
+    count++;
+    offset = index + target.length;
+  }
+  return count;
 }
 
 function compactWhitespace(value: string): string {

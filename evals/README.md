@@ -34,9 +34,10 @@ the contract; leave them out when the case is only about whether the passage
 receives a finding.
 Use `maximumFindings` when finding count is itself meaningful, including when
 the suite leaves the particular findings open. `rewriteExcludes` verifies that
-a diagnosed defect was removed. `rewritePreserves` keeps an exact span unchanged
-inside a larger rewrite. `rewriteEquals` names the complete expected result when
-the rewrite must remove a defect without changing or adding anything else, while
+a diagnosed defect was removed; its case- and whitespace-normalized form must
+identify one input span. `rewritePreserves` keeps an exact span unchanged inside
+a larger rewrite. `rewriteEquals` names the complete expected result when the
+rewrite must remove a defect without changing or adding anything else, while
 `rewriteEqualsInput` protects a clean document as a whole.
 
 Suite and response JSON reject repeated object member names before schema

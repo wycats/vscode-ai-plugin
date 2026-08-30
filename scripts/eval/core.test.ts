@@ -762,6 +762,72 @@ void test("validates suite identity and assertions", () => {
   );
 });
 
+void test("rejects deterministic rewrite contradictions and ambiguous exclusions", () => {
+  function suiteWithExpectation(document: string, expect: Record<string, unknown>) {
+    return {
+      schemaVersion: 1,
+      protocol: "document-review/v1",
+      resource: {
+        identity: "wycats-plugin:agents/slop-linter",
+        name: "slop-linter",
+        path: "agents/slop-linter.agent.md",
+      },
+      description: "Example",
+      cases: [{ id: "case", description: "Example case", document, expect }],
+    };
+  }
+
+  assert.throws(
+    () =>
+      parseSuite(
+        suiteWithExpectation("Text", {
+          requiredFindings: [{ passage: "Text" }],
+          rewriteEquals: "Text",
+        }),
+      ),
+    /rewriteEquals retains a required finding passage/,
+  );
+  assert.throws(
+    () =>
+      parseSuite(
+        suiteWithExpectation("Vague claim. The guide also says vague claim.", {
+          rewriteExcludes: ["Vague claim."],
+        }),
+      ),
+    /excluded text must have one case- and whitespace-normalized occurrence/,
+  );
+  assert.throws(
+    () =>
+      parseSuite(
+        suiteWithExpectation("Text", {
+          rewriteExcludes: ["Text"],
+          rewriteEquals: " text ",
+        }),
+      ),
+    /rewriteEquals retains excluded text/,
+  );
+  assert.throws(
+    () =>
+      parseSuite(
+        suiteWithExpectation("Text", {
+          rewriteIncludes: ["Required detail"],
+          rewriteEquals: "Replacement",
+        }),
+      ),
+    /exact rewrite does not include required text/,
+  );
+  assert.throws(
+    () =>
+      parseSuite(
+        suiteWithExpectation("Preserve this. Remove that.", {
+          rewritePreserves: ["Preserve this."],
+          rewriteEquals: "Replacement",
+        }),
+      ),
+    /rewriteEquals does not preserve required exact text/,
+  );
+});
+
 void test("rejects duplicate JSON members before suite validation", async () => {
   const directory = await mkdtemp(join(tmpdir(), "eval-suite-"));
   const path = join(directory, "cases.json");

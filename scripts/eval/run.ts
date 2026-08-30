@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, realpath, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createAdapter } from "./adapters/index.ts";
@@ -141,6 +141,39 @@ function adapterFailureMessage(message: string, stderr: string): string {
   return `${message}\nAdapter stderr: ${snippet}`;
 }
 
+async function existingRealPath(path: string): Promise<string | undefined> {
+  try {
+    return await realpath(path);
+  } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "ENOENT"
+    ) {
+      return undefined;
+    }
+    throw error;
+  }
+}
+
+async function assertOutputPathIsSeparate(
+  outputPath: string,
+  inputs: { label: string; path: string }[],
+): Promise<void> {
+  const resolvedOutput = resolve(outputPath);
+  const realOutput = await existingRealPath(resolvedOutput);
+  for (const input of inputs) {
+    const resolvedInput = resolve(input.path);
+    if (
+      resolvedOutput === resolvedInput ||
+      (realOutput !== undefined && realOutput === (await realpath(resolvedInput)))
+    ) {
+      throw new Error(`Evaluation output must not overwrite the ${input.label}: ${displayPath(input.path)}.`);
+    }
+  }
+}
+
 async function run(): Promise<void> {
   const options = parseOptions();
   const { suite, source: suiteSource } = await loadSuiteSnapshot(options.suitePath);
@@ -150,6 +183,11 @@ async function run(): Promise<void> {
   validateCanonicalResource(suite.resource, resourceSource);
   const resourceDigest = sha256(resourceSource);
   const suiteDigest = sha256(suiteSource);
+  const outputPath = options.outputPath ?? defaultOutputPath();
+  await assertOutputPathIsSeparate(outputPath, [
+    { label: "evaluation suite", path: options.suitePath },
+    { label: "canonical resource", path: resourcePath },
+  ]);
   const adapter = createAdapter(options.adapter, ROOT);
 
   if (options.dryRun) {
@@ -177,6 +215,9 @@ async function run(): Promise<void> {
     assertSnapshotUnchanged(resourcePath, resourceSource, "Canonical resource"),
   ]);
   const projectedResourcePath = adapter.projectedResourcePath(suite.resource);
+  await assertOutputPathIsSeparate(outputPath, [
+    { label: "projected resource", path: projectedResourcePath },
+  ]);
   const projectedResourceSource = await readFile(projectedResourcePath, "utf-8");
   validateCanonicalResource(suite.resource, projectedResourceSource);
   const execution = {
@@ -276,7 +317,6 @@ async function run(): Promise<void> {
     }
   }
 
-  const outputPath = options.outputPath ?? defaultOutputPath();
   await mkdir(dirname(outputPath), { recursive: true });
   const report = {
     schemaVersion: 1,
