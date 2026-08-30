@@ -1,4 +1,5 @@
 import { execFileSync, spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { performance } from "node:perf_hooks";
@@ -163,6 +164,13 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
   constructor(root: string) {
     this.#root = root;
     this.#projection = join(root, "out", "claude-code");
+    const pluginManifest = JSON.parse(
+      readFileSync(join(root, "plugin.json"), "utf-8"),
+    ) as { name?: unknown };
+    if (typeof pluginManifest.name !== "string" || pluginManifest.name.trim() === "") {
+      throw new Error("plugin.json must declare a plugin name.");
+    }
+    this.#pluginName = pluginManifest.name;
   }
 
   async prepare(): Promise<AdapterMetadata> {
@@ -193,7 +201,9 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
     if (typeof pluginManifest.name !== "string" || pluginManifest.name.trim() === "") {
       throw new Error("The Claude Code projection must declare a plugin name.");
     }
-    this.#pluginName = pluginManifest.name;
+    if (pluginManifest.name !== this.#pluginName) {
+      throw new Error("The Claude Code projection must preserve the canonical plugin name.");
+    }
     return {
       id: this.id,
       target: this.target,
@@ -227,7 +237,7 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
   projectPrompt(suite: EvaluationSuite, canonicalPrompt: string): string {
     const descriptor = canonicalResourceDescriptor(suite.resource.path);
     if (descriptor.kind === "agent") return canonicalPrompt;
-    return `Invoke the ${suite.resource.name} skill from the loaded plugin before answering the canonical request below.\n\n${canonicalPrompt}`;
+    return `Invoke the ${this.#pluginName}:${descriptor.name} skill before answering the canonical request below.\n\n${canonicalPrompt}`;
   }
 
   execute(request: AdapterRequest): AdapterObservation {

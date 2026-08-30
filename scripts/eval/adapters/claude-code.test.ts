@@ -30,6 +30,12 @@ const suite: EvaluationSuite = {
   ],
 };
 
+function testAdapter(): { adapter: ClaudeCodeCliAdapter; root: string } {
+  const root = mkdtempSync(join(tmpdir(), "claude-adapter-"));
+  writeFileSync(join(root, "plugin.json"), '{"name":"wycats-ai-plugin"}\n');
+  return { adapter: new ClaudeCodeCliAdapter(root), root };
+}
+
 void test("launches Windows npm command shims through their Node entrypoint", () => {
   const prefix = mkdtempSync(join(tmpdir(), "claude-command-"));
   try {
@@ -53,39 +59,44 @@ void test("launches Windows npm command shims through their Node entrypoint", ()
 });
 
 void test("adds only the Claude Code invocation envelope to a canonical request", () => {
-  const adapter = new ClaudeCodeCliAdapter("/tmp/example-plugin");
-  assert.equal(adapter.id, "claude-code-cli");
-  assert.equal(adapter.target, "claude-code");
-  assert.equal(adapter.transport, "cli");
-  const canonicalPrompt = "Canonical request";
-  assert.equal(
-    adapter.projectPrompt(suite, canonicalPrompt),
-    "Canonical request",
-  );
+  const { adapter, root } = testAdapter();
+  try {
+    assert.equal(adapter.id, "claude-code-cli");
+    assert.equal(adapter.target, "claude-code");
+    assert.equal(adapter.transport, "cli");
+    const canonicalPrompt = "Canonical request";
+    assert.equal(adapter.projectPrompt(suite, canonicalPrompt), "Canonical request");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 void test("projects skills and stances through Claude Code's skill surface", () => {
-  const adapter = new ClaudeCodeCliAdapter("/tmp/example-plugin");
-  const stanceSuite: EvaluationSuite = {
-    ...suite,
-    resource: {
-      identity: "wycats-plugin:stances/relational-continuity",
-      name: "relational-continuity",
-      path: "stances/relational-continuity/SKILL.md",
-    },
-  };
-  assert.equal(
-    adapter.projectPrompt(stanceSuite, "Canonical request"),
-    "Invoke the relational-continuity skill from the loaded plugin before answering the canonical request below.\n\nCanonical request",
-  );
-  assert.equal(
-    adapter.projectedResourcePath(suite.resource),
-    "/tmp/example-plugin/out/claude-code/agents/slop-linter.agent.md",
-  );
-  assert.equal(
-    adapter.projectedResourcePath(stanceSuite.resource),
-    "/tmp/example-plugin/out/claude-code/skills/relational-continuity/SKILL.md",
-  );
+  const { adapter, root } = testAdapter();
+  try {
+    const stanceSuite: EvaluationSuite = {
+      ...suite,
+      resource: {
+        identity: "wycats-plugin:stances/relational-continuity",
+        name: "relational-continuity",
+        path: "stances/relational-continuity/SKILL.md",
+      },
+    };
+    assert.equal(
+      adapter.projectPrompt(stanceSuite, "Canonical request"),
+      "Invoke the wycats-ai-plugin:relational-continuity skill before answering the canonical request below.\n\nCanonical request",
+    );
+    assert.equal(
+      adapter.projectedResourcePath(suite.resource),
+      join(root, "out", "claude-code", "agents", "slop-linter.agent.md"),
+    );
+    assert.equal(
+      adapter.projectedResourcePath(stanceSuite.resource),
+      join(root, "out", "claude-code", "skills", "relational-continuity", "SKILL.md"),
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 function stream(...events: unknown[]): string {
