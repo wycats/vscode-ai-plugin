@@ -133,8 +133,8 @@ async function assertSnapshotUnchanged(path: string, source: string, label: stri
   }
 }
 
-function adapterFailureMessage(message: string, stderr: string): string {
-  const detail = stderr.trim();
+function adapterFailureMessage(message: string, stderr?: string): string {
+  const detail = stderr?.trim() ?? "";
   if (!detail) return message;
   const limit = 1_000;
   const snippet = detail.length > limit ? `${detail.slice(0, limit)}…` : detail;
