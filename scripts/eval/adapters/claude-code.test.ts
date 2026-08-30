@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { resolveClaudeCommand } from "../../claude-executable.ts";
-import { ClaudeCodeCliAdapter } from "./claude-code.ts";
+import { ClaudeCodeCliAdapter, parseClaudeCodeStream } from "./claude-code.ts";
 import type { EvaluationSuite } from "../core.ts";
 
 const suite: EvaluationSuite = {
@@ -81,5 +81,134 @@ void test("projects skills and stances through Claude Code's skill surface", () 
   assert.equal(
     adapter.projectedResourcePath(stanceSuite.resource),
     "/tmp/example-plugin/out/claude-code/skills/relational-continuity/SKILL.md",
+  );
+});
+
+function stream(...events: unknown[]): string {
+  return events.map((event) => JSON.stringify(event)).join("\n");
+}
+
+void test("requires a completed invocation of the projected agent", () => {
+  const result = '{"findings":[],"rewrittenDocument":"Text"}';
+  assert.deepEqual(
+    parseClaudeCodeStream(
+      stream(
+        {
+          type: "assistant",
+          message: {
+            content: [
+              {
+                type: "tool_use",
+                id: "agent-1",
+                name: "Agent",
+                input: { subagent_type: "wycats-ai-plugin:slop-linter" },
+              },
+            ],
+          },
+        },
+        {
+          type: "user",
+          message: {
+            content: [{ type: "tool_result", tool_use_id: "agent-1", content: result }],
+          },
+        },
+        { type: "result", subtype: "success", is_error: false, result },
+      ),
+      suite.resource,
+      "wycats-ai-plugin",
+    ),
+    {
+      result,
+      resourceInvocation: {
+        tool: "Agent",
+        resource: "wycats-ai-plugin:slop-linter",
+        toolUseId: "agent-1",
+      },
+    },
+  );
+});
+
+void test("recognizes a completed invocation through the projected skill surface", () => {
+  const resource = {
+    identity: "wycats-plugin:stances/relational-continuity",
+    name: "relational-continuity",
+    path: "stances/relational-continuity/SKILL.md",
+  };
+  const result = '{"findings":[],"rewrittenDocument":"Text"}';
+  assert.deepEqual(
+    parseClaudeCodeStream(
+      stream(
+        {
+          type: "assistant",
+          message: {
+            content: [
+              {
+                type: "tool_use",
+                id: "skill-1",
+                name: "Skill",
+                input: { skill: "wycats-ai-plugin:relational-continuity" },
+              },
+            ],
+          },
+        },
+        {
+          type: "user",
+          message: {
+            content: [{ type: "tool_result", tool_use_id: "skill-1", content: "Loaded" }],
+          },
+        },
+        { type: "result", subtype: "success", is_error: false, result },
+      ),
+      resource,
+      "wycats-ai-plugin",
+    ),
+    {
+      result,
+      resourceInvocation: {
+        tool: "Skill",
+        resource: "wycats-ai-plugin:relational-continuity",
+        toolUseId: "skill-1",
+      },
+    },
+  );
+});
+
+void test("rejects a launcher response without a successful resource invocation", () => {
+  const directResult = stream({
+    type: "result",
+    subtype: "success",
+    is_error: false,
+    result: '{"findings":[],"rewrittenDocument":"Text"}',
+  });
+  assert.throws(
+    () => parseClaudeCodeStream(directResult, suite.resource, "wycats-ai-plugin"),
+    /did not complete a wycats-ai-plugin:slop-linter resource invocation/,
+  );
+
+  const failedInvocation = stream(
+    {
+      type: "assistant",
+      message: {
+        content: [
+          {
+            type: "tool_use",
+            id: "agent-1",
+            name: "Task",
+            input: { subagent_type: "wycats-ai-plugin:slop-linter" },
+          },
+        ],
+      },
+    },
+    {
+      type: "user",
+      message: {
+        content: [{ type: "tool_result", tool_use_id: "agent-1", is_error: true }],
+      },
+    },
+    { type: "result", subtype: "success", is_error: false, result: "{}" },
+  );
+  assert.throws(
+    () => parseClaudeCodeStream(failedInvocation, suite.resource, "wycats-ai-plugin"),
+    /did not complete a wycats-ai-plugin:slop-linter resource invocation/,
   );
 });

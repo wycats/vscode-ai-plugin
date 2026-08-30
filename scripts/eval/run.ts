@@ -4,6 +4,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createAdapter } from "./adapters/index.ts";
+import type { ResourceInvocation } from "./adapters/adapter.ts";
 import {
   buildCanonicalPrompt,
   gradeResponse,
@@ -33,6 +34,8 @@ interface EvaluationResult {
   projectedPrompt: string;
   durationMs?: number;
   rawResponse?: string;
+  transportOutput?: string;
+  resourceInvocation?: ResourceInvocation;
   stderr?: string;
   exitCode?: number | null;
   executionError?: string;
@@ -191,13 +194,17 @@ async function run(): Promise<void> {
     const canonicalPrompt = buildCanonicalPrompt(suite, testCase);
     const projectedPrompt = adapter.projectPrompt(suite, canonicalPrompt);
     let rawResponse: string | undefined;
+    let transportOutput: string | undefined;
+    let resourceInvocation: ResourceInvocation | undefined;
     let stderr: string | undefined;
     let durationMs: number | undefined;
     let exitCode: number | null | undefined;
     let executionError: string | undefined;
     try {
-      const observation = adapter.execute(projectedPrompt);
+      const observation = adapter.execute(projectedPrompt, suite.resource);
       rawResponse = observation.rawResponse;
+      transportOutput = observation.transportOutput;
+      resourceInvocation = observation.resourceInvocation;
       stderr = observation.stderr;
       durationMs = observation.durationMs;
       exitCode = observation.exitCode;
@@ -216,6 +223,8 @@ async function run(): Promise<void> {
         projectedPrompt,
         durationMs,
         rawResponse: observation.rawResponse,
+        transportOutput,
+        resourceInvocation,
         stderr,
         exitCode,
         response,
@@ -231,6 +240,8 @@ async function run(): Promise<void> {
         projectedPrompt,
         durationMs,
         rawResponse,
+        transportOutput,
+        resourceInvocation,
         stderr,
         exitCode,
         executionError,

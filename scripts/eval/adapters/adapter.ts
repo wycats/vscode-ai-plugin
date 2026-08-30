@@ -2,16 +2,25 @@ import type { EvaluationResource, EvaluationSuite } from "../core.ts";
 
 export interface AdapterObservation {
   rawResponse: string;
+  transportOutput?: string;
+  resourceInvocation?: ResourceInvocation;
   stderr: string;
   durationMs: number;
   exitCode: number | null;
   executionError?: string;
 }
 
+export interface ResourceInvocation {
+  tool: string;
+  resource: string;
+  toolUseId: string;
+}
+
 export interface AdapterMetadata {
   id: string;
   target: string;
   transport: string;
+  pluginName: string;
   discoveredCommand: string;
   executable: string;
   argumentPrefix: string[];
@@ -31,5 +40,5 @@ export interface EvaluationAdapter {
   prepare(): Promise<AdapterMetadata>;
   projectedResourcePath(resource: EvaluationResource): string;
   projectPrompt(suite: EvaluationSuite, canonicalPrompt: string): string;
-  execute(projectedPrompt: string): AdapterObservation;
+  execute(projectedPrompt: string, resource: EvaluationResource): AdapterObservation;
 }

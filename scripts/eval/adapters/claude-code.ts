@@ -5,7 +5,120 @@ import { performance } from "node:perf_hooks";
 import { findClaudeCommand, type ClaudeCommand } from "../../claude-executable.ts";
 import type { EvaluationResource, EvaluationSuite } from "../core.ts";
 import { canonicalResourceDescriptor } from "../resource.ts";
-import type { AdapterMetadata, AdapterObservation, EvaluationAdapter } from "./adapter.ts";
+import type {
+  AdapterMetadata,
+  AdapterObservation,
+  EvaluationAdapter,
+  ResourceInvocation,
+} from "./adapter.ts";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function messageContent(event: Record<string, unknown>): unknown[] {
+  if (!isRecord(event.message) || !Array.isArray(event.message.content)) return [];
+  return event.message.content;
+}
+
+function matchingInvocation(
+  block: Record<string, unknown>,
+  resource: EvaluationResource,
+  pluginName: string,
+): ResourceInvocation | undefined {
+  if (block.type !== "tool_use" || typeof block.id !== "string" || !isRecord(block.input)) {
+    return undefined;
+  }
+  const descriptor = canonicalResourceDescriptor(resource.path);
+  const expectedResource = `${pluginName}:${descriptor.name}`;
+  if (
+    descriptor.kind === "agent" &&
+    (block.name === "Agent" || block.name === "Task") &&
+    block.input.subagent_type === expectedResource
+  ) {
+    return { tool: block.name, resource: expectedResource, toolUseId: block.id };
+  }
+  if (
+    descriptor.kind !== "agent" &&
+    block.name === "Skill" &&
+    block.input.skill === expectedResource
+  ) {
+    return { tool: "Skill", resource: expectedResource, toolUseId: block.id };
+  }
+  return undefined;
+}
+
+export function parseClaudeCodeStream(
+  output: string,
+  resource: EvaluationResource,
+  pluginName: string,
+): { result: string; resourceInvocation: ResourceInvocation } {
+  const events = output
+    .split("\n")
+    .filter((line) => line.trim() !== "")
+    .map((line, index): Record<string, unknown> => {
+      let value: unknown;
+      try {
+        value = JSON.parse(line) as unknown;
+      } catch (error) {
+        throw new Error(`Claude Code stream line ${String(index + 1)} is not valid JSON.`, {
+          cause: error,
+        });
+      }
+      if (!isRecord(value)) {
+        throw new Error(`Claude Code stream line ${String(index + 1)} must be an object.`);
+      }
+      return value;
+    });
+
+  const invocations: ResourceInvocation[] = [];
+  const completedToolUses = new Set<string>();
+  let result: string | undefined;
+
+  for (const event of events) {
+    if (event.type === "assistant") {
+      for (const value of messageContent(event)) {
+        if (!isRecord(value)) continue;
+        const invocation = matchingInvocation(value, resource, pluginName);
+        if (invocation) invocations.push(invocation);
+      }
+    }
+    if (event.type === "user") {
+      for (const value of messageContent(event)) {
+        if (
+          isRecord(value) &&
+          value.type === "tool_result" &&
+          typeof value.tool_use_id === "string" &&
+          value.is_error !== true
+        ) {
+          completedToolUses.add(value.tool_use_id);
+        }
+      }
+    }
+    if (
+      event.type === "result" &&
+      event.subtype === "success" &&
+      event.is_error !== true &&
+      typeof event.result === "string"
+    ) {
+      result = event.result;
+    }
+  }
+
+  const resourceInvocation = invocations.find((invocation) =>
+    completedToolUses.has(invocation.toolUseId),
+  );
+  if (!resourceInvocation) {
+    const descriptor = canonicalResourceDescriptor(resource.path);
+    throw new Error(
+      `Claude Code did not complete a ${pluginName}:${descriptor.name} resource invocation.`,
+    );
+  }
+  if (result === undefined) {
+    throw new Error("Claude Code stream did not contain a successful result event.");
+  }
+  return { result, resourceInvocation };
+}
 
 export class ClaudeCodeCliAdapter implements EvaluationAdapter {
   readonly id = "claude-code-cli" as const;
@@ -15,6 +128,7 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
   readonly #projection: string;
   #command: ClaudeCommand | undefined;
   #launcherModel = "";
+  #pluginName = "";
 
   constructor(root: string) {
     this.#root = root;
@@ -43,10 +157,18 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
       ["scripts/build.ts", "--config", "config.claude-code.example.json"],
       { cwd: this.#root, stdio: "inherit" },
     );
+    const pluginManifest = JSON.parse(
+      await readFile(join(this.#projection, ".claude-plugin", "plugin.json"), "utf-8"),
+    ) as { name?: unknown };
+    if (typeof pluginManifest.name !== "string" || pluginManifest.name.trim() === "") {
+      throw new Error("The Claude Code projection must declare a plugin name.");
+    }
+    this.#pluginName = pluginManifest.name;
     return {
       id: this.id,
       target: this.target,
       transport: this.transport,
+      pluginName: this.#pluginName,
       discoveredCommand: this.#command.discoveredPath,
       executable: this.#command.executable,
       argumentPrefix: this.#command.argumentPrefix,
@@ -78,8 +200,10 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
     return `Use the ${suite.resource.name} ${invocationKind} from the loaded plugin for this task.\n\n${canonicalPrompt}`;
   }
 
-  execute(projectedPrompt: string): AdapterObservation {
-    if (!this.#command) throw new Error("Claude Code CLI adapter has not been prepared.");
+  execute(projectedPrompt: string, resource: EvaluationResource): AdapterObservation {
+    if (!this.#command || !this.#pluginName) {
+      throw new Error("Claude Code CLI adapter has not been prepared.");
+    }
     const started = performance.now();
     const result = spawnSync(
       this.#command.executable,
@@ -90,7 +214,8 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
         "-p",
         projectedPrompt,
         "--output-format",
-        "text",
+        "stream-json",
+        "--verbose",
         "--model",
         this.#launcherModel,
         "--max-turns",
@@ -104,13 +229,27 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
       },
     );
     const durationMs = Math.round(performance.now() - started);
-
-    return {
-      rawResponse: result.stdout,
+    const observation: AdapterObservation = {
+      rawResponse: "",
+      transportOutput: result.stdout,
       stderr: result.stderr,
       durationMs,
       exitCode: result.status,
       executionError: result.error?.message,
     };
+    if (observation.executionError || observation.exitCode !== 0) return observation;
+    try {
+      const parsed = parseClaudeCodeStream(result.stdout, resource, this.#pluginName);
+      return {
+        ...observation,
+        rawResponse: parsed.result,
+        resourceInvocation: parsed.resourceInvocation,
+      };
+    } catch (error) {
+      return {
+        ...observation,
+        executionError: error instanceof Error ? error.message : String(error),
+      };
+    }
   }
 }
