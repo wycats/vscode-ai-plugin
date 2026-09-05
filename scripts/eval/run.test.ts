@@ -57,4 +57,13 @@ void test("refuses output paths that overwrite evaluation inputs", () => {
   ]);
   assert.equal(resourceResult.status, 1);
   assert.match(resourceResult.stderr, /must not overwrite the canonical resource/);
+
+  for (const [path, label] of [
+    ["config.claude-code.example.json", "adapter config"],
+    ["plugin.json", "plugin manifest"],
+  ]) {
+    const result = runEval(["--adapter", "claude-code-cli", "--output", path]);
+    assert.equal(result.status, 1);
+    assert.ok(result.stderr.includes(`must not overwrite the ${label}`), result.stderr);
+  }
 });

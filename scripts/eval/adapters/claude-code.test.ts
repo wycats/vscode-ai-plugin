@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { delimiter, join } from "node:path";
 import test from "node:test";
-import { resolveClaudeCommand } from "../../claude-executable.ts";
+import { findClaudeCommand, resolveClaudeCommand } from "../../claude-executable.ts";
 import {
   ClaudeCodeCliAdapter,
   claudeCodeInvocation,
@@ -35,6 +35,28 @@ function testAdapter(): { adapter: ClaudeCodeCliAdapter; root: string } {
   writeFileSync(join(root, "plugin.json"), '{"name":"wycats-ai-plugin"}\n');
   return { adapter: new ClaudeCodeCliAdapter(root), root };
 }
+
+void test("skips directories on PATH and accepts executable symlinks", { skip: process.platform === "win32" }, () => {
+  const root = mkdtempSync(join(tmpdir(), "claude-path-"));
+  const originalPath = process.env.PATH;
+  try {
+    const first = join(root, "first");
+    const second = join(root, "second");
+    mkdirSync(join(first, "claude"), { recursive: true });
+    mkdirSync(second);
+    const target = join(root, "cli");
+    writeFileSync(target, "#!/bin/sh\nexit 0\n");
+    chmodSync(target, 0o755);
+    const command = join(second, "claude");
+    symlinkSync(target, command);
+    process.env.PATH = [first, second].join(delimiter);
+    assert.equal(findClaudeCommand()?.discoveredPath, command);
+  } finally {
+    if (originalPath === undefined) delete process.env.PATH;
+    else process.env.PATH = originalPath;
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 
 void test("launches Windows npm command shims through their Node entrypoint", () => {
   const prefix = mkdtempSync(join(tmpdir(), "claude-command-"));

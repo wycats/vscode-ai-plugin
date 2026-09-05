@@ -125,6 +125,7 @@ function parseExpectation(value: unknown, path: string): CaseExpectation {
   );
 
   let requiredFindings: RequiredFinding[] | undefined;
+  const requiredPassages = new Set<string>();
   if (value.requiredFindings !== undefined) {
     if (!Array.isArray(value.requiredFindings)) {
       throw new Error(`${path}.requiredFindings must be an array.`);
@@ -147,13 +148,15 @@ function parseExpectation(value: unknown, path: string): CaseExpectation {
           `${path}.requiredFindings[${String(index)}].labelsAnyOf must not be empty.`,
         );
       }
-      return {
-        passage: requireString(
-          entry.passage,
-          `${path}.requiredFindings[${String(index)}].passage`,
-        ),
-        labelsAnyOf,
-      };
+      const passage = requireString(
+        entry.passage,
+        `${path}.requiredFindings[${String(index)}].passage`,
+      );
+      if (requiredPassages.has(passage)) {
+        throw new Error(`${path}.requiredFindings repeats a required passage.`);
+      }
+      requiredPassages.add(passage);
+      return { passage, labelsAnyOf };
     });
   }
 
@@ -181,6 +184,9 @@ function parseExpectation(value: unknown, path: string): CaseExpectation {
   }
   if (expectation.rewriteEqualsInput && expectation.requiredFindings?.length) {
     throw new Error(`${path} cannot combine requiredFindings with rewriteEqualsInput.`);
+  }
+  if (expectation.maximumFindings === 0 && expectation.requiredFindings?.length) {
+    throw new Error(`${path} cannot combine requiredFindings with maximumFindings: 0.`);
   }
   if (expectation.rewriteEqualsInput && expectation.rewriteExcludes?.length) {
     throw new Error(`${path} cannot combine rewriteExcludes with rewriteEqualsInput.`);
@@ -240,6 +246,9 @@ export function parseSuite(value: unknown): EvaluationSuite {
     for (const preserved of expect.rewritePreserves ?? []) {
       if (!document.includes(preserved)) {
         throw new Error(`${path}.expect preserved text does not appear in the document.`);
+      }
+      if (document.indexOf(preserved) !== document.lastIndexOf(preserved)) {
+        throw new Error(`${path}.expect preserved text appears more than once in the document.`);
       }
       if (expect.rewriteEquals !== undefined && !expect.rewriteEquals.includes(preserved)) {
         throw new Error(`${path}.expect rewriteEquals does not preserve required exact text.`);

@@ -1,4 +1,4 @@
-import { accessSync, constants, readdirSync } from "node:fs";
+import { accessSync, constants, readdirSync, statSync } from "node:fs";
 import { homedir, platform } from "node:os";
 import { delimiter, dirname, extname, join } from "node:path";
 
@@ -10,6 +10,7 @@ export interface ClaudeCommand {
 
 function executable(path: string): string | undefined {
   try {
+    if (!statSync(path).isFile()) return undefined;
     accessSync(path, constants.X_OK);
     return path;
   } catch {
@@ -19,6 +20,7 @@ function executable(path: string): string | undefined {
 
 function readable(path: string): string | undefined {
   try {
+    if (!statSync(path).isFile()) return undefined;
     accessSync(path, constants.R_OK);
     return path;
   } catch {

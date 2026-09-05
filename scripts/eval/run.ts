@@ -184,11 +184,12 @@ async function run(): Promise<void> {
   const resourceDigest = sha256(resourceSource);
   const suiteDigest = sha256(suiteSource);
   const outputPath = options.outputPath ?? defaultOutputPath();
+  const adapter = createAdapter(options.adapter, ROOT);
   await assertOutputPathIsSeparate(outputPath, [
     { label: "evaluation suite", path: options.suitePath },
     { label: "canonical resource", path: resourcePath },
+    ...adapter.inputPaths,
   ]);
-  const adapter = createAdapter(options.adapter, ROOT);
 
   if (options.dryRun) {
     console.log(`Suite: ${displayPath(options.suitePath)}`);

@@ -155,6 +155,8 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
   readonly id = "claude-code-cli" as const;
   readonly target = "claude-code" as const;
   readonly transport = "cli" as const;
+  readonly inputPaths: { label: string; path: string }[];
+  readonly #configPath: string;
   readonly #root: string;
   readonly #projection: string;
   #command: ClaudeCommand | undefined;
@@ -164,6 +166,11 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
   constructor(root: string) {
     this.#root = root;
     this.#projection = join(root, "out", "claude-code");
+    this.#configPath = join(root, "config.claude-code.example.json");
+    this.inputPaths = [
+      { label: "adapter config", path: this.#configPath },
+      { label: "plugin manifest", path: join(root, "plugin.json") },
+    ];
     const pluginManifest = JSON.parse(
       readFileSync(join(root, "plugin.json"), "utf-8"),
     ) as { name?: unknown };
@@ -180,8 +187,7 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
         "The claude-code-cli adapter requires an authenticated Claude Code executable. A Claude Code extension session does not provide this transport.",
       );
     }
-    const configPath = join(this.#root, "config.claude-code.example.json");
-    const config = JSON.parse(await readFile(configPath, "utf-8")) as {
+    const config = JSON.parse(await readFile(this.#configPath, "utf-8")) as {
       models: Record<string, string | null>;
     };
     this.#launcherModel = config.models.balanced ?? "";
@@ -192,7 +198,7 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
     }
     execFileSync(
       process.execPath,
-      ["scripts/build.ts", "--config", "config.claude-code.example.json"],
+      ["scripts/build.ts", "--config", this.#configPath],
       { cwd: this.#root, stdio: "inherit" },
     );
     const pluginManifest = JSON.parse(

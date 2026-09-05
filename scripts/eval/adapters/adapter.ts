@@ -44,6 +44,7 @@ export interface EvaluationAdapter {
   readonly id: string;
   readonly target: string;
   readonly transport: string;
+  readonly inputPaths: { label: string; path: string }[];
   prepare(): Promise<AdapterMetadata>;
   projectedResourcePath(resource: EvaluationResource): string;
   projectPrompt(suite: EvaluationSuite, canonicalPrompt: string): string;

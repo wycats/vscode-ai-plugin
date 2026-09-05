@@ -762,7 +762,7 @@ void test("validates suite identity and assertions", () => {
   );
 });
 
-void test("rejects deterministic rewrite contradictions and ambiguous exclusions", () => {
+void test("rejects contradictory and ambiguous suite assertions", () => {
   function suiteWithExpectation(document: string, expect: Record<string, unknown>) {
     return {
       schemaVersion: 1,
@@ -776,6 +776,28 @@ void test("rejects deterministic rewrite contradictions and ambiguous exclusions
       cases: [{ id: "case", description: "Example case", document, expect }],
     };
   }
+
+  assert.throws(
+    () => parseSuite(suiteWithExpectation("Text", {
+      requiredFindings: [{ passage: "Text" }], maximumFindings: 0,
+    })),
+    /cannot combine requiredFindings with maximumFindings: 0/,
+  );
+  assert.throws(
+    () => parseSuite(suiteWithExpectation("Text", {
+      requiredFindings: [{ passage: "Text" }, { passage: "Text", labelsAnyOf: ["Another label"] }],
+    })),
+    /repeats a required passage/,
+  );
+  assert.throws(
+    () => parseSuite(suiteWithExpectation("Text. More Text.", { rewritePreserves: ["Text"] })),
+    /preserved text appears more than once/,
+  );
+  assert.doesNotThrow(() => parseSuite(suiteWithExpectation("Text", { maximumFindings: 0 })));
+  assert.doesNotThrow(() => parseSuite(suiteWithExpectation("Text", {
+    requiredFindings: [{ passage: "Text" }], maximumFindings: 1,
+  })));
+  assert.doesNotThrow(() => parseSuite(suiteWithExpectation("Text", { rewritePreserves: ["Text"] })));
 
   assert.throws(
     () =>
