@@ -1,11 +1,12 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { performance } from "node:perf_hooks";
 import { findClaudeCommand, type ClaudeCommand } from "../../claude-executable.ts";
 import type { EvaluationResource, EvaluationSuite } from "../core.ts";
 import { canonicalResourceDescriptor } from "../resource.ts";
+import { discoverResourceFiles } from "../../resource-discovery.ts";
 import type {
   AdapterMetadata,
   AdapterObservation,
@@ -16,6 +17,19 @@ import type {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export async function validateClaudeCodeProjection(root: string): Promise<void> {
+  const resources = await discoverResourceFiles(root);
+  const names = new Map<string, string>();
+  for (const resource of [...resources.skills, ...resources.stances]) {
+    const name = basename(dirname(resource.sourcePath));
+    const previous = names.get(name);
+    if (previous) {
+      throw new Error(`Claude Code skill '${name}' collides between ${previous} and ${resource.pluginPath}.`);
+    }
+    names.set(name, resource.pluginPath);
+  }
 }
 
 function messageContent(event: Record<string, unknown>): unknown[] {
@@ -155,7 +169,6 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
   readonly id = "claude-code-cli" as const;
   readonly target = "claude-code" as const;
   readonly transport = "cli" as const;
-  readonly inputPaths: { label: string; path: string }[];
   readonly #configPath: string;
   readonly #root: string;
   readonly #projection: string;
@@ -167,10 +180,6 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
     this.#root = root;
     this.#projection = join(root, "out", "claude-code");
     this.#configPath = join(root, "config.claude-code.example.json");
-    this.inputPaths = [
-      { label: "adapter config", path: this.#configPath },
-      { label: "plugin manifest", path: join(root, "plugin.json") },
-    ];
     const pluginManifest = JSON.parse(
       readFileSync(join(root, "plugin.json"), "utf-8"),
     ) as { name?: unknown };
@@ -181,6 +190,7 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
   }
 
   async prepare(): Promise<AdapterMetadata> {
+    await validateClaudeCodeProjection(this.#root);
     this.#command = findClaudeCommand();
     if (!this.#command) {
       throw new Error(

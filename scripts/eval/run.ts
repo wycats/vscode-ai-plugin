@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdir, readFile, realpath, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createAdapter } from "./adapters/index.ts";
@@ -15,6 +15,7 @@ import {
   type Grade,
 } from "./core.ts";
 import { validateCanonicalResource } from "./resource.ts";
+import { validateReportPath } from "./output.ts";
 
 const ROOT = resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const DEFAULT_SUITE = join(ROOT, "evals", "slop-linter", "cases.json");
@@ -49,7 +50,7 @@ function usage(): string {
 Options:
   --suite <path>   Evaluation suite (default: evals/slop-linter/cases.json)
   --case <id>      Run one case
-  --output <path>  Result file (default: .runtime/evals/<timestamp>-claude-code-cli.json)
+  --output <path>  New file under .runtime/evals/ (default: timestamp-claude-code-cli.json)
   --dry-run        Print case prompts without invoking the target`;
 }
 
@@ -141,39 +142,6 @@ function adapterFailureMessage(message: string, stderr?: string): string {
   return `${message}\nAdapter stderr: ${snippet}`;
 }
 
-async function existingRealPath(path: string): Promise<string | undefined> {
-  try {
-    return await realpath(path);
-  } catch (error) {
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      error.code === "ENOENT"
-    ) {
-      return undefined;
-    }
-    throw error;
-  }
-}
-
-async function assertOutputPathIsSeparate(
-  outputPath: string,
-  inputs: { label: string; path: string }[],
-): Promise<void> {
-  const resolvedOutput = resolve(outputPath);
-  const realOutput = await existingRealPath(resolvedOutput);
-  for (const input of inputs) {
-    const resolvedInput = resolve(input.path);
-    if (
-      resolvedOutput === resolvedInput ||
-      (realOutput !== undefined && realOutput === (await realpath(resolvedInput)))
-    ) {
-      throw new Error(`Evaluation output must not overwrite the ${input.label}: ${displayPath(input.path)}.`);
-    }
-  }
-}
-
 async function run(): Promise<void> {
   const options = parseOptions();
   const { suite, source: suiteSource } = await loadSuiteSnapshot(options.suitePath);
@@ -185,11 +153,7 @@ async function run(): Promise<void> {
   const suiteDigest = sha256(suiteSource);
   const outputPath = options.outputPath ?? defaultOutputPath();
   const adapter = createAdapter(options.adapter, ROOT);
-  await assertOutputPathIsSeparate(outputPath, [
-    { label: "evaluation suite", path: options.suitePath },
-    { label: "canonical resource", path: resourcePath },
-    ...adapter.inputPaths,
-  ]);
+  await validateReportPath(ROOT, outputPath);
 
   if (options.dryRun) {
     console.log(`Suite: ${displayPath(options.suitePath)}`);
@@ -216,9 +180,6 @@ async function run(): Promise<void> {
     assertSnapshotUnchanged(resourcePath, resourceSource, "Canonical resource"),
   ]);
   const projectedResourcePath = adapter.projectedResourcePath(suite.resource);
-  await assertOutputPathIsSeparate(outputPath, [
-    { label: "projected resource", path: projectedResourcePath },
-  ]);
   const projectedResourceSource = await readFile(projectedResourcePath, "utf-8");
   validateCanonicalResource(suite.resource, projectedResourceSource);
   const execution = {
@@ -319,6 +280,7 @@ async function run(): Promise<void> {
   }
 
   await mkdir(dirname(outputPath), { recursive: true });
+  await validateReportPath(ROOT, outputPath);
   const report = {
     schemaVersion: 1,
     suite: {
@@ -336,7 +298,7 @@ async function run(): Promise<void> {
     completedAt: new Date().toISOString(),
     results,
   };
-  await writeFile(outputPath, `${JSON.stringify(report, null, 2)}\n`);
+  await writeFile(outputPath, `${JSON.stringify(report, null, 2)}\n`, { flag: "wx" });
 
   const passed = results.filter((result) => result.grade.passed).length;
   console.log(`\n${String(passed)}/${String(results.length)} cases passed.`);

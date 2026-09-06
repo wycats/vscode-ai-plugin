@@ -798,6 +798,15 @@ void test("rejects contradictory and ambiguous suite assertions", () => {
     requiredFindings: [{ passage: "Text" }], maximumFindings: 1,
   })));
   assert.doesNotThrow(() => parseSuite(suiteWithExpectation("Text", { rewritePreserves: ["Text"] })));
+  assert.throws(() => parseSuite(suiteWithExpectation("One. Two.", {
+    requiredFindings: [{ passage: "One." }, { passage: "Two." }], maximumFindings: 1,
+  })), /below the minimum of 2 disjoint required passages/);
+  assert.doesNotThrow(() => parseSuite(suiteWithExpectation("One. Two.", {
+    requiredFindings: [{ passage: "One." }, { passage: "Two." }], maximumFindings: 2,
+  })));
+  assert.doesNotThrow(() => parseSuite(suiteWithExpectation("One. Two.", {
+    requiredFindings: [{ passage: "One." }, { passage: "Two." }, { passage: "One. Two." }], maximumFindings: 2,
+  })));
 
   assert.throws(
     () =>

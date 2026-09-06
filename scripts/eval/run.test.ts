@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { resolve } from "node:path";
+import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
+import { validateReportPath } from "./output.ts";
 
 const ROOT = resolve(fileURLToPath(new URL("../..", import.meta.url)));
 
@@ -46,7 +49,7 @@ void test("refuses output paths that overwrite evaluation inputs", () => {
     "evals/slop-linter/cases.json",
   ]);
   assert.equal(suiteResult.status, 1);
-  assert.match(suiteResult.stderr, /must not overwrite the evaluation suite/);
+  assert.match(suiteResult.stderr, /must be a new file under .runtime\/evals/);
 
   const resourceResult = runEval([
     "--adapter",
@@ -56,14 +59,33 @@ void test("refuses output paths that overwrite evaluation inputs", () => {
     "agents/slop-linter.agent.md",
   ]);
   assert.equal(resourceResult.status, 1);
-  assert.match(resourceResult.stderr, /must not overwrite the canonical resource/);
+  assert.match(resourceResult.stderr, /must be a new file under .runtime\/evals/);
 
-  for (const [path, label] of [
-    ["config.claude-code.example.json", "adapter config"],
-    ["plugin.json", "plugin manifest"],
+  for (const path of [
+    "config.claude-code.example.json",
+    "plugin.json",
+    "agents/review.agent.md",
   ]) {
     const result = runEval(["--adapter", "claude-code-cli", "--output", path]);
     assert.equal(result.status, 1);
-    assert.ok(result.stderr.includes(`must not overwrite the ${label}`), result.stderr);
+    assert.match(result.stderr, /must be a new file under .runtime\/evals/);
+  }
+});
+
+void test("accepts new reports and rejects existing files and redirected directories", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eval-output-"));
+  try {
+    const reports = join(root, ".runtime", "evals");
+    await validateReportPath(root, join(reports, "new.json"));
+    await mkdir(reports, { recursive: true });
+    const existing = join(reports, "existing.json");
+    await writeFile(existing, "Previous report");
+    await assert.rejects(validateReportPath(root, existing), /already exists/);
+    await symlink(root, join(reports, "redirect"), "junction");
+    await assert.rejects(validateReportPath(root, join(reports, "redirect", "new.json")), /symlinks/);
+    await assert.rejects(validateReportPath(root, join(reports, "..", "escape.json")), /new file under/);
+    await validateReportPath(root, join(reports, "nested", "new.json"));
+  } finally {
+    await rm(root, { recursive: true, force: true });
   }
 });

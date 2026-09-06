@@ -243,6 +243,23 @@ export function parseSuite(value: unknown): EvaluationSuite {
         throw new Error(`${path}.expect rewriteEquals retains a required finding passage.`);
       }
     }
+    const intervals = (expect.requiredFindings ?? [])
+      .map(({ passage }) => {
+        const start = document.indexOf(passage);
+        return { start, end: start + passage.length };
+      })
+      .sort((left, right) => left.end - right.end);
+    let minimumFindings = 0;
+    let previousEnd = 0;
+    for (const interval of intervals) {
+      if (interval.start >= previousEnd) {
+        minimumFindings++;
+        previousEnd = interval.end;
+      }
+    }
+    if (expect.maximumFindings !== undefined && expect.maximumFindings < minimumFindings) {
+      throw new Error(`${path}.expect maximumFindings is below the minimum of ${String(minimumFindings)} disjoint required passages.`);
+    }
     for (const preserved of expect.rewritePreserves ?? []) {
       if (!document.includes(preserved)) {
         throw new Error(`${path}.expect preserved text does not appear in the document.`);

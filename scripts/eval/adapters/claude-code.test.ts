@@ -8,6 +8,7 @@ import {
   ClaudeCodeCliAdapter,
   claudeCodeInvocation,
   parseClaudeCodeStream,
+  validateClaudeCodeProjection,
 } from "./claude-code.ts";
 import type { EvaluationSuite } from "../core.ts";
 
@@ -35,6 +36,21 @@ function testAdapter(): { adapter: ClaudeCodeCliAdapter; root: string } {
   writeFileSync(join(root, "plugin.json"), '{"name":"wycats-ai-plugin"}\n');
   return { adapter: new ClaudeCodeCliAdapter(root), root };
 }
+
+void test("rejects skill and stance names that share a Claude projection", async () => {
+  const { root } = testAdapter();
+  try {
+    for (const section of ["skills", "stances"]) {
+      mkdirSync(join(root, section, "shared"), { recursive: true });
+      writeFileSync(join(root, section, "shared", "SKILL.md"), "Resource body");
+    }
+    await assert.rejects(validateClaudeCodeProjection(root), /skill 'shared' collides/);
+    rmSync(join(root, "stances", "shared", "SKILL.md"));
+    await validateClaudeCodeProjection(root);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 
 void test("skips directories on PATH and accepts executable symlinks", { skip: process.platform === "win32" }, () => {
   const root = mkdtempSync(join(tmpdir(), "claude-path-"));

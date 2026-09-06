@@ -73,4 +73,6 @@ Code session running only as a VS Code extension does not provide that
 executable; it needs a different adapter, not different evaluation cases.
 
 Live results are written under `.runtime/evals/`, which is ignored by git.
-Custom output paths must keep the suite, resource, and adapter inputs intact.
+Custom output paths select a new file inside `.runtime/evals/`. Existing files
+and paths redirected through symlinks are rejected, keeping source files and
+previous results intact.
