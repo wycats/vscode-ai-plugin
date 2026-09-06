@@ -7,9 +7,18 @@ export const CANONICAL_RESOURCE_AUTHORITY = "wycats-plugin";
 
 export async function resolveCanonicalResourcePath(root: string, path: string): Promise<string> {
   const resolved = resolve(root, path);
+  let physicalPath: string;
+  try {
+    physicalPath = await realpath(resolved);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      throw new Error(`Canonical resource does not exist: ${path}.`, { cause: error });
+    }
+    throw error;
+  }
   for (const local of [
     relative(root, resolved),
-    relative(await realpath(root), await realpath(resolved)),
+    relative(await realpath(root), physicalPath),
   ]) {
     if (!local || local === ".." || local.startsWith(`..${sep}`) || isAbsolute(local)) {
       throw new Error(`Canonical resource must resolve inside the repository: ${path}.`);

@@ -1,6 +1,7 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { basename, dirname, join } from "node:path";
 import { performance } from "node:perf_hooks";
 import { findClaudeCommand, type ClaudeCommand } from "../../claude-executable.ts";
@@ -17,6 +18,17 @@ import type {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export async function withConfigSnapshot<T>(source: string, use: (path: string) => T | Promise<T>): Promise<T> {
+  const directory = await mkdtemp(join(tmpdir(), "eval-config-"));
+  try {
+    const path = join(directory, "config.json");
+    await writeFile(path, source, { flag: "wx" });
+    return await use(path);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 }
 
 export function parseClaudeCodeConfig(value: unknown): { models: Record<string, string | null> } {
@@ -217,18 +229,21 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
         "The claude-code-cli adapter requires an authenticated Claude Code executable. A Claude Code extension session does not provide this transport.",
       );
     }
-    const config = parseClaudeCodeConfig(JSON.parse(await readFile(this.#configPath, "utf-8")) as unknown);
+    const configSource = await readFile(this.#configPath, "utf-8");
+    const config = parseClaudeCodeConfig(JSON.parse(configSource) as unknown);
     this.#launcherModel = config.models.balanced ?? "";
     if (!this.#launcherModel) {
       throw new Error(
         "The claude-code-cli adapter requires a concrete balanced model mapping for reproducible evaluation runs.",
       );
     }
-    execFileSync(
-      process.execPath,
-      ["scripts/build.ts", "--config", this.#configPath],
-      { cwd: this.#root, stdio: "inherit" },
-    );
+    await withConfigSnapshot(configSource, (configPath) => {
+      execFileSync(
+        process.execPath,
+        ["scripts/build.ts", "--config", configPath],
+        { cwd: this.#root, stdio: "inherit" },
+      );
+    });
     const pluginManifest = JSON.parse(
       await readFile(join(this.#projection, ".claude-plugin", "plugin.json"), "utf-8"),
     ) as { name?: unknown };

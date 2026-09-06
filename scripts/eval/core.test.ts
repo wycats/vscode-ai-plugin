@@ -827,6 +827,9 @@ void test("rejects contradictory and ambiguous suite assertions", () => {
       [assertion]: ["The Text"], rewriteExcludes: ["Text"],
     })), /required rewrite text contains excluded text/);
   }
+  assert.throws(() => parseSuite(suiteWithExpectation("ababa", {
+    rewriteExcludes: ["aba"],
+  })), /excluded text must have one/);
   assert.throws(() => parseSuite(suiteWithExpectation("Text", {
     requiredFindings: [{ passage: "Text" }], rewritePreserves: ["Text"],
   })), /preserved text retains a required finding/);

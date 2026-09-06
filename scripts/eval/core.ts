@@ -443,7 +443,7 @@ function countNormalizedOccurrences(value: string, token: string): number {
     const index = source.indexOf(target, offset);
     if (index === -1) break;
     count++;
-    offset = index + target.length;
+    offset = index + 1;
   }
   return count;
 }

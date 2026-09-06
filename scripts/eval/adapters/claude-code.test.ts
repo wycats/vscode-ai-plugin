@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { chmodSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { delimiter, join } from "node:path";
 import test from "node:test";
@@ -10,6 +10,7 @@ import {
   parseClaudeCodeStream,
   parseClaudeCodeConfig,
   validateClaudeCodeProjection,
+  withConfigSnapshot,
 } from "./claude-code.ts";
 import type { EvaluationSuite } from "../core.ts";
 
@@ -37,6 +38,18 @@ function testAdapter(): { adapter: ClaudeCodeCliAdapter; root: string } {
   writeFileSync(join(root, "plugin.json"), '{"name":"wycats-ai-plugin"}\n');
   return { adapter: new ClaudeCodeCliAdapter(root), root };
 }
+
+void test("supplies captured config bytes and cleans up after build failure", async () => {
+  const source = '{"target":"claude-code","models":{"balanced":"sonnet"}}';
+  let snapshotPath = "";
+  await assert.rejects(withConfigSnapshot(source, (path) => {
+    snapshotPath = path;
+    assert.equal(readFileSync(path, "utf-8"), source);
+    throw new Error("Build failed");
+  }), /Build failed/);
+  assert.ok(snapshotPath);
+  assert.equal(existsSync(snapshotPath), false);
+});
 
 void test("requires a Claude Code build target and concrete model mapping", () => {
   assert.throws(() => parseClaudeCodeConfig({ target: "codex", models: { balanced: "sonnet" } }), /must target claude-code/);

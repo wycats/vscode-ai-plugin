@@ -19,6 +19,7 @@ void test("keeps canonical resource symlinks inside the repository", async () =>
     assert.equal(await resolveCanonicalResourcePath(root, "inside-link.md"), join(root, "inside-link.md"));
     await assert.rejects(resolveCanonicalResourcePath(root, "outside-link.md"), /must resolve inside/);
     await assert.rejects(resolveCanonicalResourcePath(root, "../outside.md"), /must resolve inside/);
+    await assert.rejects(resolveCanonicalResourcePath(root, "missing.md"), /Canonical resource does not exist: missing.md/);
   } finally {
     await rm(temporary, { recursive: true, force: true });
   }
