@@ -816,6 +816,20 @@ void test("rejects contradictory and ambiguous suite assertions", () => {
   assert.doesNotThrow(() => parseSuite(suiteWithExpectation("abc ", {
     requiredFindings: [{ passage: "abc" }, { passage: "abc " }], maximumFindings: 1,
   })));
+  assert.throws(() => parseSuite(suiteWithExpectation("abc", {
+    requiredFindings: [{ passage: "abc", labelsAnyOf: ["A"] }, { passage: "b", labelsAnyOf: ["B"] }],
+  })), /incompatible labels/);
+  assert.doesNotThrow(() => parseSuite(suiteWithExpectation("abc", {
+    requiredFindings: [{ passage: "abc", labelsAnyOf: ["A", "B"] }, { passage: "b", labelsAnyOf: ["B"] }],
+  })));
+  for (const assertion of ["rewriteIncludes", "rewritePreserves"]) {
+    assert.throws(() => parseSuite(suiteWithExpectation("The Text", {
+      [assertion]: ["The Text"], rewriteExcludes: ["Text"],
+    })), /required rewrite text contains excluded text/);
+  }
+  assert.throws(() => parseSuite(suiteWithExpectation("Text", {
+    requiredFindings: [{ passage: "Text" }], rewritePreserves: ["Text"],
+  })), /preserved text retains a required finding/);
 
   assert.throws(
     () =>

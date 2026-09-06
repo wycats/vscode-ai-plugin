@@ -1,6 +1,28 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { validateCanonicalResource } from "./resource.ts";
+import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { resolveCanonicalResourcePath, validateCanonicalResource } from "./resource.ts";
+
+void test("keeps canonical resource symlinks inside the repository", async () => {
+  const temporary = await mkdtemp(join(tmpdir(), "eval-resource-"));
+  const root = join(temporary, "repo");
+  try {
+    await mkdir(root);
+    const inside = join(root, "inside.md");
+    const outside = join(temporary, "outside.md");
+    await writeFile(inside, "Inside");
+    await writeFile(outside, "Outside");
+    await symlink(inside, join(root, "inside-link.md"));
+    await symlink(outside, join(root, "outside-link.md"));
+    assert.equal(await resolveCanonicalResourcePath(root, "inside-link.md"), join(root, "inside-link.md"));
+    await assert.rejects(resolveCanonicalResourcePath(root, "outside-link.md"), /must resolve inside/);
+    await assert.rejects(resolveCanonicalResourcePath(root, "../outside.md"), /must resolve inside/);
+  } finally {
+    await rm(temporary, { recursive: true, force: true });
+  }
+});
 
 const source = `---
 name: slop-linter

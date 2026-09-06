@@ -80,7 +80,7 @@ function findBelow(root: string, names: Set<string>): ClaudeCommand | undefined 
       if (entry.isDirectory()) {
         const match = findBelow(path, names);
         if (match) return match;
-      } else if (entry.isFile() && names.has(entry.name.toLowerCase())) {
+      } else if ((entry.isFile() || entry.isSymbolicLink()) && names.has(entry.name.toLowerCase())) {
         const match = executable(path);
         if (match) {
           const command = resolveClaudeCommand(match);
@@ -94,10 +94,14 @@ function findBelow(root: string, names: Set<string>): ClaudeCommand | undefined 
   return undefined;
 }
 
+export function findClaudeCommandBelow(root: string): ClaudeCommand | undefined {
+  return findBelow(root, new Set(executableNames("claude")));
+}
+
 export function findClaudeCommand(): ClaudeCommand | undefined {
   const fromPath = findOnPath("claude");
   if (fromPath) return fromPath;
 
   const protoRoot = join(homedir(), ".proto", "tools", "node");
-  return findBelow(protoRoot, new Set(executableNames("claude")));
+  return findClaudeCommandBelow(protoRoot);
 }

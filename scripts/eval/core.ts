@@ -244,9 +244,9 @@ export function parseSuite(value: unknown): EvaluationSuite {
       }
     }
     const intervals = (expect.requiredFindings ?? [])
-      .map(({ passage }) => {
+      .map(({ passage, labelsAnyOf }) => {
         const start = document.indexOf(passage);
-        return { start, end: start + passage.length };
+        return { start, end: start + passage.length, labelsAnyOf };
       });
     const boundaries = [...new Set(intervals.flatMap(({ start, end }) => [start, end]))]
       .sort((left, right) => left - right);
@@ -258,7 +258,18 @@ export function parseSuite(value: unknown): EvaluationSuite {
       const start = boundaries[index - 1];
       const end = boundaries[index];
       if (!document.slice(start, end).trim()) continue;
-      if (intervals.some((interval) => interval.start <= start && interval.end >= end)) {
+      const covering = intervals.filter((interval) => interval.start <= start && interval.end >= end);
+      let sharedLabels: Set<string> | undefined;
+      for (const { labelsAnyOf } of covering) {
+        if (!labelsAnyOf) continue;
+        sharedLabels = sharedLabels === undefined
+          ? new Set(labelsAnyOf)
+          : new Set(labelsAnyOf.filter((label) => sharedLabels?.has(label)));
+      }
+      if (sharedLabels?.size === 0) {
+        throw new Error(`${path}.expect overlapping required passages have incompatible labels.`);
+      }
+      if (covering.length) {
         minimumFindings++;
       }
     }
@@ -275,6 +286,9 @@ export function parseSuite(value: unknown): EvaluationSuite {
       if (expect.rewriteEquals !== undefined && !expect.rewriteEquals.includes(preserved)) {
         throw new Error(`${path}.expect rewriteEquals does not preserve required exact text.`);
       }
+      if (expect.requiredFindings?.some(({ passage }) => preserved.includes(passage))) {
+        throw new Error(`${path}.expect preserved text retains a required finding passage.`);
+      }
     }
     for (const excluded of expect.rewriteExcludes ?? []) {
       if (!document.includes(excluded)) {
@@ -284,6 +298,10 @@ export function parseSuite(value: unknown): EvaluationSuite {
         throw new Error(
           `${path}.expect excluded text must have one case- and whitespace-normalized occurrence in the document.`,
         );
+      }
+      if ([...(expect.rewriteIncludes ?? []), ...(expect.rewritePreserves ?? [])]
+        .some((included) => normalize(included).includes(normalize(excluded)))) {
+        throw new Error(`${path}.expect required rewrite text contains excluded text.`);
       }
       if (
         expect.rewriteEquals !== undefined &&

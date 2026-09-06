@@ -3,7 +3,7 @@ import { chmodSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync }
 import { tmpdir } from "node:os";
 import { delimiter, join } from "node:path";
 import test from "node:test";
-import { findClaudeCommand, resolveClaudeCommand } from "../../claude-executable.ts";
+import { findClaudeCommand, findClaudeCommandBelow, resolveClaudeCommand } from "../../claude-executable.ts";
 import {
   ClaudeCodeCliAdapter,
   claudeCodeInvocation,
@@ -76,6 +76,7 @@ void test("skips directories on PATH and accepts executable symlinks", { skip: p
     symlinkSync(target, command);
     process.env.PATH = [first, second].join(delimiter);
     assert.equal(findClaudeCommand()?.discoveredPath, command);
+    assert.equal(findClaudeCommandBelow(root)?.discoveredPath, command);
   } finally {
     if (originalPath === undefined) delete process.env.PATH;
     else process.env.PATH = originalPath;

@@ -1,8 +1,22 @@
 import matter from "gray-matter";
-import { posix } from "node:path";
+import { isAbsolute, posix, relative, resolve, sep } from "node:path";
+import { realpath } from "node:fs/promises";
 import type { EvaluationResource } from "./core.ts";
 
 export const CANONICAL_RESOURCE_AUTHORITY = "wycats-plugin";
+
+export async function resolveCanonicalResourcePath(root: string, path: string): Promise<string> {
+  const resolved = resolve(root, path);
+  for (const local of [
+    relative(root, resolved),
+    relative(await realpath(root), await realpath(resolved)),
+  ]) {
+    if (!local || local === ".." || local.startsWith(`..${sep}`) || isAbsolute(local)) {
+      throw new Error(`Canonical resource must resolve inside the repository: ${path}.`);
+    }
+  }
+  return resolved;
+}
 
 export interface CanonicalResourceDescriptor {
   kind: "agent" | "skill" | "stance";

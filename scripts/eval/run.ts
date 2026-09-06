@@ -14,7 +14,7 @@ import {
   type EvaluationResponse,
   type Grade,
 } from "./core.ts";
-import { validateCanonicalResource } from "./resource.ts";
+import { resolveCanonicalResourcePath, validateCanonicalResource } from "./resource.ts";
 import { validateReportPath } from "./output.ts";
 
 const ROOT = resolve(fileURLToPath(new URL("../..", import.meta.url)));
@@ -114,15 +114,6 @@ function defaultOutputPath(): string {
   return join(ROOT, ".runtime", "evals", `${timestamp}-claude-code-cli.json`);
 }
 
-function resolveRepositoryPath(path: string): string {
-  const resolved = resolve(ROOT, path);
-  const local = relative(ROOT, resolved);
-  if (local === "" || local.startsWith("..") || isAbsolute(local)) {
-    throw new Error(`Canonical resource path must stay inside the repository: ${path}.`);
-  }
-  return resolved;
-}
-
 function sha256(source: string): string {
   const digest = createHash("sha256").update(source).digest("hex");
   return `sha256:${digest}`;
@@ -146,7 +137,7 @@ async function run(): Promise<void> {
   const options = parseOptions();
   const { suite, source: suiteSource } = await loadSuiteSnapshot(options.suitePath);
   const cases = selectCases(suite.cases, options.caseId);
-  const resourcePath = resolveRepositoryPath(suite.resource.path);
+  const resourcePath = await resolveCanonicalResourcePath(ROOT, suite.resource.path);
   const resourceSource = await readFile(resourcePath, "utf-8");
   validateCanonicalResource(suite.resource, resourceSource);
   const resourceDigest = sha256(resourceSource);
