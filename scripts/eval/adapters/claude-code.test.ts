@@ -8,6 +8,7 @@ import {
   ClaudeCodeCliAdapter,
   claudeCodeInvocation,
   parseClaudeCodeStream,
+  parseClaudeCodeConfig,
   validateClaudeCodeProjection,
 } from "./claude-code.ts";
 import type { EvaluationSuite } from "../core.ts";
@@ -36,6 +37,14 @@ function testAdapter(): { adapter: ClaudeCodeCliAdapter; root: string } {
   writeFileSync(join(root, "plugin.json"), '{"name":"wycats-ai-plugin"}\n');
   return { adapter: new ClaudeCodeCliAdapter(root), root };
 }
+
+void test("requires a Claude Code build target and concrete model mapping", () => {
+  assert.throws(() => parseClaudeCodeConfig({ target: "codex", models: { balanced: "sonnet" } }), /must target claude-code/);
+  assert.throws(() => parseClaudeCodeConfig({ target: "claude-code" }), /models object/);
+  assert.throws(() => parseClaudeCodeConfig({ target: "claude-code", models: { balanced: 42 } }), /non-empty string or null/);
+  assert.throws(() => parseClaudeCodeConfig({ target: "claude-code", models: { balanced: null } }), /concrete balanced/);
+  assert.deepEqual(parseClaudeCodeConfig({ target: "claude-code", models: { balanced: "sonnet", auxiliary: null } }), { models: { balanced: "sonnet", auxiliary: null } });
+});
 
 void test("rejects skill and stance names that share a Claude projection", async () => {
   const { root } = testAdapter();

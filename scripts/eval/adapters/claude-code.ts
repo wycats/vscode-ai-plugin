@@ -19,6 +19,26 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+export function parseClaudeCodeConfig(value: unknown): { models: Record<string, string | null> } {
+  if (!isRecord(value) || value.target !== "claude-code") {
+    throw new Error("The evaluation adapter config must target claude-code.");
+  }
+  if (!isRecord(value.models)) {
+    throw new Error("The evaluation adapter config must declare a models object.");
+  }
+  const models: Record<string, string | null> = {};
+  for (const [role, target] of Object.entries(value.models)) {
+    if (target !== null && (typeof target !== "string" || !target.trim())) {
+      throw new Error(`The evaluation adapter model '${role}' must be a non-empty string or null.`);
+    }
+    models[role] = target;
+  }
+  if (!models.balanced) {
+    throw new Error("The evaluation adapter requires a concrete balanced model mapping.");
+  }
+  return { models };
+}
+
 export async function validateClaudeCodeProjection(root: string): Promise<void> {
   const resources = await discoverResourceFiles(root);
   const names = new Map<string, string>();
@@ -197,9 +217,7 @@ export class ClaudeCodeCliAdapter implements EvaluationAdapter {
         "The claude-code-cli adapter requires an authenticated Claude Code executable. A Claude Code extension session does not provide this transport.",
       );
     }
-    const config = JSON.parse(await readFile(this.#configPath, "utf-8")) as {
-      models: Record<string, string | null>;
-    };
+    const config = parseClaudeCodeConfig(JSON.parse(await readFile(this.#configPath, "utf-8")) as unknown);
     this.#launcherModel = config.models.balanced ?? "";
     if (!this.#launcherModel) {
       throw new Error(

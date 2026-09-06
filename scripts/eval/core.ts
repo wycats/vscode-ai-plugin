@@ -247,18 +247,23 @@ export function parseSuite(value: unknown): EvaluationSuite {
       .map(({ passage }) => {
         const start = document.indexOf(passage);
         return { start, end: start + passage.length };
-      })
-      .sort((left, right) => left.end - right.end);
+      });
+    const boundaries = [...new Set(intervals.flatMap(({ start, end }) => [start, end]))]
+      .sort((left, right) => left - right);
     let minimumFindings = 0;
-    let previousEnd = 0;
-    for (const interval of intervals) {
-      if (interval.start >= previousEnd) {
+    // Quotes covering a requirement must stay within its boundaries. Because
+    // findings cannot overlap, every non-whitespace segment between boundaries
+    // needs its own quote when that segment belongs to a required passage.
+    for (let index = 1; index < boundaries.length; index++) {
+      const start = boundaries[index - 1];
+      const end = boundaries[index];
+      if (!document.slice(start, end).trim()) continue;
+      if (intervals.some((interval) => interval.start <= start && interval.end >= end)) {
         minimumFindings++;
-        previousEnd = interval.end;
       }
     }
     if (expect.maximumFindings !== undefined && expect.maximumFindings < minimumFindings) {
-      throw new Error(`${path}.expect maximumFindings is below the minimum of ${String(minimumFindings)} disjoint required passages.`);
+      throw new Error(`${path}.expect maximumFindings is below the minimum of ${String(minimumFindings)} quotes needed to cover required passages.`);
     }
     for (const preserved of expect.rewritePreserves ?? []) {
       if (!document.includes(preserved)) {

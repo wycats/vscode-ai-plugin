@@ -279,6 +279,7 @@ async function run(): Promise<void> {
     }
   }
 
+  await validateReportPath(ROOT, outputPath);
   await mkdir(dirname(outputPath), { recursive: true });
   await validateReportPath(ROOT, outputPath);
   const report = {
