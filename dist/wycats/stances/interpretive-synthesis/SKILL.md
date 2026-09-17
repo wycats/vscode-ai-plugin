@@ -46,6 +46,6 @@ Interpretive synthesis surfaces things that linear review misses:
 
 ## Composition notes
 
-Interpretive synthesis uses **collaborative grounding** throughout — the hermeneutic circle surfaces ambiguities that only the user's situated knowledge can resolve.
+Interpretive synthesis uses [collaborative grounding](../collaborative-grounding/SKILL.md "composition:reference") throughout — the hermeneutic circle surfaces ambiguities that only the user's situated knowledge can resolve.
 
-Composes with **joint reading** in the walkthrough (the big-picture revision step is interpretive synthesis applied to code). Composes with **diagnostic questioning** in the handoff (the coherent account reveals where the high-variance threads are and helps prioritize the diagnostic sequence). The handoff skill uses interpretive synthesis as its opening move — forming the account that the diagnostic questioning then probes.
+Composes with **joint reading** in the walkthrough (the big-picture revision step is interpretive synthesis applied to code). Composes with [diagnostic questioning](../diagnostic-questioning/SKILL.md "composition:reference") in the handoff (the coherent account reveals where the high-variance threads are and helps prioritize the diagnostic sequence). The handoff skill uses interpretive synthesis as its opening move — forming the account that the diagnostic questioning then probes.

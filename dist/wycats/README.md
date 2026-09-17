@@ -1,10 +1,10 @@
 # vscode-ai-plugin
 
-An agent toolkit for VS Code Copilot, Claude Code, and Codex, grounded in a theory of how language activates reasoning in language models.
+An agent toolkit for VS Code Copilot, Claude Code, Codex, and Pi, grounded in a theory of how language activates reasoning in language models.
 
 ## What this is
 
-This repo is a working agent plugin for VS Code, Claude Code, and Codex. Its
+This repo is a working agent plugin for VS Code, Claude Code, Codex, and Pi. Its
 canonical resources are projected into the capabilities each host provides;
 not every host activates every resource type. The repo is also the testbed for
 a framework about *how to write good agent customizations*, and a vocabulary
@@ -195,13 +195,64 @@ use abstract role names for models and tool groups instead of hardcoded
 provider-specific values. A local `config.json` (gitignored) maps those roles
 to concrete values for your environment. The build resolves the names and
 writes runtime projections to `out/wycats/` for VS Code,
-`out/claude-code/` for Claude Code, or `out/codex/` for Codex.
+`out/claude-code/` for Claude Code, `out/codex/` for Codex, or `out/pi/` for Pi.
 
 | Target      | Active resource projections |
 | ----------- | --------------------------- |
 | VS Code     | Agents, workflow skills, hidden stances, instructions, and hooks |
 | Claude Code | Agents, workflow skills, stances materialized as hidden skills, and hooks |
 | Codex       | Workflow skills and stances materialized as hidden skills; agents are packaged as reference material |
+| Pi          | Public Recon workflow, private canonical stances, and the `wycats-recon` pi-subagents profile |
+
+The first Pi package is intentionally bounded to Recon. Its delegated profile
+requires [pi-subagents](https://github.com/nicobailon/pi-subagents) to be
+installed (`pi install npm:pi-subagents`). This projection was inspected
+against Pi 0.85.1 and pi-subagents 0.68.0; re-check `pi --version`, run
+`/subagents-doctor`, and inspect the `wycats-recon` Prompt Audit after runtime
+upgrades and before behavioral probes.
+
+Build with `pnpm build:pi`, then launch without installing this package using
+`pi -e ./out/pi`. Invoke `/skill:recon` in the parent or ask the parent to use
+`wycats-recon` through pi-subagents. `out/pi/projection-capabilities.json`
+records the runtime prerequisite, exact supported surface, and prototype
+omissions; browser, memory, Exo, nested fan-out, and dedicated testing tools
+are reported rather than silently substituted.
+
+### Pi installation and updates
+
+Once the Pi publication workflow has run on `main`, install the generated
+package from its publication branch:
+
+```sh
+pi install git:github.com/wycats/vscode-ai-plugin@pi-plugin
+```
+
+Fetch later publications explicitly, then run `/reload` or restart pi:
+
+```sh
+pi update git:github.com/wycats/vscode-ai-plugin@pi-plugin
+# Or update all installed extension packages:
+pi update --extensions
+```
+
+Pi 0.85.1 fetches and reconciles the configured Git ref during updates, so
+`@pi-plugin` follows that branch's current publication. A tag or commit ref
+instead retains the corresponding snapshot. Pushing source updates triggers
+publication after validation; installed clients receive them when they run an
+update, rather than being changed by the publisher.
+
+`publish-pi.yml` builds from canonical source on `main` and publishes a generated
+root package to `pi-plugin`. `pnpm publish-pi` runs the same publication manually
+and **pushes to origin**. It uses a disposable staging repository and an exact
+ref lease to protect a concurrent publication. The branch is generated output;
+source edits belong on the normal development branches.
+
+For local development, `pi -e ./out/pi` and a local `pi install -l ./out/pi`
+remain useful. When switching from a local install to the publication branch,
+remove the local package registration with `pi remove -l ./out/pi` so the same
+resources are loaded only once. Keep model preferences in user/project
+pi-subagents overrides; edits inside a managed Git package checkout can be
+replaced by an update.
 
 Codex does not currently activate this plugin's agents, instructions, or
 hooks. Claude Code does not consume the VS Code instruction format. These are
@@ -216,11 +267,30 @@ See [docs/setup.md](https://github.com/wycats/vscode-ai-plugin/blob/main/docs/se
 pnpm watch     # Auto-rebuild on source or config changes
 pnpm build     # One-off build
 pnpm build:codex # Build the Codex target from the example config
+pnpm build:pi  # Build the bounded Pi Recon package
 pnpm package-codex # Build an ignored local Codex marketplace
 pnpm validate  # Check discovered resources and plugin metadata
 pnpm check     # TypeScript + ESLint strict type-checked
 pnpm test:eval # Test evaluation fixtures, parsing, and grading without a model
+pnpm test:pi-runtime # Optional installed pi-subagents parser integration (see below)
+pnpm test:pi-publication # Publish/update tests using disposable local Git remotes
 pnpm eval -- --adapter claude-code-cli # Run behavioral evaluations through the Claude Code CLI
 ```
+
+The portable suite skips the runtime-source integration by default. To verify a
+locally installed pi-subagents parser without adding a repository dependency,
+set `PI_SUBAGENTS_ROOT` to that checkout before running
+`pnpm test:pi-runtime`.
+
+The publication suite always tests generated package publication against a local
+bare Git remote. Set `PI_TEST_BINARY` to an installed pi executable to also
+exercise real `pi install` and `pi update --extensions` across two publications.
+That optional test uses a disposable pi configuration and maps its fixture Git
+URL to the local remote; it leaves the user's installed packages unchanged.
+
+For isolated builds, `node scripts/build.ts --config config.pi.example.json --output /tmp/new-pi-output`
+accepts a new or empty directory outside the source checkout. The override
+rejects source paths, ancestors, symlinks, and existing data before cleanup;
+ordinary target builds continue replacing their dedicated `out/<target>` directory.
 
 Edit agents, skills, and stances in this directory. For VS Code, the watch script rebuilds `out/wycats/` on every change. All VS Code windows consume the installed plugin.

@@ -57,6 +57,6 @@ Resolve this in context. When the user's energy is revealing something the diagn
 
 ## Composition notes
 
-Diagnostic questioning is **collaborative grounding** structured around uncertainty reduction. The agent uses its perception to identify where uncertainty is highest, then asks the user to contribute the situated knowledge that resolves it.
+Diagnostic questioning is [collaborative grounding](../collaborative-grounding/SKILL.md "composition:reference") structured around uncertainty reduction. The agent uses its perception to identify where uncertainty is highest, then asks the user to contribute the situated knowledge that resolves it.
 
-Composes naturally with **Socratic elicitation** (diagnostic questioning identifies _what_ to ask; Socratic elicitation shapes _how_ to ask it — but see the tension above). Composes with **interpretive synthesis** (the coherent account of the session reveals where the high-variance threads are). The handoff skill uses diagnostic questioning to triage dangling threads.
+Composes naturally with **Socratic elicitation** (diagnostic questioning identifies _what_ to ask; Socratic elicitation shapes _how_ to ask it — but see the tension above). Composes with [interpretive synthesis](../interpretive-synthesis/SKILL.md "composition:reference") (the coherent account of the session reveals where the high-variance threads are). The handoff skill uses diagnostic questioning to triage dangling threads.

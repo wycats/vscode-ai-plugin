@@ -49,8 +49,8 @@ sentence and the reader's path through it, so the rewrite has a clear target.
 
 ## Composition notes
 
-Relational continuity composes with **collaborative-grounding** when the work
-depends on the user's situated context. It composes with **interpretive-synthesis**
+Relational continuity composes with [collaborative-grounding](../collaborative-grounding/SKILL.md "composition:reference") when the work
+depends on the user's situated context. It composes with [interpretive-synthesis](../interpretive-synthesis/SKILL.md "composition:reference")
 when a conversation or session is being carried into a durable account. It
 composes with **gap-reading** when the question is what a compressed account
 would lose.
