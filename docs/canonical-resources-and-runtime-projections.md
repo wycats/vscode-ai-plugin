@@ -68,6 +68,49 @@ are not automatically behaviorally equivalent: a host may fail to activate a
 resource, expose a hidden stance, or omit a capability. Projection validation
 therefore checks both content fidelity and the host-visible surface.
 
+## Canonical composition links
+
+A canonical resource can make a relationship navigable with an ordinary
+relative Markdown link whose title is exactly one of these values:
+
+```markdown
+[interpretive synthesis](../../stances/interpretive-synthesis/SKILL.md "composition:load")
+[collaborative grounding](../collaborative-grounding/SKILL.md "composition:reference")
+```
+
+`composition:reference` means the full resource remains available for
+consultation. `composition:load` requests activation when the governing prose
+applies. The surrounding sentence owns the condition, timing, emphasis, and
+purpose; the title does not establish a separate activation state machine.
+Background guidance can therefore say “keep active throughout,” while a
+situated interruption can say “when surfaces conflict,” and both can use the
+same load relationship without losing their different shapes.
+
+The supported grammar is an inline Markdown link with a relative destination
+and a single- or double-quoted title (parenthesized Markdown titles are also
+accepted). Composition destinations point directly to a discovered canonical
+Markdown resource; URL schemes, absolute paths, fragments, and query strings
+are outside this identity form. Validation reports malformed markers, exact
+`composition` namespaces with unsupported relationship values, likely
+namespace typos within edit distance two when paired with exact `load` or
+`reference`, identity collisions, and unresolved or invalid targets with
+source file and line. This bounded typo check catches plausible authoring
+mistakes without treating arbitrary documentation titles as markers; it does
+not promise to classify every possible misspelling. Top-level and blockquoted
+fenced code plus inline code remain literal examples. Ordinary documentation
+links and historical unmarked links remain ordinary Markdown and carry no
+inferred composition relationship.
+
+Builds validate both source resolution and target projection completeness
+before cleaning generated output. They retain the label, title, and all
+surrounding body bytes while rewriting only the destination for the target's
+physical layout. Each target also emits `composition-index.json`, a mechanical
+index of the projected edges. Its `canonicalSource` and `canonicalLine` identify
+the authoritative coordinate; `generatedSource` identifies the projected file
+without asserting that generated frontmatter retained the same line number.
+The index supports inspection and discovery; canonical prose remains the
+authority for what each relationship means.
+
 ## Reinforcement, variants, and loss
 
 Intentional restatement is useful when it deepens the same well. A compact

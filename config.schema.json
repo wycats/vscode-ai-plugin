@@ -12,8 +12,8 @@
     },
     "target": {
       "type": "string",
-      "description": "Build target platform. VS Code builds to out/wycats/; Claude Code builds to out/claude-code/; Codex builds to out/codex/.",
-      "enum": ["vscode", "claude-code", "codex"],
+      "description": "Build target platform. VS Code builds to out/wycats/; Claude Code builds to out/claude-code/; Codex builds to out/codex/; Pi builds to out/pi/.",
+      "enum": ["vscode", "claude-code", "codex", "pi"],
       "default": "vscode"
     },
     "models": {
@@ -34,6 +34,16 @@
           "type": ["string", "null"],
           "description": "Cost-effective model for supporting tasks (pre-read, slop-linter). Examples: 'GPT 5.4 (vercel)', 'haiku', null (platform default)."
         }
+      }
+    },
+    "thinkingLevels": {
+      "type": "object",
+      "description": "Optional target-specific thinking levels keyed by abstract model role. Pi projects these into pi-subagents agent profiles.",
+      "additionalProperties": false,
+      "properties": {
+        "fast": { "type": ["string", "null"] },
+        "balanced": { "type": ["string", "null"] },
+        "auxiliary": { "type": ["string", "null"] }
       }
     },
     "toolGroups": {

@@ -10,7 +10,7 @@
  * (vscode → out/wycats/, claude-code → out/claude-code/, codex → out/codex/).
  */
 
-import { readFile, writeFile, mkdir, cp, rm } from "node:fs/promises";
+import { readFile, writeFile, mkdir, cp } from "node:fs/promises";
 import { join, relative, dirname, basename, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
@@ -23,8 +23,16 @@ import {
   CODEX_TARGET,
   legacyVSCodeOutputPath,
   outputPathForTarget,
+  PI_TARGET,
   VSCODE_TARGET,
 } from "./target-output.ts";
+import {
+  formatCompositionDiagnostics,
+  loadCanonicalComposition,
+  projectCompositionLinks,
+  type CanonicalComposition,
+} from "./resource-composition.ts";
+import { assertSafeOutputOverride, prepareProjectionOutput } from "./projection-output.ts";
 
 const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const DEFAULT_CONFIG_PATH = join(ROOT, "config.json");
@@ -33,6 +41,7 @@ const CONFIG_ENV_VAR = "VSCODE_AI_PLUGIN_CONFIG_PATH";
 interface Config {
   target: string;
   models: Record<string, string | null>;
+  thinkingLevels?: Record<string, string | null>;
   toolGroups: Record<string, string[]>;
   hookMatchers?: Record<string, string>;
 }
@@ -78,11 +87,12 @@ interface CodexPluginJson extends PluginMetadata {
 }
 
 function usage(): string {
-  return `Usage: node scripts/build.ts [--config <path>]
+  return `Usage: node scripts/build.ts [--config <path>] [--output <path>]
 
 Examples:
   pnpm build --config config.example.json
-  pnpm build -- --config config.example.json`;
+  pnpm build -- --config config.example.json
+  node scripts/build.ts --config config.pi.example.json --output /tmp/pi-projection`;
 }
 
 function failArgument(message: string): never {
@@ -90,32 +100,38 @@ function failArgument(message: string): never {
   process.exit(1);
 }
 
-function parseConfigPath(args = process.argv.slice(2)): string {
-  let selectedPath: string | undefined;
+interface BuildOptions {
+  configPath: string;
+  outputPath?: string;
+}
+
+function parseBuildOptions(args = process.argv.slice(2)): BuildOptions {
+  let selectedConfigPath: string | undefined;
+  let selectedOutputPath: string | undefined;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
 
-    if (arg === "--") {
-      continue;
-    }
+    if (arg === "--") continue;
 
-    if (arg === "--config") {
+    if (arg === "--config" || arg === "--output") {
       const value = args[i + 1];
       if (!value || value.startsWith("--")) {
-        failArgument("Missing value for --config.");
+        failArgument(`Missing value for ${arg}.`);
       }
-      selectedPath = value;
+      if (arg === "--config") selectedConfigPath = value;
+      else selectedOutputPath = value;
       i++;
       continue;
     }
 
-    if (arg.startsWith("--config=")) {
-      const value = arg.slice("--config=".length);
-      if (!value) {
-        failArgument("Missing value for --config.");
-      }
-      selectedPath = value;
+    if (arg.startsWith("--config=") || arg.startsWith("--output=")) {
+      const separator = arg.indexOf("=");
+      const option = arg.slice(0, separator);
+      const value = arg.slice(separator + 1);
+      if (!value) failArgument(`Missing value for ${option}.`);
+      if (option === "--config") selectedConfigPath = value;
+      else selectedOutputPath = value;
       continue;
     }
 
@@ -123,7 +139,15 @@ function parseConfigPath(args = process.argv.slice(2)): string {
   }
 
   const envPath = process.env[CONFIG_ENV_VAR];
-  return resolve(ROOT, selectedPath ?? (envPath || DEFAULT_CONFIG_PATH));
+  return {
+    configPath: resolve(
+      ROOT,
+      selectedConfigPath ?? (envPath || DEFAULT_CONFIG_PATH),
+    ),
+    ...(selectedOutputPath
+      ? { outputPath: resolve(ROOT, selectedOutputPath) }
+      : {}),
+  };
 }
 
 function displayConfigPath(configPath: string): string {
@@ -134,7 +158,8 @@ function displayConfigPath(configPath: string): string {
   return configPath;
 }
 
-const CONFIG_PATH = parseConfigPath();
+const BUILD_OPTIONS = parseBuildOptions();
+const CONFIG_PATH = BUILD_OPTIONS.configPath;
 
 async function loadConfig(): Promise<Config> {
   try {
@@ -210,20 +235,27 @@ function formatYamlString(value: string): string {
   return shouldQuoteYamlString(value) ? JSON.stringify(value) : value;
 }
 
-function serializeFrontmatter(data: Record<string, unknown>): string {
+function serializeFrontmatter(
+  data: Record<string, unknown>,
+  listStyle: "flow" | "block" = "flow",
+): string {
   const lines: string[] = [];
   for (const [key, value] of Object.entries(data)) {
     if (value === undefined) continue;
     if (Array.isArray(value)) {
-      // Format tool arrays in the YAML flow style used by agent files
       lines.push(`${key}:`);
-      lines.push(`  [`);
-      for (let i = 0; i < value.length; i++) {
-        const item = String(value[i]);
-        const formatted = formatYamlString(item);
-        lines.push(`    ${formatted},`);
+      if (listStyle === "block") {
+        for (const item of value) {
+          lines.push(`  - ${formatYamlString(String(item))}`);
+        }
+      } else {
+        // Preserve the existing YAML flow envelope for non-Pi targets.
+        lines.push(`  [`);
+        for (const item of value) {
+          lines.push(`    ${formatYamlString(String(item))},`);
+        }
+        lines.push(`  ]`);
       }
-      lines.push(`  ]`);
     } else if (typeof value === "boolean") {
       lines.push(`${key}: ${value ? "true" : "false"}`);
     } else if (typeof value === "string") {
@@ -240,17 +272,27 @@ function deriveAgentName(filename: string): string {
 
 async function buildAgent(
   srcPath: string,
+  outPath: string,
   outDir: string,
   config: Config,
+  composition: CanonicalComposition,
+  outputBySourcePath: ReadonlyMap<string, string>,
 ): Promise<string> {
-  const raw = await readFile(srcPath, "utf-8");
+  const raw = projectCompositionLinks(
+    await readFile(srcPath, "utf-8"),
+    srcPath,
+    outPath,
+    composition,
+    outputBySourcePath,
+  );
   const { data, content } = matter(raw);
   const filename = relative(join(ROOT, "agents"), srcPath);
   const isClaudeCode = config.target === "claude-code";
+  const isPi = config.target === PI_TARGET;
 
-  // Claude Code requires a name field — insert at the front
-  if (isClaudeCode && !data.name) {
-    const name = deriveAgentName(filename);
+  // Claude Code and pi-subagents require a name field — insert at the front.
+  if ((isClaudeCode || isPi) && !data.name) {
+    const name = isPi ? "wycats-recon" : deriveAgentName(filename);
     const original = { ...data };
     for (const k of Object.keys(data)) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -259,37 +301,58 @@ async function buildAgent(
     Object.assign(data, { name }, original);
   }
 
-  // Resolve model
+  // Resolve model and target-specific thinking from the same abstract role.
   if (data.model !== undefined) {
-    const resolved = resolveModel(String(data.model), config);
+    const role = String(data.model);
+    const resolved = resolveModel(role, config);
     if (resolved === undefined) {
       delete data.model;
     } else {
       data.model = resolved;
+    }
+    if (isPi) {
+      const thinking = config.thinkingLevels?.[role];
+      if (thinking) data.thinking = thinking;
     }
   }
 
   // Resolve tools
   if (Array.isArray(data.tools)) {
     const resolved = resolveTools(data.tools, config);
-    // Claude Code: deduplicate (many CC groups overlap, e.g. Bash appears in multiple)
-    data.tools = isClaudeCode ? [...new Set(resolved)] : resolved;
+    // Claude Code and Pi groups may overlap; both hosts want a strict unique list.
+    data.tools = isClaudeCode || isPi ? [...new Set(resolved)] : resolved;
   }
 
-  // Claude Code: strip VS Code-specific fields
   if (isClaudeCode) {
     delete data["user-invocable"];
   }
 
-  // Rebuild the file: frontmatter + body
-  const frontmatter = serializeFrontmatter(data);
+  if (isPi) {
+    Object.assign(data, {
+      advertise: true,
+      systemPromptMode: "replace",
+      inheritProjectContext: true,
+      inheritGlobalContext: false,
+      inheritSkills: false,
+      skills: [
+        "recon",
+        "diagnostic-questioning",
+        "interpretive-synthesis",
+        "observational-grounding",
+        "relational-continuity",
+      ],
+      skillPath: ["../skills", "../stances"],
+      allowNestedSubagents: false,
+    });
+  }
+
+  const frontmatter = serializeFrontmatter(data, isPi ? "block" : "flow");
   const outContent = `---\n${frontmatter}\n---\n${content}`;
 
-  const outPath = join(outDir, "agents", filename);
   await mkdir(dirname(outPath), { recursive: true });
   await writeFile(outPath, outContent);
 
-  return `./agents/${filename}`;
+  return `./${relative(outDir, outPath).split("\\").join("/")}`;
 }
 
 // --- Hook manifest (neutral format) ---
@@ -454,70 +517,297 @@ async function copyDir(srcName: string, outDir: string): Promise<void> {
   }
 }
 
-async function copyStancesAsSkills(
+function projectedResourcePath(
   outDir: string,
-  stances: DiscoveredResource[],
-): Promise<string[]> {
-  const outPaths: string[] = [];
+  target: string,
+  resource: DiscoveredResource,
+): string {
+  if (resource.section === "agents" && target === PI_TARGET) {
+    return join(outDir, "agents", "wycats-recon.agent.md");
+  }
+  if (
+    resource.section === "stances" &&
+    (target === "claude-code" || target === CODEX_TARGET)
+  ) {
+    return join(outDir, "skills", basename(dirname(resource.sourcePath)), "SKILL.md");
+  }
+  return join(outDir, resource.pluginPath.replace(/^\.\//, ""));
+}
 
-  for (const stance of stances) {
-    const dirName = basename(dirname(stance.sourcePath));
-    const outPath = join(outDir, "skills", dirName, "SKILL.md");
-    await mkdir(dirname(outPath), { recursive: true });
-    await cp(stance.sourcePath, outPath);
-    outPaths.push(`./skills/${dirName}/SKILL.md`);
+function resourcesProjectedForTarget(
+  target: string,
+  resources: Awaited<ReturnType<typeof discoverResourceFiles>>,
+): DiscoveredResource[] {
+  if (target !== PI_TARGET) {
+    return [
+      ...resources.agents,
+      ...resources.skills,
+      ...resources.stances,
+      ...(target === VSCODE_TARGET ? resources.instructions : []),
+    ];
   }
 
-  return outPaths;
+  return [
+    ...resources.agents.filter(
+      (resource) => basename(resource.sourcePath) === "recon.agent.md",
+    ),
+    ...resources.skills.filter(
+      (resource) => basename(dirname(resource.sourcePath)) === "recon",
+    ),
+    ...resources.stances,
+  ];
+}
+
+async function writeProjectedResource(
+  resource: DiscoveredResource,
+  outPath: string,
+  composition: CanonicalComposition,
+  outputBySourcePath: ReadonlyMap<string, string>,
+): Promise<void> {
+  const content = projectCompositionLinks(
+    await readFile(resource.sourcePath, "utf-8"),
+    resource.sourcePath,
+    outPath,
+    composition,
+    outputBySourcePath,
+  );
+  await mkdir(dirname(outPath), { recursive: true });
+  await writeFile(outPath, content);
+}
+
+async function writeCompositionIndex(
+  outDir: string,
+  composition: CanonicalComposition,
+  outputBySourcePath: ReadonlyMap<string, string>,
+): Promise<void> {
+  const edges = composition.references.flatMap((reference) => {
+    const source = outputBySourcePath.get(reference.source.sourcePath);
+    const target = outputBySourcePath.get(reference.target.sourcePath);
+    if (!source || !target) return [];
+    return [
+      {
+        canonicalSource: reference.source.pluginPath,
+        canonicalSourceIdentity: reference.source.identity,
+        canonicalLine: reference.line,
+        generatedSource: `./${relative(outDir, source).split("\\").join("/")}`,
+        relation: reference.relation,
+        generatedTarget: `./${relative(outDir, target).split("\\").join("/")}`,
+        canonicalTarget: reference.target.pluginPath,
+        canonicalTargetIdentity: reference.target.identity,
+      },
+    ];
+  });
+  await writeFile(
+    join(outDir, "composition-index.json"),
+    JSON.stringify(
+      {
+        schemaVersion: 2,
+        coordinates: {
+          canonicalLine:
+            "line in canonicalSource; generated files may add or transform frontmatter",
+          generatedSource: "projected file path; no generated line is asserted",
+        },
+        semantics: {
+          reference: "consultation availability",
+          load: "requested activation when the governing prose applies",
+        },
+        edges,
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+}
+
+async function writePiCapabilityReport(
+  outDir: string,
+  composition: CanonicalComposition,
+): Promise<void> {
+  const selected = new Set([
+    "skill:recon",
+    "skill:diagnostic-questioning",
+    "skill:interpretive-synthesis",
+    "skill:observational-grounding",
+    "skill:relational-continuity",
+  ]);
+  const catalog = [];
+  for (const resource of composition.resources) {
+    if (!selected.has(resource.identity)) continue;
+    const data = matter(await readFile(resource.sourcePath, "utf-8")).data as Record<
+      string,
+      unknown
+    >;
+    catalog.push({
+      name: resource.name,
+      description:
+        typeof data.description === "string" ? data.description : "",
+      location:
+        resource.section === "skills"
+          ? `./skills/${resource.name}/SKILL.md`
+          : `./stances/${resource.name}/SKILL.md`,
+    });
+  }
+
+  await writeFile(
+    join(outDir, "projection-capabilities.json"),
+    JSON.stringify(
+      {
+        schemaVersion: 1,
+        profile: "wycats-recon",
+        workflow: "recon",
+        runtimePrerequisites: {
+          pi: {
+            inspectedVersion: "0.85.1",
+            preflight: "re-run pi --version and re-verify package behavior after upgrades",
+          },
+          piSubagents: {
+            required: true,
+            inspectedVersion: "0.68.0",
+            install: "pi install npm:pi-subagents",
+            preflight:
+              "run /subagents-doctor and inspect wycats-recon Prompt Audit before behavioral probes",
+          },
+        },
+        agentFrontmatter: {
+          listFormat: "YAML block list (- item)",
+          verifiedParser: "pi-subagents 0.68.0 parseFrontmatterList",
+        },
+        activation: {
+          mechanism: "model-directed progressive disclosure",
+          markers: ["composition:load", "composition:reference"],
+          automaticRuntimeLoader: false,
+        },
+        supported: [
+          "public Recon workflow discovery",
+          "private canonical stance catalog for the delegated Recon profile",
+          "canonical link navigation and target-relative projection",
+          "project context inheritance",
+          "local filesystem reads, search, and shell commands",
+        ],
+        omitted: [
+          "browser tools",
+          "persistent memory",
+          "Exo context tools",
+          "nested delegation and canonical fan-out execution",
+          "dedicated testing tools (shell commands remain available)",
+        ],
+        note:
+          "The canonical fan-out prose is preserved. This local-code prototype reports unavailable capabilities rather than substituting different semantics.",
+        selectedResourceCatalog: catalog,
+      },
+      null,
+      2,
+    ) + "\n",
+  );
 }
 
 async function build() {
   const config = await loadConfig();
-  const outDir = outputPathForTarget(ROOT, config.target);
+  const defaultOutDir = outputPathForTarget(ROOT, config.target);
+  const outDir = BUILD_OPTIONS.outputPath ?? defaultOutDir;
+  if (BUILD_OPTIONS.outputPath) {
+    await assertSafeOutputOverride(ROOT, outDir);
+  }
   const resources = await discoverResourceFiles(ROOT);
+  const compositionResult = await loadCanonicalComposition(ROOT, resources);
+  if (!compositionResult.composition) {
+    throw new Error(
+      `Canonical composition validation failed before output cleanup:\n${formatCompositionDiagnostics(compositionResult.diagnostics)}`,
+    );
+  }
+  const composition = compositionResult.composition;
   const isClaudeCode = config.target === "claude-code";
   const isCodex = config.target === CODEX_TARGET;
+  const isPi = config.target === PI_TARGET;
+  const projectedResources = resourcesProjectedForTarget(config.target, resources);
+  const outputBySourcePath = new Map(
+    projectedResources.map((resource) => [
+      resolve(resource.sourcePath),
+      projectedResourcePath(outDir, config.target, resource),
+    ]),
+  );
 
-  // Clean output
-  if (config.target === VSCODE_TARGET) {
-    await rm(legacyVSCodeOutputPath(ROOT), { recursive: true, force: true });
-  }
-  await rm(outDir, { recursive: true, force: true });
-  await mkdir(outDir, { recursive: true });
+  // Source and target preflight intentionally complete before generated output changes.
+  await prepareProjectionOutput({
+    outDir,
+    ...(config.target === VSCODE_TARGET && !BUILD_OPTIONS.outputPath
+      ? { legacyOutDir: legacyVSCodeOutputPath(ROOT) }
+      : {}),
+    target: config.target,
+    composition,
+    outputBySourcePath,
+  });
 
-  // Read plugin metadata
   const pluginMeta = JSON.parse(
     await readFile(join(ROOT, "plugin.json"), "utf-8"),
   ) as PluginMetadata;
 
-  // Build agents
-  const agentSources = resources.agents.map((resource) => resource.sourcePath);
+  const agentResources = projectedResources.filter(
+    (resource) => resource.section === "agents",
+  );
   const agentPaths: string[] = [];
-  for (const src of agentSources) {
-    const relPath = await buildAgent(src, outDir, config);
-    agentPaths.push(relPath);
+  for (const resource of agentResources) {
+    const outPath = outputBySourcePath.get(resolve(resource.sourcePath));
+    if (!outPath) throw new Error(`Missing output path for ${resource.pluginPath}`);
+    agentPaths.push(
+      await buildAgent(
+        resource.sourcePath,
+        outPath,
+        outDir,
+        config,
+        composition,
+        outputBySourcePath,
+      ),
+    );
   }
 
-  // Copy workflow skills (shared by both targets)
-  await copyDir("skills", outDir);
-  const skillPaths = resources.skills.map((resource) => resource.pluginPath);
-  let stancePaths: string[];
-
-  if (isClaudeCode || isCodex) {
-    // Claude Code and Codex auto-discover only the default skills/ tree, so
-    // materialize stance-skills there while preserving source files under stances/.
-    stancePaths = await copyStancesAsSkills(outDir, resources.stances);
-  } else {
-    // VS Code uses explicit manifest paths, so stances can remain grouped under
-    // stances/ and be registered as hidden skills.
+  if (isPi) {
+    await cp(join(ROOT, "skills", "recon"), join(outDir, "skills", "recon"), {
+      recursive: true,
+    });
     await copyDir("stances", outDir);
-    stancePaths = resources.stances.map((resource) => resource.pluginPath);
+  } else {
+    await copyDir("skills", outDir);
+    if (isClaudeCode || isCodex) {
+      for (const stance of resources.stances) {
+        const outPath = outputBySourcePath.get(resolve(stance.sourcePath));
+        if (!outPath) throw new Error(`Missing output path for ${stance.pluginPath}`);
+        await mkdir(dirname(outPath), { recursive: true });
+        await cp(stance.sourcePath, outPath);
+      }
+    } else {
+      await copyDir("stances", outDir);
+    }
   }
 
+  const skillResources = projectedResources.filter(
+    (resource) => resource.section === "skills",
+  );
+  const stanceResources = projectedResources.filter(
+    (resource) => resource.section === "stances",
+  );
+  for (const resource of [...skillResources, ...stanceResources]) {
+    const outPath = outputBySourcePath.get(resolve(resource.sourcePath));
+    if (!outPath) throw new Error(`Missing output path for ${resource.pluginPath}`);
+    await writeProjectedResource(
+      resource,
+      outPath,
+      composition,
+      outputBySourcePath,
+    );
+  }
+
+  const skillPaths = skillResources.map(
+    (resource) =>
+      `./${relative(outDir, outputBySourcePath.get(resolve(resource.sourcePath)) ?? "").split("\\").join("/")}`,
+  );
+  const stancePaths = stanceResources.map(
+    (resource) =>
+      `./${relative(outDir, outputBySourcePath.get(resolve(resource.sourcePath)) ?? "").split("\\").join("/")}`,
+  );
   const allSkillPaths = [...skillPaths, ...stancePaths];
 
-  // Build hooks for platforms that support this plugin hook format.
-  const hookPaths = isCodex
+  const hookPaths = isCodex || isPi
     ? []
     : await buildHooks(
         outDir,
@@ -525,14 +815,36 @@ async function build() {
         resources.hooks.map((resource) => resource.sourcePath),
       );
 
-  // Generate package.json for script portability
+  await writeCompositionIndex(outDir, composition, outputBySourcePath);
+
+  const packageJson = isPi
+    ? {
+        name: "wycats-ai-plugin-pi",
+        version: pluginMeta.version,
+        description: `${pluginMeta.description} Pi projection.`,
+        private: true,
+        keywords: ["pi-package"],
+        engines: { node: ">=24.0.0" },
+        pi: {
+          skills: ["./skills/recon"],
+          subagents: { agents: ["./agents"] },
+        },
+      }
+    : { type: "module", engines: { node: ">=24.0.0" } };
   await writeFile(
     join(outDir, "package.json"),
-    JSON.stringify({ type: "module", engines: { node: ">=24.0.0" } }, null, 2) +
-      "\n",
+    JSON.stringify(packageJson, null, 2) + "\n",
   );
 
-  if (isClaudeCode) {
+  if (isPi) {
+    await writePiCapabilityReport(outDir, composition);
+    console.log(`Built to ${relative(ROOT, outDir)}/`);
+    console.log(`  agents:       ${String(agentPaths.length)} pi-subagents profile`);
+    console.log(`  skills:       ${String(skillPaths.length)} public workflow`);
+    console.log(`  stances:      ${String(stancePaths.length)} private canonical resources`);
+    console.log("  manifest:     package.json");
+    console.log("  capabilities: projection-capabilities.json");
+  } else if (isClaudeCode) {
     // Claude Code: generate .claude-plugin/plugin.json
     const ccManifest: Record<string, unknown> = {
       name: pluginMeta.name,
@@ -608,6 +920,16 @@ async function build() {
   } else {
     // VS Code: copy instructions; generate plugin.json
     await copyDir("instructions", outDir);
+    for (const resource of resources.instructions) {
+      const outPath = outputBySourcePath.get(resolve(resource.sourcePath));
+      if (!outPath) throw new Error(`Missing output path for ${resource.pluginPath}`);
+      await writeProjectedResource(
+        resource,
+        outPath,
+        composition,
+        outputBySourcePath,
+      );
+    }
     const instructionPaths = resources.instructions.map(
       (resource) => resource.pluginPath,
     );

@@ -7,7 +7,7 @@ description: "Use when investigating unfamiliar code, tracing data flows, mappin
 
 Adaptive investigation where each result changes what you look for next. Unlike search (which executes a known plan), recon follows leads, makes judgment calls about what's worth pursuing, and synthesizes findings into a grounded account.
 
-**Stances used:** Load the **diagnostic-questioning** and **interpretive-synthesis** stances for investigation, **observational-grounding** when surfaces conflict, and **relational-continuity** for keeping findings attached to the work underway.
+**Stances used:** Load the [diagnostic-questioning](../../stances/diagnostic-questioning/SKILL.md "composition:load") and [interpretive-synthesis](../../stances/interpretive-synthesis/SKILL.md "composition:load") stances for investigation, load [observational-grounding](../../stances/observational-grounding/SKILL.md "composition:load") when surfaces conflict, and keep [relational-continuity](../../stances/relational-continuity/SKILL.md "composition:load") active throughout for keeping findings attached to the work underway.
 
 ## When to use
 
@@ -45,6 +45,8 @@ recent turns, the stable starting point is not "persistence failed" or "the
 cache missed." It is the observed contradiction: the log surface reports recent
 activity, while the storage surface does not show the corresponding persisted
 state. Once the surfaces are known to be comparable, causal recon can resume.
+Consult the full [observational-grounding](../../stances/observational-grounding/SKILL.md "composition:reference")
+stance when this compact guidance leaves comparability ambiguous.
 
 ## Fan-out
 
