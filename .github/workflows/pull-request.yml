@@ -1,0 +1,44 @@
+name: Pull Request Validation
+
+on:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Validate canonical sources
+        run: pnpm validate
+
+      - name: Typecheck, lint, and test
+        run: pnpm check
+
+      - name: Build VS Code projection
+        run: pnpm build -- --config config.example.json
+
+      - name: Build Claude Code projection
+        run: pnpm build -- --config config.claude-code.example.json
+
+      - name: Build Codex projection
+        run: pnpm build -- --config config.codex.example.json
+
+      - name: Build Pi projection
+        run: pnpm build:pi
+
+      - name: Verify Pi install and update against a local remote
+        run: |
+          npm install --global --ignore-scripts @earendil-works/pi-coding-agent@0.85.1
+          PI_TEST_BINARY="$(command -v pi)" pnpm test:pi-publication

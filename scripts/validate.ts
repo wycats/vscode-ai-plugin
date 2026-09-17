@@ -16,6 +16,7 @@ import {
   discoverResourceFiles,
   type DiscoveredResource,
 } from "./resource-discovery.ts";
+import { loadCanonicalComposition } from "./resource-composition.ts";
 
 const HOOK_TYPES = new Set(["policy", "observer", "side-effect"]);
 
@@ -264,6 +265,12 @@ async function main() {
   await validateAgents(resources.agents);
   await validateInstructions(resources.instructions);
   await validateHooks(resources.hooks);
+
+  console.log("Checking canonical composition links...");
+  const composition = await loadCanonicalComposition(ROOT, resources);
+  for (const diagnostic of composition.diagnostics) {
+    error(`${diagnostic.file}:${String(diagnostic.line)}: ${diagnostic.message}`);
+  }
 
   console.log("");
   if (errors > 0) {

@@ -92,7 +92,7 @@ same phenomenon.
 
 ## Composition notes
 
-Observational grounding composes with **recon** by interrupting broad
+Observational grounding composes with the [Recon workflow](../../skills/recon/SKILL.md "composition:reference") by interrupting broad
 lead-following when the problem is an unstable phenomenon. Recon can
 resume once the phenomenon is stable.
 
@@ -104,6 +104,6 @@ It composes with **hypothesis-evaluating** when expected and actual results come
 from different surfaces. Evaluation starts by checking whether the "actual" is
 stable enough to compare with the expectation.
 
-It composes with **collaborative grounding** when phenomenon stability depends
+It composes with [collaborative grounding](../collaborative-grounding/SKILL.md "composition:reference") when phenomenon stability depends
 on situated context the user can see or knows from the workflow. The agent
 should present what it can observe and ask for the missing situated relation.
